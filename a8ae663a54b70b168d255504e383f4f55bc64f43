@@ -1,0 +1,7 @@
+Code-Review+2: Michael O'Brien <frank.obrien@amdocs.com>
+Verified+1: Michael O'Brien <frank.obrien@amdocs.com>
+Submitted-by: Michael O'Brien <frank.obrien@amdocs.com>
+Submitted-at: Thu, 19 Jul 2018 18:34:14 +0000
+Reviewed-on: https://gerrit.onap.org/r/55909
+Project: logging-analytics/pomba/pomba-aai-context-builder
+Branch: refs/heads/master
