@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a76adc5_90452a19",
+        "filename": "config/logback.xml",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1077
+      },
+      "writtenOn": "2018-08-17T12:56:45Z",
+      "side": 1,
+      "message": "logback will need audit/error/metrics/debug.log - however the spec is being retrofitted again - so when it gets finalized next week we can do all the projects at the same time later",
+      "revId": "8d9044a5e2232776243f641cab1a8b90f26ff9ff",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
