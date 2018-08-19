@@ -29,4 +29,7 @@ public class AuditError {
 
     public static final String INVALID_REQUEST_URL_MISSING_PARAMETER = "Invalid request URL, missing parameter: ";
     public static final String MISSING_HEADER_PARAMETER = "Missing header parameter: ";
+
+    public static final String MISMATCH = "Authorization Failed due to mismatch basic authorization username or password";
+    public static final String MISSING_AUTHORIZATION_HEADER = "Missing Authorization header";
 }

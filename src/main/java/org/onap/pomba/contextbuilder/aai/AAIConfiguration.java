@@ -18,16 +18,19 @@
 package org.onap.pomba.contextbuilder.aai;
 
 
+import java.util.Base64;
+import javax.ws.rs.ApplicationPath;
+import org.eclipse.jetty.util.security.Password;
 import org.onap.aai.restclient.client.RestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 
-//@Component
-@Configuration
-//@ApplicationPath("/")
+@Component
+//@Configuration
+@ApplicationPath("/")
 public class AAIConfiguration {
     @Autowired
     @Value("${aai.host}")
@@ -36,28 +39,14 @@ public class AAIConfiguration {
     @Value("${aai.port}")
     private String port;
     @Autowired
+    @Value("${aai.username}")
+    private String username;
+    @Autowired
+    @Value("${aai.password}")
+    private String password;
+    @Autowired
     @Value("${aai.httpProtocol}")
     private String httpProtocol;
-
-    @Autowired
-    @Value("${aai.trustStorePath}")
-    private String trustStorePath;
-    @Autowired
-    @Value("${aai.keyStorePath}")
-    private String keyStorePath;
-    @Autowired
-    @Value("${aai.keyStorePassword}")
-    private String keyStorePassword;
-
-    @Autowired
-    @Value("${aai.keyManagerFactoryAlgorithm}")
-    private String keyManagerFactoryAlgorithm;
-    @Autowired
-    @Value("${aai.keyStoreType}")
-    private String keyStoreType;
-    @Autowired
-    @Value("${aai.securityProtocol}")
-    private String securityProtocol;
 
     @Autowired
     @Value("${aai.connectionTimeout}")
@@ -70,16 +59,31 @@ public class AAIConfiguration {
     @Value("${aai.serviceInstancePath}")
     private String serviceInstancePath;
 
+    @Autowired
+    @Value("${http.userId}")
+    private String httpUserId;
 
+    @Autowired
+    @Value("${http.password}")
+    private String httpPassword;
+
+
+    @Bean(name="httpBasicAuthorization")
+    public String getHttpBasicAuth() {
+        String auth = new String(this.httpUserId + ":" + Password.deobfuscate(this.httpPassword));
+
+        String encodedAuth =  Base64.getEncoder().encodeToString(auth.getBytes());
+        return ("Basic " + encodedAuth);
+    }
 
     @Bean(name="aaiClient")
     public RestClient restClient() {
         RestClient restClient = new RestClient();
-        if (httpProtocol.equals("https"))
-            restClient.validateServerHostname(false).validateServerCertChain(false).trustStore(trustStorePath).clientCertFile(keyStorePath).clientCertPassword(keyStorePassword).connectTimeoutMs(connectionTimeout).readTimeoutMs(readTimeout);
-        else
-            restClient.validateServerHostname(false).validateServerCertChain(false).connectTimeoutMs(connectionTimeout).readTimeoutMs(readTimeout);
+        restClient.validateServerHostname(false).validateServerCertChain(false).connectTimeoutMs(connectionTimeout).readTimeoutMs(readTimeout);
+        restClient.basicAuthUsername(username);
+        restClient.basicAuthPassword(Password.deobfuscate(password));
         return restClient;
+
     }
 
     @Bean(name="aaiBaseUrl")

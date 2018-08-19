@@ -39,6 +39,8 @@ public class RestServiceImpl implements RestService {
 
     @Autowired
     private SpringService service;
+    @Autowired
+    private String httpBasicAuthorization;
 
     @Override
     public Response getContext(HttpHeaders headers, String serviceInstanceId, String modelVersionId, String modelInvariantId, String serviceType, String customerId) {
@@ -46,7 +48,7 @@ public class RestServiceImpl implements RestService {
         String url = "serviceInstanceId=" + serviceInstanceId + " modelVersion="+modelVersionId +
                 " modelInvariantId="+ modelInvariantId + " serviceType="+serviceType + " customerId="+ customerId;
         if(log.isDebugEnabled()) {
-            log.debug(LogMessages.AAI_CONTEXT_BUILDER_URL + url);
+            log.debug(LogMessages.AAI_CONTEXT_BUILDER_URL, url);
         }
 
 
@@ -58,6 +60,7 @@ public class RestServiceImpl implements RestService {
 
         try {
             // Do some validation on Http headers and URL parameters
+        	RestUtil.validateBasicAuthorization(headers, httpBasicAuthorization);
             RestUtil.validateHeader(headers);
             RestUtil.validateURL(serviceInstanceId, modelVersionId, modelInvariantId, serviceType, customerId);
 

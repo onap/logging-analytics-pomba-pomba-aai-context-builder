@@ -16,7 +16,6 @@ package org.onap.pomba.contextbuilder.aai.util;
 
 
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-//import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,6 +65,7 @@ public class RestUtil {
     // HTTP headers
     private static final String TRANSACTION_ID = "X-TransactionId";
     private static final String FROM_APP_ID = "X-FromAppId";
+    private static final String AUTHORIZATION = "Authorization";
 
     private static final String APP_NAME = "aaiCtxBuilder";
 
@@ -114,6 +114,19 @@ public class RestUtil {
         }
     }
 
+    public static void validateBasicAuthorization(HttpHeaders headers, String basicAuthorization) throws AuditException {
+    	String authorization = null;
+
+        // validation on HTTP Authorization Header
+        authorization = headers.getRequestHeaders().getFirst(AUTHORIZATION);
+        if (authorization != null && !authorization.trim().isEmpty() && authorization.startsWith("Basic")) {
+            if (!authorization.equals(basicAuthorization)) {
+                throw new AuditException(Status.UNAUTHORIZED, AuditError.MISMATCH);
+            };
+        } else {
+            throw new AuditException(Status.UNAUTHORIZED, AuditError.MISSING_AUTHORIZATION_HEADER);
+        }
+    }
 
     public static void validateHeader(HttpHeaders headers) throws AuditException {
         String fromAppId = null;

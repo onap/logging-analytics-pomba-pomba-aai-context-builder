@@ -21,7 +21,7 @@ public class LogMessages {
 
     private LogMessages() {}
 
-    public static final String AAI_CONTEXT_BUILDER_URL = "AAI Context Builder URL ";
+    public static final String AAI_CONTEXT_BUILDER_URL = "AAI Context Builder URL: ";
     public static final String HEADER_MESSAGE = "Header {} not present in request, generating new value: {}";
     public static final String NOT_FOUND = "{} {} is not found from AAI";
     public static final String NUMBER_OF_API_CALLS = "The number of API calls for {} is {}";

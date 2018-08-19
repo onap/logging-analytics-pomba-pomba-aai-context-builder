@@ -38,7 +38,6 @@ public class SpringServiceImpl implements SpringService {
     @Autowired
     private String aaiServiceInstancePath;
 
-
     public SpringServiceImpl() {
         // needed for instantiation
     }

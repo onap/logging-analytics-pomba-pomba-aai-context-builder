@@ -32,6 +32,16 @@ public class AuditException extends Exception {
         super(message);
     }
 
+    /**
+     * Constructor for an instance of this exception with a message and status.
+     * @param httpStatus
+     * @param message
+     */
+    public AuditException(Status httpStatus, String message) {
+        super(message);
+        this.httpStatus = httpStatus;
+    }
+
     public AuditException(String message, Status httpStatus) {
         super(message);
         this.setHttpStatus(httpStatus);

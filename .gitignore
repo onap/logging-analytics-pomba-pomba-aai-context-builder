@@ -1,0 +1,9 @@
+/target/
+/debug-logs/
+/logs/
+/.settings/
+.checkstyle
+.classpath
+.project
+output.log
+
