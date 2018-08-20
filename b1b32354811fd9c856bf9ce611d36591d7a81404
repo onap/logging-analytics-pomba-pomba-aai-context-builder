@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a76adc5_33021b0c",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/exception/AuditException.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 659
+      },
+      "writtenOn": "2018-08-20T14:17:14Z",
+      "side": 1,
+      "message": "It sure looks like a duplicate, only the arguments ordering is different.  Which one of these is being called?",
+      "parentUuid": "1a76adc5_f33583f7",
+      "revId": "b1b32354811fd9c856bf9ce611d36591d7a81404",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a76adc5_3a551050",
         "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/service/rs/RestServiceImpl.java",
         "patchSetId": 1
