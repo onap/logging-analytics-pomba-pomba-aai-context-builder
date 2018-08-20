@@ -55,6 +55,23 @@
     },
     {
       "key": {
+        "uuid": "1a76adc5_6e642ae5",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/exception/AuditException.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 2931
+      },
+      "writtenOn": "2018-08-20T14:30:58Z",
+      "side": 1,
+      "message": "the one on Line 45 is called by RestUtil.java line 137 for example. I suggest removed your new added method since it is not necesaary",
+      "revId": "b1b32354811fd9c856bf9ce611d36591d7a81404",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a76adc5_3a551050",
         "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/service/rs/RestServiceImpl.java",
         "patchSetId": 1
