@@ -121,10 +121,10 @@ public class RestUtil {
         authorization = headers.getRequestHeaders().getFirst(AUTHORIZATION);
         if (authorization != null && !authorization.trim().isEmpty() && authorization.startsWith("Basic")) {
             if (!authorization.equals(basicAuthorization)) {
-                throw new AuditException(Status.UNAUTHORIZED, AuditError.MISMATCH);
+                throw new AuditException(AuditError.MISMATCH, Status.UNAUTHORIZED);
             };
         } else {
-            throw new AuditException(Status.UNAUTHORIZED, AuditError.MISSING_AUTHORIZATION_HEADER);
+            throw new AuditException(AuditError.MISSING_AUTHORIZATION_HEADER, Status.UNAUTHORIZED);
         }
     }
 

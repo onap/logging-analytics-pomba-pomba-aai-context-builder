@@ -47,7 +47,7 @@ public class SpringServiceImpl implements SpringService {
 
         String url = "serviceInstanceId=" + serviceInstanceId + " modelVersion="+modelVersionId +
                 " modelInvariantId="+ modelInvariantId + " serviceType="+serviceType + " customerId="+ customerId;
-        log.info(LogMessages.AAI_CONTEXT_BUILDER_URL + url);
+        log.info(LogMessages.AAI_CONTEXT_BUILDER_URL, url);
 
         ModelContext context = null;
 

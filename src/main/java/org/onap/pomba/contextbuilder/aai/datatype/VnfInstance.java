@@ -267,7 +267,7 @@ public class VnfInstance {
         return orchestrationStatus;
     }
 
-    public void setoOrchestrationStatus(String orchestrationStatus) {
+    public void setOrchestrationStatus(String orchestrationStatus) {
         this.orchestrationStatus = orchestrationStatus;
     }
 
