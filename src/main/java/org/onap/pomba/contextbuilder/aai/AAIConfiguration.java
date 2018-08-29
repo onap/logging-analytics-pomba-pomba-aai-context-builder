@@ -33,10 +33,10 @@ import org.springframework.stereotype.Component;
 @ApplicationPath("/")
 public class AAIConfiguration {
     @Autowired
-    @Value("${aai.host}")
+    @Value("${aai.serviceName}")
     private String host;
     @Autowired
-    @Value("${aai.port}")
+    @Value("${aai.servicePort}")
     private String port;
     @Autowired
     @Value("${aai.username}")
