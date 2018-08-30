@@ -76,6 +76,13 @@ public class AAIConfiguration {
         return ("Basic " + encodedAuth);
     }
 
+    @Bean(name="aaiBasicAuthorization")
+    public String getAAIBasicAuth() {
+        String auth = new String(this.username + ":" + Password.deobfuscate(this.password));
+        String encodedAuth =  Base64.getEncoder().encodeToString(auth.getBytes());
+        return ("Basic " + encodedAuth);
+    }
+
     @Bean(name="aaiClient")
     public RestClient restClient() {
         RestClient restClient = new RestClient();
