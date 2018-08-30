@@ -48,6 +48,7 @@ import org.onap.pomba.contextbuilder.aai.exception.AuditError;
 import org.onap.pomba.contextbuilder.aai.exception.AuditException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 public class RestUtil {
@@ -82,6 +83,7 @@ public class RestUtil {
     private static final String EMPTY_JSON_STRING = "{}";
     private static final String DELIMITER = "$";
     private static final String DEPTH = "?depth=2";
+
 
     /**
      * Validates the URL parameter.
@@ -162,7 +164,7 @@ public class RestUtil {
      */
     public static ModelContext retrieveAAIModelData(RestClient aaiClient, String baseURL, String aaiServiceInstancePath,
             String transactionId, String serviceInstanceId, String modelVersionId, String modelInvariantId,
-            String serviceType, String customerId) throws AuditException {
+            String serviceType, String customerId, String aaiBasicAuthorization) throws AuditException {
         String serviceInstancePayload = null;
         String genericVNFPayload = null;
         String vnfcPayload = null;
@@ -177,7 +179,7 @@ public class RestUtil {
                 + generateServiceInstanceURL(aaiServiceInstancePath, customerId, serviceType, serviceInstanceId);
         // Response from service instance API call
         serviceInstancePayload =
-                getResource(aaiClient, url, transactionId, MediaType.valueOf(MediaType.APPLICATION_XML));
+                getResource(aaiClient, url, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
 
         // Handle the case if the service instance is not found in AAI
         if (isEmptyJson(serviceInstancePayload)) {
@@ -197,7 +199,7 @@ public class RestUtil {
             String genericVNFURL = baseURL + genericVNFLink + DEPTH;
             // Response from generic VNF API call
             genericVNFPayload =
-                    getResource(aaiClient, genericVNFURL, transactionId, MediaType.valueOf(MediaType.APPLICATION_XML));
+                    getResource(aaiClient, genericVNFURL, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
 
             if (isEmptyJson(genericVNFPayload)) {
                 log.info(LogMessages.NOT_FOUND, "GenericVNF with url ", genericVNFLink);
@@ -214,7 +216,7 @@ public class RestUtil {
                 List<VnfcInstance> vnfcLst = new ArrayList<VnfcInstance>();
                 for (String vnfcLink : vnfcLinkLst) {
                     String vnfcURL = baseURL + vnfcLink;
-                    vnfcPayload = getResource(aaiClient, vnfcURL, transactionId,
+                    vnfcPayload = getResource(aaiClient, vnfcURL, aaiBasicAuthorization,  transactionId,
                             MediaType.valueOf(MediaType.APPLICATION_XML));
 
                     if (isEmptyJson(vnfcPayload)) {
@@ -410,17 +412,18 @@ public class RestUtil {
 
 
     @SuppressWarnings("unchecked")
-    private static Map<String, List<String>> buildHeaders(String transactionId) {
+    private static Map<String, List<String>> buildHeaders(String aaiBasicAuthorization, String transactionId) {
         MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
         headers.put(TRANSACTION_ID, Collections.singletonList(transactionId));
         headers.put(FROM_APP_ID, Collections.singletonList(APP_NAME));
+        headers.put(AUTHORIZATION, Collections.singletonList(aaiBasicAuthorization));
         return headers;
     }
 
 
-    private static String getResource(RestClient client, String url, String transId, MediaType mediaType)
+    private static String getResource(RestClient client, String url, String aaiBasicAuthorization, String transId, MediaType mediaType)
             throws AuditException {
-        OperationResult result = client.get(url, buildHeaders(transId), MediaType.valueOf(MediaType.APPLICATION_JSON));
+        OperationResult result = client.get(url, buildHeaders(aaiBasicAuthorization, transId), MediaType.valueOf(MediaType.APPLICATION_JSON));
 
         if (result.getResultCode() == 200) {
             return result.getResult();
