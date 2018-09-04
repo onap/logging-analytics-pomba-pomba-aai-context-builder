@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a76adc5_b4fb27c0",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 186,
+      "author": {
+        "id": 3131
+      },
+      "writtenOn": "2018-09-04T16:14:50Z",
+      "side": 1,
+      "message": "What do we do with resourceLink after this point?",
+      "revId": "7401830aa0a162575beda138e5ccfd394294c38e",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_547c1383",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 469,
+      "author": {
+        "id": 3131
+      },
+      "writtenOn": "2018-09-04T16:14:50Z",
+      "side": 1,
+      "message": "We can just return here",
+      "revId": "7401830aa0a162575beda138e5ccfd394294c38e",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_340877d9",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 496,
+      "author": {
+        "id": 3131
+      },
+      "writtenOn": "2018-09-04T16:14:50Z",
+      "side": 1,
+      "message": "Should be catching JSONException",
+      "revId": "7401830aa0a162575beda138e5ccfd394294c38e",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_94670bb7",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 501,
+      "author": {
+        "id": 3131
+      },
+      "writtenOn": "2018-09-04T16:14:50Z",
+      "side": 1,
+      "message": "This should be in the same try as above.  You can then simplify everything by using JSON to loop through the array: getJSONObject(index); check the resource type: hasString(JSON_ATT_RESOURCE_TYPE); then extract the resourceLink:getString(key).\nCatching JSONException for all these as well",
+      "revId": "7401830aa0a162575beda138e5ccfd394294c38e",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
