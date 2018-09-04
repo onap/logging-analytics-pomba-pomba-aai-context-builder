@@ -104,4 +104,12 @@ public class AAIConfiguration {
         return serviceInstancePath;
     }
 
+    @Value("${aai.pathToGetCustomerInfoBasedOnServiceInstanceId}")
+    private String pathToGetCustomerInfoBasedOnServiceInstanceId;
+
+    @Bean(name="aaiPathToGetCustomerInfoBasedOnServiceInstanceId")
+    public String getAaiPathToGetCustomerInfoBasedOnServiceInstanceId() {
+        return pathToGetCustomerInfoBasedOnServiceInstanceId;
+    }
+
 }
