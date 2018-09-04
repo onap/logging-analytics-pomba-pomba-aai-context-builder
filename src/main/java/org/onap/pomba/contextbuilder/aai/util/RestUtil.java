@@ -31,6 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.onap.aai.restclient.client.OperationResult;
 import org.onap.aai.restclient.client.RestClient;
@@ -48,7 +49,7 @@ import org.onap.pomba.contextbuilder.aai.exception.AuditError;
 import org.onap.pomba.contextbuilder.aai.exception.AuditException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class RestUtil {
 
@@ -72,12 +73,17 @@ public class RestUtil {
     // Service Catalog
     private static final String CATALOG_GENERIC_VNF = "generic-vnf";
     private static final String CATALOG_VNFC = "vnfc";
+    private static final String CATALOG_SERVICE_INSTANCE = "service-instance";
+
     // Relationship Json Path
     private static final String RELATIONSHIP_LIST = "relationship-list";
     private static final String RELATIONSHIP = "relationship";
+    private static final String RESULT_DATA = "result-data";
 
     private static final String JSON_ATT_RELATED_TO = "related-to";
     private static final String JSON_ATT_RELATED_LINK = "related-link";
+    private static final String JSON_ATT_RESOURCE_TYPE = "resource-type";
+    private static final String JSON_ATT_RESOURCE_LINK = "resource-link";
 
     private static final String EMPTY_JSON_STRING = "{}";
     private static final String DELIMITER = "$";
@@ -105,6 +111,7 @@ public class RestUtil {
             throw new AuditException(AuditError.INVALID_REQUEST_URL_MISSING_PARAMETER + MODEL_INVARIANT_ID,
                     Status.BAD_REQUEST);
         }
+
         // serviceType
         if (serviceType == null || serviceType.isEmpty()) {
             throw new AuditException(AuditError.INVALID_REQUEST_URL_MISSING_PARAMETER + SERVICE_TYPE, Status.BAD_REQUEST);
@@ -161,7 +168,7 @@ public class RestUtil {
     /*
      * Trigger external API call to AAI to retrieve Service Instance data (i.e. genericVNF and VNFC)
      */
-    public static ModelContext retrieveAAIModelData(RestClient aaiClient, String baseURL, String aaiServiceInstancePath,
+    public static ModelContext retrieveAAIModelData(RestClient aaiClient, String baseURL, String aaiPathToSearchNodeQuery, String aaiServiceInstancePath, 
             String transactionId, String serviceInstanceId, String modelVersionId, String modelInvariantId,
             String serviceType, String customerId, String aaiBasicAuthorization) throws AuditException {
         String serviceInstancePayload = null;
@@ -173,6 +180,8 @@ public class RestUtil {
         Map<String, List<VnfcInstance>> vnfMap = new HashMap<String, List<VnfcInstance>>(); // MAP the vnf-id as the
                                                                                             // key, and list of the vNFC
                                                                                             // pojo object
+        // Obtain resource-link based on resource-type = service-Instance
+        String resourceLink = obtainResouceLinkBasedOnServiceInstanceFromAAI(aaiClient, baseURL, aaiPathToSearchNodeQuery, serviceInstanceId, transactionId, aaiBasicAuthorization);
 
         String url = baseURL
                 + generateServiceInstanceURL(aaiServiceInstancePath, customerId, serviceType, serviceInstanceId);
@@ -442,5 +451,60 @@ public class RestUtil {
         return MessageFormat.format(siPath, customerId, serviceType, serviceInstanceId);
     }
 
+    public static String obtainResouceLinkBasedOnServiceInstanceFromAAI(RestClient aaiClient, String baseURL, String aaiPathToSearchNodeQuery, String serviceInstanceId,
+            String transactionId, String aaiBasicAuthorization) throws AuditException {
 
+        String url = generateGetCustomerInfoUrl(baseURL, aaiPathToSearchNodeQuery, serviceInstanceId);
+        String customerInfoString  = getResource(aaiClient, url, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
+
+        // Handle the case if the service instance is not found in AAI
+        if (isEmptyJson(customerInfoString)) {
+            log.info(LogMessages.NOT_FOUND, "Service Instance" , serviceInstanceId);
+            // Only return the empty Json on the root level. i.e service instance
+            return null;
+        }
+
+        return extractResourceLinkBasedOnResourceType(customerInfoString, CATALOG_SERVICE_INSTANCE);
+    }
+
+    private static String generateGetCustomerInfoUrl (String baseURL, String aaiPathToSearchNodeQuery ,String serviceInstanceId) {
+        return baseURL + aaiPathToSearchNodeQuery + serviceInstanceId;
+    }
+
+    /*
+     * Extract the resource-Link from Json payload. For example
+     * {
+     *     "result-data": [
+     *         {
+     *             "resource-type": "service-instance",
+     *             "resource-link": "/aai/v11/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb"
+     *         }
+     *     ]
+     * }
+     */
+    private static String extractResourceLinkBasedOnResourceType(String payload, String catalog) throws AuditException {
+        String resourceLink = null;
+        log.info("Fetching the resource-link based on resource-type=" + catalog);
+
+        try {
+            JSONArray result_data_list = new JSONObject(payload).getJSONArray(RESULT_DATA);
+            if (result_data_list != null) {
+                for (int i = 0; i < result_data_list.length(); i++) {
+                    JSONObject obj = result_data_list.optJSONObject(i);
+                    if (obj.has(JSON_ATT_RESOURCE_TYPE) && (obj.getString(JSON_ATT_RESOURCE_TYPE).equals(catalog) ))  {
+                        resourceLink = obj.getString(JSON_ATT_RESOURCE_LINK);
+                        log.info(resourceLink);
+                        return resourceLink;
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            log.error(e.getMessage());
+            throw new AuditException(AuditError.JSON_READER_PARSE_ERROR + " " + e.getMessage());
+        }
+
+        log.error("resource-link CANNOT be found: ", payload );
+
+        return resourceLink;
+    }
 }
