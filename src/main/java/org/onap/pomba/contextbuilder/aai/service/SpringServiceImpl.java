@@ -39,6 +39,8 @@ public class SpringServiceImpl implements SpringService {
     private String aaiServiceInstancePath;
     @Autowired
     private String aaiBasicAuthorization;
+    @Autowired
+    private String aaiPathToSearchNodeQuery;
 
     public SpringServiceImpl() {
         // needed for instantiation
@@ -55,7 +57,7 @@ public class SpringServiceImpl implements SpringService {
 
         // Retrieve the service instance information from AAI
         try {
-            context= RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiServiceInstancePath, tranId, serviceInstanceId, modelVersionId, modelInvariantId, serviceType, customerId,aaiBasicAuthorization);
+            context= RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, aaiServiceInstancePath, tranId, serviceInstanceId, modelVersionId, modelInvariantId, serviceType, customerId,aaiBasicAuthorization);
         } catch (AuditException ae) {
             throw ae;
         } catch (Exception e) {

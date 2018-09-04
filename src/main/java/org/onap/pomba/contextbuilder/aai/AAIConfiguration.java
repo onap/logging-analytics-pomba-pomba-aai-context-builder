@@ -104,4 +104,12 @@ public class AAIConfiguration {
         return serviceInstancePath;
     }
 
+    @Value("${aai.searchNodeQuery}")
+    private String searchNodeQuery;
+
+    @Bean(name="aaiPathToSearchNodeQuery")
+    public String getAaiPathToSearchNodeQuery() {
+        return searchNodeQuery.trim();
+    }
+
 }
