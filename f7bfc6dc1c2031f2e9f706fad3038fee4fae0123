@@ -279,6 +279,24 @@
       "revId": "f7bfc6dc1c2031f2e9f706fad3038fee4fae0123",
       "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_b0e48a3c",
+        "filename": "src/test/resources/junit/queryNodeData-1.json",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-05T19:45:49Z",
+      "side": 1,
+      "message": "Jennie is referring to the fact that this is already in the test directory, having a junit subdirectory is pointless.  And of course, if we are removing junit subdirectory, anything referencing it would need to be updated.",
+      "parentUuid": "1a76adc5_ad00b5ab",
+      "revId": "f7bfc6dc1c2031f2e9f706fad3038fee4fae0123",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
     }
   ]
 }
