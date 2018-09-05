@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a76adc5_033f3fd7",
+        "filename": "pom.xml",
+        "patchSetId": 2
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 3131
+      },
+      "writtenOn": "2018-09-05T13:01:56Z",
+      "side": 1,
+      "message": "Clean up the whitespace, tabs etc. in this file.",
+      "revId": "17058887ce5e8dc417ae7f49865599e8c2422e40",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_832a6f8e",
+        "filename": "src/test/java/org/onap/logging_analytics/pomba/pomba_aai_context_builder/RestUtilTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 3131
+      },
+      "writtenOn": "2018-09-05T13:01:56Z",
+      "side": 1,
+      "message": "Fix up the whitespace here too.  Using AnyEdit tools in Eclipse will do this for you for every file you edit.",
+      "revId": "17058887ce5e8dc417ae7f49865599e8c2422e40",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
