@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a76adc5_2a6c8bcf",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 485,
+      "author": {
+        "id": 3131
+      },
+      "writtenOn": "2018-09-05T14:54:44Z",
+      "side": 1,
+      "message": "Please clean this up and exercise the exception handling before we merge.",
+      "revId": "08b6621d2a5f56b9a2bcbb9b660ef0df856f6257",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
