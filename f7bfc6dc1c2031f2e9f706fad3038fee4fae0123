@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a76adc5_8a1fdf6b",
+        "filename": "config/application.properties",
+        "patchSetId": 4
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-05T16:53:20Z",
+      "side": 1,
+      "message": "Please remember to update the corresponded file in oom.",
+      "revId": "f7bfc6dc1c2031f2e9f706fad3038fee4fae0123",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_4a478777",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-05T16:53:20Z",
+      "side": 1,
+      "message": "Where is resourceLink being used in this method?  And what if resourceLink is null?",
+      "revId": "f7bfc6dc1c2031f2e9f706fad3038fee4fae0123",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_2a39ebf1",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 486,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-05T16:53:20Z",
+      "side": 1,
+      "message": "The name of the variable is a list but declared it as String?",
+      "revId": "f7bfc6dc1c2031f2e9f706fad3038fee4fae0123",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_ea2693cd",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 497,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-05T16:53:20Z",
+      "side": 1,
+      "message": "Is it possible that there are more than one resource_link found?  It looks like we return as soon as we\u0027ve found the first one.",
+      "revId": "f7bfc6dc1c2031f2e9f706fad3038fee4fae0123",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_aa2c1bad",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 506,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-05T16:53:20Z",
+      "side": 1,
+      "message": "Is it really an error when we can\u0027t find a link?",
+      "revId": "f7bfc6dc1c2031f2e9f706fad3038fee4fae0123",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_6a4cc39e",
+        "filename": "src/test/java/org/onap/logging_analytics/pomba/pomba_aai_context_builder/RestUtilTest.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-05T16:53:20Z",
+      "side": 1,
+      "message": "Should add a test when this method returns null.",
+      "revId": "f7bfc6dc1c2031f2e9f706fad3038fee4fae0123",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
