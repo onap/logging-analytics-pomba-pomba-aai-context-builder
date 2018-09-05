@@ -156,6 +156,24 @@
       "revId": "7401830aa0a162575beda138e5ccfd394294c38e",
       "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_a71a166d",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 501,
+      "author": {
+        "id": 3131
+      },
+      "writtenOn": "2018-09-05T13:01:56Z",
+      "side": 1,
+      "message": "Once you get the JSONArray result_data_list above use the JSON utitilities to loop over the array to get the JSONObjects you are interested in and do it above in the same try.",
+      "parentUuid": "1a76adc5_972f0d88",
+      "revId": "7401830aa0a162575beda138e5ccfd394294c38e",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
     }
   ]
 }
