@@ -43,10 +43,9 @@ public class RestServiceImpl implements RestService {
     private String httpBasicAuthorization;
 
     @Override
-    public Response getContext(HttpHeaders headers, String serviceInstanceId, String modelVersionId, String modelInvariantId, String serviceType, String customerId) {
+    public Response getContext(HttpHeaders headers, String serviceInstanceId, String modelVersionId, String modelInvariantId) {
 
-        String url = "serviceInstanceId=" + serviceInstanceId + " modelVersion="+modelVersionId +
-                " modelInvariantId="+ modelInvariantId + " serviceType="+serviceType + " customerId="+ customerId;
+        String url = "serviceInstanceId=" + serviceInstanceId + " modelVersion="+modelVersionId + " modelInvariantId="+ modelInvariantId;
         if(log.isDebugEnabled()) {
             log.debug(LogMessages.AAI_CONTEXT_BUILDER_URL, url);
         }
@@ -60,14 +59,14 @@ public class RestServiceImpl implements RestService {
 
         try {
             // Do some validation on Http headers and URL parameters
-        	RestUtil.validateBasicAuthorization(headers, httpBasicAuthorization);
+            RestUtil.validateBasicAuthorization(headers, httpBasicAuthorization);
             RestUtil.validateHeader(headers);
-            RestUtil.validateURL(serviceInstanceId, modelVersionId, modelInvariantId, serviceType, customerId);
+            RestUtil.validateURL(serviceInstanceId, modelVersionId, modelInvariantId);
 
             // Keep the same transaction id for logging purpose
             transactionId= RestUtil.extractTranIdHeader(headers);
 
-            aaiContext = service.getContext(serviceInstanceId, modelVersionId, modelInvariantId, serviceType, customerId, transactionId);
+            aaiContext = service.getContext(serviceInstanceId, modelVersionId, modelInvariantId, transactionId);
 
             if (aaiContext==null) {
                 // Return empty JSON

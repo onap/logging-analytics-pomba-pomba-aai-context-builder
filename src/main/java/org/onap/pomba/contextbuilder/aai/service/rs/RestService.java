@@ -44,19 +44,17 @@ public interface RestService {
             value = "Respond AAIContext Model Data",
             notes = "Returns a JSON object which represents the AAIConetxt model data",
             response = GenericResponse.class
-    )
+            )
     @ApiResponses(
             value = {
                     @ApiResponse(code = 200, message = "OK"),
                     @ApiResponse(code = 400, message = "Bad Request"),
                     @ApiResponse(code = 404, message = "Service not available"),
                     @ApiResponse(code = 500, message = "Unexpected Runtime error")
-                    })
+            })
     public Response getContext(@Context HttpHeaders headers,
             @QueryParam("serviceInstanceId") String serviceInstanceId,
             @QueryParam("modelVersionId") String modelVersionId,
-            @QueryParam("modelInvariantId") String modelInvariantId,
-            @QueryParam("serviceType") String serviceType,
-            @QueryParam("customerId") String customerId
+            @QueryParam("modelInvariantId") String modelInvariantId
             );
 }

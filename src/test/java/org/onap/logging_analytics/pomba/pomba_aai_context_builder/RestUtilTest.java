@@ -61,80 +61,54 @@ public class RestUtilTest {
     @Rule
     public WireMockRule aaiEnricherRule = new WireMockRule(wireMockConfig().port(9808));
 
-	@Test
-	public void testValidateURL() {
-		// Missing ServiceInstanceId or it is null
-		try {
-			RestUtil.validateURL("", "modelVersionId", "modelInvariantId", "serviceType", "customerId");
-		} catch (AuditException e) {
-			assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: serviceInstanceId"));
-		}
+    @Test
+    public void testValidateURL() {
+        // Missing ServiceInstanceId or it is null
+        try {
+            RestUtil.validateURL("", "modelVersionId", "modelInvariantId");
+        } catch (AuditException e) {
+            assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: serviceInstanceId"));
+        }
 
-		try {
-			RestUtil.validateURL(null, "modelVersionId", "modelInvariantId", "serviceType", "customerId");
-		} catch (AuditException e) {
-			assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: serviceInstanceId"));
-		}
+        try {
+            RestUtil.validateURL(null, "modelVersionId", "modelInvariantId");
+        } catch (AuditException e) {
+            assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: serviceInstanceId"));
+        }
 
-		// Missing ModelVersionId or it is null
-		try {
-			RestUtil.validateURL("serviceInstanceId", "", "modelInvariantId", "serviceType", "customerId");
-		} catch (AuditException e) {
-			assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: modelVersionId"));
-		}
+        // Missing ModelVersionId or it is null
+        try {
+            RestUtil.validateURL("serviceInstanceId", "", "modelInvariantId");
+        } catch (AuditException e) {
+            assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: modelVersionId"));
+        }
 
-		try {
-			RestUtil.validateURL("serviceInstanceId", null, "modelInvariantId", "serviceType", "customerId");
-		} catch (AuditException e) {
-			assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: modelVersionId"));
-		}
+        try {
+            RestUtil.validateURL("serviceInstanceId", null, "modelInvariantId");
+        } catch (AuditException e) {
+            assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: modelVersionId"));
+        }
 
-		// Missing ModelInvariantId or it is null
-		try {
-			RestUtil.validateURL("serviceInstanceId", "modelVersionId", "", "serviceType", "customerId");
-		} catch (AuditException e) {
-			assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: modelInvariantId"));
-		}
+        // Missing ModelInvariantId or it is null
+        try {
+            RestUtil.validateURL("serviceInstanceId", "modelVersionId", "");
+        } catch (AuditException e) {
+            assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: modelInvariantId"));
+        }
 
-		try {
-			RestUtil.validateURL("serviceInstanceId", "modelVersionId", null, "serviceType", "customerId");
-		} catch (AuditException e) {
-			assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: modelInvariantId"));
-		}
+        try {
+            RestUtil.validateURL("serviceInstanceId", "modelVersionId", null);
+        } catch (AuditException e) {
+            assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: modelInvariantId"));
+        }
 
-		// Missing ServiceType or it is null
-		try {
-			RestUtil.validateURL("serviceInstanceId", "modelVersionId", "modelInvariantId", "", "customerId");
-		} catch (AuditException e) {
-			assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: serviceType"));
-		}
+    }
 
-		try {
-			RestUtil.validateURL("serviceInstanceId", "modelVersionId", "modelInvariantId", null, "customerId");
-		} catch (AuditException e) {
-			assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: serviceType"));
-		}
-
-		// Missing CustomerId or it is null
-		try {
-			RestUtil.validateURL("serviceInstanceId", "modelVersionId", "modelInvariantId", "serviceType", "");
-		} catch (AuditException e) {
-			assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: customerId"));
-		}
-
-
-		try {
-			RestUtil.validateURL("serviceInstanceId", "modelVersionId", "modelInvariantId", "serviceType", null);
-		} catch (AuditException e) {
-			assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: customerId"));
-		}
-	}
-
-	@Test
-	public void testIsEmptyJson() {
-		assertTrue(RestUtil.isEmptyJson("{}"));
-		assertTrue(!RestUtil.isEmptyJson("{Not Empty}"));
-	}
+    @Test
+    public void testIsEmptyJson() {
+        assertTrue(RestUtil.isEmptyJson("{}"));
+        assertTrue(!RestUtil.isEmptyJson("{Not Empty}"));
+    }
 
     @Test
     public void testObtainResouceLinkBasedOnServiceInstanceFromAAI() throws Exception {
