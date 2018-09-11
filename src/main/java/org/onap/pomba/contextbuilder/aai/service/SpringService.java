@@ -23,5 +23,5 @@ import org.onap.pomba.contextbuilder.aai.exception.AuditException;
 
 public interface SpringService {
 
-    public ModelContext getContext(String serviceInstanceId, String modelVersionId, String modelInvariantId, String serviceType, String customerId, String transactionId) throws AuditException;
+    public ModelContext getContext(String serviceInstanceId, String modelVersionId, String modelInvariantId, String transactionId) throws AuditException;
 }

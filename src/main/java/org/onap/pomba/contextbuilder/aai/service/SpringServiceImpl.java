@@ -35,8 +35,7 @@ public class SpringServiceImpl implements SpringService {
     private RestClient aaiClient;
     @Autowired
     private String aaiBaseUrl;
-    @Autowired
-    private String aaiServiceInstancePath;
+
     @Autowired
     private String aaiBasicAuthorization;
     @Autowired
@@ -46,18 +45,16 @@ public class SpringServiceImpl implements SpringService {
         // needed for instantiation
     }
 
-    @Override
-    public ModelContext getContext(String serviceInstanceId, String modelVersionId, String modelInvariantId, String serviceType, String customerId, String tranId) throws AuditException {
+    public ModelContext getContext(String serviceInstanceId, String modelVersionId, String modelInvariantId,  String tranId) throws AuditException {
 
-        String url = "serviceInstanceId=" + serviceInstanceId + " modelVersion="+modelVersionId +
-                " modelInvariantId="+ modelInvariantId + " serviceType="+serviceType + " customerId="+ customerId;
+        String url = "serviceInstanceId=" + serviceInstanceId + " modelVersion="+modelVersionId + " modelInvariantId="+ modelInvariantId ;
         log.info(LogMessages.AAI_CONTEXT_BUILDER_URL, url);
 
         ModelContext context = null;
 
         // Retrieve the service instance information from AAI
         try {
-            context= RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, aaiServiceInstancePath, tranId, serviceInstanceId, modelVersionId, modelInvariantId, serviceType, customerId,aaiBasicAuthorization);
+            context= RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, tranId, serviceInstanceId, modelVersionId, modelInvariantId, aaiBasicAuthorization);
         } catch (AuditException ae) {
             throw ae;
         } catch (Exception e) {

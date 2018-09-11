@@ -56,10 +56,6 @@ public class AAIConfiguration {
     private Integer readTimeout;
 
     @Autowired
-    @Value("${aai.serviceInstancePath}")
-    private String serviceInstancePath;
-
-    @Autowired
     @Value("${http.userId}")
     private String httpUserId;
 
@@ -99,10 +95,6 @@ public class AAIConfiguration {
 
     }
 
-    @Bean(name="aaiServiceInstancePath")
-    public String getserviceInstancePathL() {
-        return serviceInstancePath;
-    }
 
     @Value("${aai.searchNodeQuery}")
     private String searchNodeQuery;
