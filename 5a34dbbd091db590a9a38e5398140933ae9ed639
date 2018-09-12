@@ -1,0 +1,7 @@
+Verified+1: ONAP Jobbuilder <onap-jobbuilder@jenkins.onap.org>
+Code-Review+2: Prudence Au <prudence.au@amdocs.com>
+Submitted-by: Prudence Au <prudence.au@amdocs.com>
+Submitted-at: Wed, 12 Sep 2018 20:05:38 +0000
+Reviewed-on: https://gerrit.onap.org/r/65869
+Project: logging-analytics/pomba/pomba-aai-context-builder
+Branch: refs/heads/master
