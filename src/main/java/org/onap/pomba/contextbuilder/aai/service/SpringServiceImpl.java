@@ -45,16 +45,16 @@ public class SpringServiceImpl implements SpringService {
         // needed for instantiation
     }
 
-    public ModelContext getContext(String serviceInstanceId, String modelVersionId, String modelInvariantId,  String tranId) throws AuditException {
+    public ModelContext getContext(String serviceInstanceId, String tranId) throws AuditException {
 
-        String url = "serviceInstanceId=" + serviceInstanceId + " modelVersion="+modelVersionId + " modelInvariantId="+ modelInvariantId ;
+        String url = "serviceInstanceId=" + serviceInstanceId;
         log.info(LogMessages.AAI_CONTEXT_BUILDER_URL, url);
 
         ModelContext context = null;
 
         // Retrieve the service instance information from AAI
         try {
-            context= RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, tranId, serviceInstanceId, modelVersionId, modelInvariantId, aaiBasicAuthorization);
+            context= RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, tranId, serviceInstanceId, aaiBasicAuthorization);
         } catch (AuditException ae) {
             throw ae;
         } catch (Exception e) {

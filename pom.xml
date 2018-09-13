@@ -112,17 +112,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.onap.aai</groupId>
-      <artifactId>rest-client</artifactId>
-      <version>${aai.rest.client.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-slf4j-impl</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-core</artifactId>
       <version>1.5.9</version>
