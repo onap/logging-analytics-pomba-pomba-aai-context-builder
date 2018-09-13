@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a76adc5_63f045fe",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 2931
+      },
+      "writtenOn": "2018-09-13T15:43:31Z",
+      "side": 1,
+      "message": "done",
+      "parentUuid": "1a76adc5_e311b552",
+      "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a76adc5_a32e5d8a",
         "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2018-09-13T15:20:18Z",
       "side": 1,
       "message": "Is there a specific JSONObject exception we should catch?",
+      "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_a3b89d11",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 571,
+      "author": {
+        "id": 2931
+      },
+      "writtenOn": "2018-09-13T15:43:31Z",
+      "side": 1,
+      "message": "yes, forget change to JSONException",
+      "parentUuid": "1a76adc5_a32e5d8a",
       "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
       "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "1a76adc5_23448d19",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 573,
+      "author": {
+        "id": 2931
+      },
+      "writtenOn": "2018-09-13T15:43:31Z",
+      "side": 1,
+      "message": "I am just looking for specific json object here if you see the code at line 567 and 569",
+      "parentUuid": "1a76adc5_03571103",
+      "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a76adc5_e33f75b2",
         "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
         "patchSetId": 1
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "1a76adc5_4362e9ae",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 622,
+      "author": {
+        "id": 2931
+      },
+      "writtenOn": "2018-09-13T15:43:31Z",
+      "side": 1,
+      "message": "removed the comment, return empty map at Line 629.",
+      "parentUuid": "1a76adc5_e33f75b2",
+      "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a76adc5_637b658c",
         "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
         "patchSetId": 1
@@ -81,6 +153,24 @@
       "writtenOn": "2018-09-13T15:20:18Z",
       "side": 1,
       "message": "Should these lines be removed?",
+      "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_6365a5b3",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 652,
+      "author": {
+        "id": 2931
+      },
+      "writtenOn": "2018-09-13T15:43:31Z",
+      "side": 1,
+      "message": "removed",
+      "parentUuid": "1a76adc5_637b658c",
       "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
       "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
       "unresolved": false
