@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a76adc5_e311b552",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-13T15:20:18Z",
+      "side": 1,
+      "message": "In the future, you might want to consider a constant for this string.",
+      "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_a32e5d8a",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 571,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-13T15:20:18Z",
+      "side": 1,
+      "message": "Is there a specific JSONObject exception we should catch?",
+      "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_03571103",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 573,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-13T15:20:18Z",
+      "side": 1,
+      "message": "When we are here, is it really true that we are missing relationship-list or relationship or would it be some other exception?",
+      "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_e33f75b2",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 622,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-13T15:20:18Z",
+      "side": 1,
+      "message": "where is the return? I am referring to the comment above.",
+      "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_637b658c",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 652,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-09-13T15:20:18Z",
+      "side": 1,
+      "message": "Should these lines be removed?",
+      "revId": "613c5675400771b297fe09d826a35f6a819e1bb4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
