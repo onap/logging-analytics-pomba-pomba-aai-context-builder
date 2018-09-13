@@ -98,26 +98,21 @@ public class RestUtil {
     private static final String DELIMITER = "$";
     private static final String DEPTH = "?depth=2";
 
+    //Attribute Name
+    private static final String LOCKEDBOOLEAN = "lockedBoolean";
+    private static final String HOSTNAME = "hostName";
+    private static final String IMAGEID = "imageId";
 
     /**
      * Validates the URL parameter.
      *
      * @throws AuditException if there is missing parameter
      */
-    public static void validateURL(String serviceInstanceId, String modelVersionId, String modelInvariantId)
+    public static void validateURL(String serviceInstanceId)
             throws AuditException {
 
         if (serviceInstanceId == null || serviceInstanceId.isEmpty()) {
             throw new AuditException(AuditError.INVALID_REQUEST_URL_MISSING_PARAMETER + SERVICE_INSTANCE_ID,
-                    Status.BAD_REQUEST);
-        }
-        // modelVersionId
-        if (modelVersionId == null || modelVersionId.isEmpty()) {
-            throw new AuditException(AuditError.INVALID_REQUEST_URL_MISSING_PARAMETER + MODEL_VERSION_ID, Status.BAD_REQUEST);
-        }
-        // modelInvariantId
-        if (modelInvariantId == null || modelInvariantId.isEmpty()) {
-            throw new AuditException(AuditError.INVALID_REQUEST_URL_MISSING_PARAMETER + MODEL_INVARIANT_ID,
                     Status.BAD_REQUEST);
         }
 
@@ -171,7 +166,7 @@ public class RestUtil {
      *
      */
     public static ModelContext retrieveAAIModelData(RestClient aaiClient, String baseURL, String aaiPathToSearchNodeQuery,
-            String transactionId, String serviceInstanceId, String modelVersionId, String modelInvariantId,  String aaiBasicAuthorization) throws AuditException {
+            String transactionId, String serviceInstanceId, String aaiBasicAuthorization) throws AuditException {
         String serviceInstancePayload = null;
         String genericVNFPayload = null;
 
@@ -280,30 +275,32 @@ public class RestUtil {
         String vnfId= getVnfId(genericVNFPayload);
         String vserverPayload = null;
 
-        for(Map.Entry<String, List<String>>  entry : vServerRelatedLinkMap.entrySet()) {
 
-            List<String>   vserverLinkLst = entry.getValue();
-            log.info(LogMessages.NUMBER_OF_API_CALLS, "vserver", vserverLinkLst.size());
-            log.info(LogMessages.API_CALL_LIST, "vserver", printOutAPIList(vserverLinkLst));
+        if (vServerRelatedLinkMap !=null && vServerRelatedLinkMap.size() >0) {
+            for(Map.Entry<String, List<String>>  entry : vServerRelatedLinkMap.entrySet()) {
 
-            List<Vserver> vserverLst = new ArrayList<Vserver>();
-            for (String vserverLink : vserverLinkLst) {
-                String vserverURL = baseURL + vserverLink;
-                vserverPayload = getResource(aaiClient, vserverURL, aaiBasicAuthorization,  transactionId,
-                        MediaType.valueOf(MediaType.APPLICATION_XML));
+                List<String>   vserverLinkLst = entry.getValue();
+                log.info(LogMessages.NUMBER_OF_API_CALLS, "vserver", vserverLinkLst.size());
+                log.info(LogMessages.API_CALL_LIST, "vserver", printOutAPIList(vserverLinkLst));
 
-                if (isEmptyJson(vserverPayload)) {
-                    log.info(LogMessages.NOT_FOUND, "VSERVER with url", vserverURL);
-                } else {
-                    // Logic to Create the Vserver POJO object
-                    Vserver vserver = Vserver.fromJson(vserverPayload);
-                    vserverLst.add(vserver);
+                List<Vserver> vserverLst = new ArrayList<Vserver>();
+                for (String vserverLink : vserverLinkLst) {
+                    String vserverURL = baseURL + vserverLink;
+                    vserverPayload = getResource(aaiClient, vserverURL, aaiBasicAuthorization,  transactionId,
+                            MediaType.valueOf(MediaType.APPLICATION_XML));
+
+                    if (isEmptyJson(vserverPayload)) {
+                        log.info(LogMessages.NOT_FOUND, "VSERVER with url", vserverURL);
+                    } else {
+                        // Logic to Create the Vserver POJO object
+                        Vserver vserver = Vserver.fromJson(vserverPayload);
+                        vserverLst.add(vserver);
+                    }
                 }
+
+                vServerMap.put(entry.getKey(), vserverLst);
             }
-
-            vServerMap.put(entry.getKey(), vserverLst);
         }
-
         vnf_vfmodule_vserver_Map.put(vnfId, vServerMap);
 
         return vnf_vfmodule_vserver_Map;
@@ -359,79 +356,81 @@ public class RestUtil {
 
 
             // --------------- Handle the vfModule
-            //Map to calculate the Vf Module MaxInstance.
-            ConcurrentMap<String, AtomicInteger> maxInstanceMap =
-                    buildMaxInstanceMap(vnf.getVfModules().getVfModule());
-
-
             List<VFModule> vfModuleLst = new ArrayList<VFModule>();
-            for ( Map.Entry<String, Map<String, List<Vserver>>> entry:    vnf_vfmodule_vserver_Map.entrySet() ) {
-                // find the vnf-id
-                if (key.equals(entry.getKey())) {
+            //Map to calculate the Vf Module MaxInstance.
+            if (vnf.getVfModules() != null) {
+                ConcurrentMap<String, AtomicInteger> maxInstanceMap =
+                        buildMaxInstanceMap(vnf.getVfModules().getVfModule());
 
-                    Map<String, List<Vserver>> vfmodule_vserver_map= entry.getValue();
+                for ( Map.Entry<String, Map<String, List<Vserver>>> entry:    vnf_vfmodule_vserver_Map.entrySet() ) {
+                    // find the vnf-id
+                    if (key.equals(entry.getKey())) {
 
-                    for ( Map.Entry<String, List<Vserver>> vfmoduleEntry:  vfmodule_vserver_map.entrySet() ){
-                        // The key is modelversionId$modelInvariantid
-                        String[] s = vfmoduleEntry.getKey().split("\\" + DELIMITER);
-                        String modelVersionId = s[0];
-                        String modelInvariantId = s[1];
+                        Map<String, List<Vserver>> vfmodule_vserver_map= entry.getValue();
 
-                        VFModule vfModule = new VFModule();
-                        vfModule.setUuid(modelVersionId);
-                        vfModule.setInvariantUuid(modelInvariantId);
-                        vfModule.setMaxInstances(getMaxInstance(vfmoduleEntry.getKey(), maxInstanceMap));
-                        vfModule.setDataQuality(DataQuality.ok());
+                        for ( Map.Entry<String, List<Vserver>> vfmoduleEntry:  vfmodule_vserver_map.entrySet() ){
+                            // The key is modelversionId$modelInvariantid
+                            String[] s = vfmoduleEntry.getKey().split("\\" + DELIMITER);
+                            String modelVersionId = s[0];
+                            String modelInvariantId = s[1];
 
-                        List<Vserver>  vserverList = vfmoduleEntry.getValue();
+                            VFModule vfModule = new VFModule();
+                            vfModule.setUuid(modelVersionId);
+                            vfModule.setInvariantUuid(modelInvariantId);
+                            vfModule.setMaxInstances(getMaxInstance(vfmoduleEntry.getKey(), maxInstanceMap));
+                            vfModule.setDataQuality(DataQuality.ok());
 
-                        // Handle VM
-                        List<VM>   vmList = new ArrayList<VM>();
-                        for (Vserver vserver: vserverList) {
+                            List<Vserver>  vserverList = vfmoduleEntry.getValue();
 
-                            List<Attribute>  attributeList = new ArrayList<Attribute>();
+                            // Handle VM
+                            List<VM>   vmList = new ArrayList<VM>();
+                            for (Vserver vserver: vserverList) {
 
-                            // Iterate through the ENUM Attribute list
-                            for (Attribute.Name  name: Attribute.Name.values()) {
-                                if (name.toString().equals("lockedBoolean")) {
-                                    Attribute att = new Attribute();
-                                    att.setDataQuality(DataQuality.ok());
-                                    att.setName(Attribute.Name.lockedBoolean);
-                                    att.setValue(String.valueOf(vserver.getInMaint()));
-                                    attributeList.add(att);
+                                List<Attribute>  attributeList = new ArrayList<Attribute>();
+
+                                // Iterate through the ENUM Attribute list
+                                for (Attribute.Name  name: Attribute.Name.values()) {
+                                    if (name.toString().equals(LOCKEDBOOLEAN)) {
+                                        Attribute att = new Attribute();
+                                        att.setDataQuality(DataQuality.ok());
+                                        att.setName(Attribute.Name.lockedBoolean);
+                                        att.setValue(String.valueOf(vserver.getInMaint()));
+                                        attributeList.add(att);
+                                    }
+
+                                    if (name.toString().equals(HOSTNAME)) {
+                                        Attribute att = new Attribute();
+                                        att.setDataQuality(DataQuality.ok());
+                                        att.setName(Attribute.Name.hostName);
+                                        att.setValue(getVserverAttribute(vserver, CATALOG_PSERVER));
+                                        attributeList.add(att);
+                                    }
+
+                                    if (name.toString().equals(IMAGEID)) {
+                                        Attribute att = new Attribute();
+                                        att.setDataQuality(DataQuality.ok());
+                                        att.setName(Attribute.Name.imageId);
+                                        att.setValue(getVserverAttribute(vserver, CATALOG_IMAGE));
+                                        attributeList.add(att);
+                                    }
                                 }
-
-                                if (name.toString().equals("hostName")) {
-                                    Attribute att = new Attribute();
-                                    att.setDataQuality(DataQuality.ok());
-                                    att.setName(Attribute.Name.hostName);
-                                    att.setValue(getVserverAttribute(vserver, CATALOG_PSERVER));
-                                    attributeList.add(att);
-                                }
-
-                                if (name.toString().equals("imageId")) {
-                                    Attribute att = new Attribute();
-                                    att.setDataQuality(DataQuality.ok());
-                                    att.setName(Attribute.Name.imageId);
-                                    att.setValue(getVserverAttribute(vserver, CATALOG_IMAGE));
-                                    attributeList.add(att);
-                                }
+                                VM vm = new VM();
+                                vm.setUuid(vserver.getVserverId());
+                                vm.setName(vserver.getVserverName());
+                                vm.setAttributes(attributeList);
+                                vmList.add(vm);
                             }
-                            VM vm = new VM();
-                            vm.setUuid(vserver.getVserverId());
-                            vm.setName(vserver.getVserverName());
-                            vm.setAttributes(attributeList);
-                            vmList.add(vm);
+                            vfModule.setVms(vmList);
+                            vfModuleLst.add(vfModule);
                         }
-                        vfModule.setVms(vmList);
-                        vfModuleLst.add(vfModule);
-                    }
 
+                    }
                 }
-            }
+            }  // done the vfmodule
 
             vf.setVfModules(vfModuleLst);
             vfLst.add(vf);
+
 
         } // done the vnfInstance
 
@@ -553,7 +552,7 @@ public class RestUtil {
      *       ]
      * },
      */
-    private static List<String> extractRelatedLink(String payload, String catalog) throws AuditException {
+    private static List<String> extractRelatedLink(String payload, String catalog)  {
         JSONObject jsonPayload = new JSONObject(payload);
         JSONArray relationships = null;
         List<String> relatedLinkList = new ArrayList<String>();
@@ -564,9 +563,10 @@ public class RestUtil {
             if (relationshipList != null) {
                 relationships = relationshipList.getJSONArray(RELATIONSHIP);
             }
-        } catch (Exception e) {
+        } catch (JSONException e) {
             log.error(e.getMessage());
-            throw new AuditException(AuditError.JSON_READER_PARSE_ERROR + " " + e.getMessage());
+            // Return empty map if the json payload missing relationship-list or relationship
+            return relatedLinkList;
         }
 
         if (relationships != null && relationships.length() > 0) {
@@ -596,13 +596,13 @@ public class RestUtil {
      *                with value: list of the related-link based on the catalog
      * The catalog can be "vserver" or "l3-network" based on common model requirement.
      */
-    private static Map<String, List<String>> extractRelatedLinkFromVfmodule(String payload, String catalog) throws AuditException {
+    private static Map<String, List<String>> extractRelatedLinkFromVfmodule(String payload, String catalog) {
 
         Map<String, List<String>> vServerRelatedLinkMap = new HashMap<String, List<String>>();
 
         JSONObject jsonPayload = new JSONObject(payload);
         JSONArray vfmoduleArray = null;
-        JSONArray relationships = null;
+
 
         try {
             log.debug("Fetching the Vf-module");
@@ -611,46 +611,62 @@ public class RestUtil {
                 vfmoduleArray = vfmodules.getJSONArray(VF_MODULE);
             }
 
-            if (vfmoduleArray != null && vfmoduleArray.length() > 0) {
-                for (int i = 0; i < vfmoduleArray.length(); i++) {
-                    List<String> relatedLinkList = new ArrayList<String>();
-                    JSONObject obj = vfmoduleArray.optJSONObject(i);
-                    String key = (String)obj.get("model-version-id") + DELIMITER + (String)obj.get("model-invariant-id");
-
-                    log.debug("Fetching the relationship");
-                    JSONObject relationshipList = obj.getJSONObject(RELATIONSHIP_LIST);
-                    if (relationshipList != null) {
-                        relationships = relationshipList.getJSONArray(RELATIONSHIP);
-                    }
-                    if (relationships != null && relationships.length() > 0) {
-                        for (int j = 0; j < relationships.length(); j++) {
-                            Object relatedToObj = null;
-                            Object relatedLinkObj = null;
-
-                            JSONObject obj2 = relationships.optJSONObject(j);
-                            relatedToObj = obj2.get(JSON_ATT_RELATED_TO);
-
-                            if (relatedToObj.toString().equals(catalog)) {
-                                relatedLinkObj = obj2.get(JSON_ATT_RELATED_LINK);
-                                if (relatedLinkObj != null) {
-                                    relatedLinkList.add(relatedLinkObj.toString());
-                                }
-                            }
-                        }  //relationship
-                    }
-
-                    vServerRelatedLinkMap.put(key, relatedLinkList);
-                } //vf-module
-            }
-
-        } catch (Exception e) {
+        } catch (JSONException e) {
             log.error(e.getMessage());
-            throw new AuditException(AuditError.JSON_READER_PARSE_ERROR + " " + e.getMessage());
+
+        }
+
+        if (vfmoduleArray != null && vfmoduleArray.length() > 0) {
+            vServerRelatedLinkMap = handleRelationship(vfmoduleArray, catalog);
         }
 
         return vServerRelatedLinkMap;
     }
 
+
+    private static Map<String, List<String>> handleRelationship(JSONArray vfmoduleArray, String catalog) {
+        Map<String, List<String>> vServerRelatedLinkMap = new HashMap<String, List<String>>();
+        JSONArray relationships = null;
+        // If there are multiple vf-module, but one of vf-module missing relationship, we should log the exception and keep loop
+        for (int i = 0; i < vfmoduleArray.length(); i++) {
+            List<String> relatedLinkList = new ArrayList<String>();
+            JSONObject obj = vfmoduleArray.optJSONObject(i);
+            String key = (String)obj.get("model-version-id") + DELIMITER + (String)obj.get("model-invariant-id");
+
+            log.debug("Fetching the relationship");
+
+            try {
+                JSONObject relationshipList = obj.getJSONObject(RELATIONSHIP_LIST);
+                if (relationshipList != null) {
+                    relationships = relationshipList.getJSONArray(RELATIONSHIP);
+                }
+            } catch (JSONException e) {
+                log.error(e.getMessage());
+                // There is case: vf-module missing relationship, build empty value with the key
+             }
+
+            if (relationships != null && relationships.length() > 0) {
+                for (int j = 0; j < relationships.length(); j++) {
+                    Object relatedToObj = null;
+                    Object relatedLinkObj = null;
+
+                    JSONObject obj2 = relationships.optJSONObject(j);
+                    relatedToObj = obj2.get(JSON_ATT_RELATED_TO);
+
+                    if (relatedToObj.toString().equals(catalog)) {
+                        relatedLinkObj = obj2.get(JSON_ATT_RELATED_LINK);
+                        if (relatedLinkObj != null) {
+                            relatedLinkList.add(relatedLinkObj.toString());
+                        }
+                    }
+                }  //relationship
+            }
+
+            vServerRelatedLinkMap.put(key, relatedLinkList);
+        } //vf-module
+
+        return vServerRelatedLinkMap;
+    }
 
     private static Map<String, List<String>> buildHeaders(String aaiBasicAuthorization, String transactionId) {
         MultivaluedMap<String, String> headers = new MultivaluedMapImpl();

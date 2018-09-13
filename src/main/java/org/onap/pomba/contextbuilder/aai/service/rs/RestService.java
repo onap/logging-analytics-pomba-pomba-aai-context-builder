@@ -53,8 +53,6 @@ public interface RestService {
                     @ApiResponse(code = 500, message = "Unexpected Runtime error")
             })
     public Response getContext(@Context HttpHeaders headers,
-            @QueryParam("serviceInstanceId") String serviceInstanceId,
-            @QueryParam("modelVersionId") String modelVersionId,
-            @QueryParam("modelInvariantId") String modelInvariantId
+            @QueryParam("serviceInstanceId") String serviceInstanceId
             );
 }
