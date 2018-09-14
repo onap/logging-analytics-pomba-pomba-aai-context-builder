@@ -1,0 +1,7 @@
+Verified+1: ONAP Jobbuilder <onap-jobbuilder@jenkins.onap.org>
+Code-Review+2: Shane Daniel <shane.daniel@amdocs.com>
+Submitted-by: Shane Daniel <shane.daniel@amdocs.com>
+Submitted-at: Fri, 14 Sep 2018 19:47:09 +0000
+Reviewed-on: https://gerrit.onap.org/r/66741
+Project: logging-analytics/pomba/pomba-aai-context-builder
+Branch: refs/heads/master
