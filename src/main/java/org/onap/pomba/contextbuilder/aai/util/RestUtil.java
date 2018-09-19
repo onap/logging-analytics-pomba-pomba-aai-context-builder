@@ -14,7 +14,7 @@
 package org.onap.pomba.contextbuilder.aai.util;
 
 
-import com.sun.jersey.core.util.MultivaluedMapImpl;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.Response.Status;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -62,9 +62,6 @@ public class RestUtil {
     private static Logger log = LoggerFactory.getLogger(RestUtil.class);
     // Parameters for Query AAI Model Data API
     private static final String SERVICE_INSTANCE_ID = "serviceInstanceId";
-    private static final String MODEL_VERSION_ID = "modelVersionId";
-    private static final String MODEL_INVARIANT_ID = "modelInvariantId";
-
 
     // HTTP headers
     private static final String TRANSACTION_ID = "X-TransactionId";
@@ -179,6 +176,14 @@ public class RestUtil {
 
         // Obtain resource-link based on resource-type = service-Instance
         String resourceLink = obtainResouceLinkBasedOnServiceInstanceFromAAI(aaiClient, baseURL, aaiPathToSearchNodeQuery, serviceInstanceId, transactionId, aaiBasicAuthorization);
+
+        // Handle the case if the service instance is not found in AAI
+        if (resourceLink==null) {
+            // return the empty Json on the root level. i.e service instance
+            return null;
+        }
+
+        // Build URl to get ServiceInstance Payload
         String url = baseURL + resourceLink;
 
         // Response from service instance API call
@@ -669,7 +674,7 @@ public class RestUtil {
     }
 
     private static Map<String, List<String>> buildHeaders(String aaiBasicAuthorization, String transactionId) {
-        MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+        MultivaluedHashMap<String, String> headers = new MultivaluedHashMap<String, String>();
         headers.put(TRANSACTION_ID, Collections.singletonList(transactionId));
         headers.put(FROM_APP_ID, Collections.singletonList(APP_NAME));
         headers.put(AUTHORIZATION, Collections.singletonList(aaiBasicAuthorization));
