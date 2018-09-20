@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a76adc5_2daf6e7e",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 677,
+      "author": {
+        "id": 2475
+      },
+      "writtenOn": "2018-09-20T15:06:48Z",
+      "side": 1,
+      "message": "Convention is to use interface type for variable (leave as MultivaluedMap)\n\n MultivaluedMap\u003cString, String\u003e headers \u003d new MultivaluedHashMap\u003c\u003e();",
+      "revId": "976c37263f4087ae3c12e704a66fe78c81b142ed",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
