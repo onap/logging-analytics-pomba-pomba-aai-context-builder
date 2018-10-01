@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_5fddb713",
+        "filename": "pom.xml",
+        "patchSetId": 1
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1077
+      },
+      "writtenOn": "2018-10-01T23:01:40Z",
+      "side": 0,
+      "message": "right, we don\u0027t use the library yet",
+      "revId": "f7a144014926396d61412691aadaf708034d1dc5",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
