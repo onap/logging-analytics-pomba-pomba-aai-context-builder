@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_1f996f6e",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 330,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-10-01T22:42:12Z",
+      "side": 1,
+      "message": "I assume there is currently no JUnit test related to this?",
+      "revId": "f7a144014926396d61412691aadaf708034d1dc5",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
