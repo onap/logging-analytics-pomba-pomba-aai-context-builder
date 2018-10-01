@@ -327,7 +327,7 @@ public class RestUtil {
         Service service = new Service();
         service.setInvariantUuid(svcInstance.getModelInvariantId());
         service.setName(svcInstance.getServiceInstanceName());
-        service.setUuid(svcInstance.getModelVersionId());
+        service.setUuid(svcInstance.getServiceInstanceId());
         service.setDataQuality(DataQuality.ok());
         List<VF> vfLst = new ArrayList<VF>();
 
