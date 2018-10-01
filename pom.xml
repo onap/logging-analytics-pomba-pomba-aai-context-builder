@@ -80,17 +80,6 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.onap.logging-analytics</groupId>
-      <artifactId>logging-slf4j</artifactId>
-      <version>1.2.2-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.att.eelf</groupId>
-          <artifactId>eelf-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
     </dependency>
