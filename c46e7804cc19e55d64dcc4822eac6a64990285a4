@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_8a2bdf81",
+        "filename": "pom.xml",
+        "patchSetId": 2
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-10-02T01:59:18Z",
+      "side": 1,
+      "message": "There isn\u0027t any need to use 1.3.0-SNAPSHOT of rest client.  And 1.3.0 version of rest client is not released yet.",
+      "revId": "c46e7804cc19e55d64dcc4822eac6a64990285a4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
