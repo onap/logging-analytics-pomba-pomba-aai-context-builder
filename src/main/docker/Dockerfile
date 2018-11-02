@@ -10,10 +10,11 @@ RUN mkdir -p $MICROSERVICE_HOME/bin/
 
 ADD pomba-aai-context-builder.jar $MICROSERVICE_HOME/lib/
 COPY config/ $MICROSERVICE_HOME/config/
+COPY bin/ $MICROSERVICE_HOME/bin/
 ADD startService.sh $MICROSERVICE_HOME/bin/
 
 RUN chmod 755 $MICROSERVICE_HOME/config/*
 RUN chmod 755 $MICROSERVICE_HOME/lib/*
-RUN chmod 755 $MICROSERVICE_HOME/bin/*
+RUN chmod 777 $MICROSERVICE_HOME/bin/*
 
 CMD ["/opt/app/bin/startService.sh"]
