@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9adffdf1_6e2c8a4b",
+        "filename": "src/main/docker/startService.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 2965
+      },
+      "writtenOn": "2018-11-05T04:32:39Z",
+      "side": 1,
+      "message": "The \u0027else\u0027 can be dropped.",
+      "revId": "cd0fcf3be1ee7548f5d17cfb4867b421471cad5e",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
