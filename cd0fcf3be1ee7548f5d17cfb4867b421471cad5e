@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "9adffdf1_5149278a",
+        "filename": "src/main/docker/Dockerfile",
+        "patchSetId": 1
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 3479
+      },
+      "writtenOn": "2018-11-05T15:22:52Z",
+      "side": 1,
+      "message": "The change to this file is not needed.",
+      "revId": "cd0fcf3be1ee7548f5d17cfb4867b421471cad5e",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9adffdf1_6e2c8a4b",
         "filename": "src/main/docker/startService.sh",
         "patchSetId": 1
