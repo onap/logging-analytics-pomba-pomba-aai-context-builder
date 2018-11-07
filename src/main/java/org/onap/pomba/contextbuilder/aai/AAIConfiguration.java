@@ -25,6 +25,7 @@ import org.onap.aai.restclient.client.RestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 
@@ -47,7 +48,18 @@ public class AAIConfiguration {
     @Autowired
     @Value("${aai.httpProtocol}")
     private String httpProtocol;
-
+    @Autowired
+    @Value("${aai.authentication}")
+    private String authenticationMode;
+    @Autowired
+    @Value("${aai.trustStorePath}")
+    private String trustStorePath;
+    @Autowired
+    @Value("${aai.keyStorePath}")
+    private String keyStorePath;
+    @Autowired
+    @Value("${aai.keyStorePassword}")
+    private String keyStorePassword;
     @Autowired
     @Value("${aai.connectionTimeout}")
     private Integer connectionTimeout;
@@ -79,14 +91,27 @@ public class AAIConfiguration {
         return ("Basic " + encodedAuth);
     }
 
+    @Conditional(AAIBasicAuthCondition.class)
     @Bean(name="aaiClient")
-    public RestClient restClient() {
+    public RestClient restClientWithBasicAuth() {
+        System.out.println("in basic auth");
         RestClient restClient = new RestClient();
         restClient.validateServerHostname(false).validateServerCertChain(false).connectTimeoutMs(connectionTimeout).readTimeoutMs(readTimeout);
         restClient.basicAuthUsername(username);
         restClient.basicAuthPassword(Password.deobfuscate(password));
         return restClient;
+    }
 
+    @Conditional(AAIClientCertCondition.class)
+    @Bean(name="aaiClient")
+    public RestClient restClientWithClientCert() {
+        RestClient restClient = new RestClient();
+        System.out.println("in client cert");
+        if (httpProtocol.equals("https"))
+            restClient.validateServerHostname(false).validateServerCertChain(false).trustStore(trustStorePath).clientCertFile(keyStorePath).clientCertPassword(keyStorePassword).connectTimeoutMs(connectionTimeout).readTimeoutMs(readTimeout);
+        else
+            restClient.validateServerHostname(false).validateServerCertChain(false).connectTimeoutMs(connectionTimeout).readTimeoutMs(readTimeout);
+        return restClient;
     }
 
     @Bean(name="aaiBaseUrl")
