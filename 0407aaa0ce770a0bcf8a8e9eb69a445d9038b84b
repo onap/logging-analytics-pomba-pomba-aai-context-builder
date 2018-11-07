@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9adffdf1_bb9aa512",
+        "filename": "config/application.properties",
+        "patchSetId": 1
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 2965
+      },
+      "writtenOn": "2018-11-07T15:20:12Z",
+      "side": 1,
+      "message": "Maybe add a comment describing valid values for this attribute to avoid having to look at code.",
+      "revId": "0407aaa0ce770a0bcf8a8e9eb69a445d9038b84b",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
