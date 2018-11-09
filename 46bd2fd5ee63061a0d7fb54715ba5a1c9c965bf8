@@ -1,0 +1,7 @@
+Code-Review+2: Michael O'Brien <frank.obrien@amdocs.com>
+Verified+1: Michael O'Brien <frank.obrien@amdocs.com>
+Submitted-by: Michael O'Brien <frank.obrien@amdocs.com>
+Submitted-at: Fri, 09 Nov 2018 19:20:51 +0000
+Reviewed-on: https://gerrit.onap.org/r/72325
+Project: logging-analytics/pomba/pomba-aai-context-builder
+Branch: refs/heads/casablanca
