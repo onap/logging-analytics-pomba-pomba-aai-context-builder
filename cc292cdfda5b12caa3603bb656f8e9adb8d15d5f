@@ -1,0 +1,8 @@
+Verified+1: ONAP Jobbuilder <onap-jobbuilder@jenkins.onap.org>
+Code-Review+2: Michael O'Brien <frank.obrien@amdocs.com>
+Verified+1: Michael O'Brien <frank.obrien@amdocs.com>
+Submitted-by: Michael O'Brien <frank.obrien@amdocs.com>
+Submitted-at: Tue, 13 Nov 2018 21:06:26 +0000
+Reviewed-on: https://gerrit.onap.org/r/72548
+Project: logging-analytics/pomba/pomba-aai-context-builder
+Branch: refs/heads/casablanca
