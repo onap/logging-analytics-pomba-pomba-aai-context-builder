@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "9adffdf1_0ea2fa98",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 3131
+      },
+      "writtenOn": "2019-01-09T19:49:22Z",
+      "side": 1,
+      "message": "Why was this commented out? Eclipse will cleanup any unused imports.",
+      "revId": "9b24e98bb37f90c85f27e515945c8ab86807a0fb",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9adffdf1_336ba7f2",
         "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
         "patchSetId": 1
