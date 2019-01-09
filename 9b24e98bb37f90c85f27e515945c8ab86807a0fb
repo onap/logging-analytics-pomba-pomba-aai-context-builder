@@ -16,6 +16,24 @@
       "revId": "9b24e98bb37f90c85f27e515945c8ab86807a0fb",
       "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9adffdf1_53474b77",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 507,
+      "author": {
+        "id": 4353
+      },
+      "writtenOn": "2019-01-09T17:46:07Z",
+      "side": 1,
+      "message": "pnfList is an optional field, same as NetworkList and vnfList in ModelContext. If no contents of these optional fields, it will be null in ModelContext. \n\nIn my implementation, if the local pnfInstance list is empty, meaning AAI doesn\u0027t provide PNF info, then there is null PNF list in ModelContext, same way to handle NetworkList and vnfList.",
+      "parentUuid": "9adffdf1_336ba7f2",
+      "revId": "9b24e98bb37f90c85f27e515945c8ab86807a0fb",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
     }
   ]
 }
