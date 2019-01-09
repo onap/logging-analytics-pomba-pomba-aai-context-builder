@@ -37,7 +37,6 @@ import org.onap.pomba.common.datatypes.Attribute;
 import org.onap.pomba.common.datatypes.DataQuality;
 import org.onap.pomba.common.datatypes.ModelContext;
 import org.onap.pomba.common.datatypes.Service;
-//import org.onap.pomba.common.datatypes.VF;
 import org.onap.pomba.common.datatypes.VNF;
 import org.onap.pomba.common.datatypes.VFModule;
 import org.onap.pomba.common.datatypes.VM;
