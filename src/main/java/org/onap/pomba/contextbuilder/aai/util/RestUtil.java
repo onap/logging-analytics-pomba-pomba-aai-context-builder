@@ -37,7 +37,8 @@ import org.onap.pomba.common.datatypes.Attribute;
 import org.onap.pomba.common.datatypes.DataQuality;
 import org.onap.pomba.common.datatypes.ModelContext;
 import org.onap.pomba.common.datatypes.Service;
-import org.onap.pomba.common.datatypes.VF;
+//import org.onap.pomba.common.datatypes.VF;
+import org.onap.pomba.common.datatypes.VNF;
 import org.onap.pomba.common.datatypes.VFModule;
 import org.onap.pomba.common.datatypes.VM;
 import org.onap.pomba.common.datatypes.VNFC;
@@ -53,7 +54,9 @@ import org.onap.pomba.contextbuilder.aai.exception.AuditError;
 import org.onap.pomba.contextbuilder.aai.exception.AuditException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.onap.pomba.contextbuilder.aai.datatype.PnfInstance;
+import org.onap.pomba.common.datatypes.PNF;
+import com.bazaarvoice.jolt.JsonUtils;
 
 public class RestUtil {
 
@@ -80,6 +83,7 @@ public class RestUtil {
     private static final String VF_MODULES = "vf-modules";
     private static final String VF_MODULE = "vf-module";
 
+    private static final String CATALOG_PNF = "pnf";
 
     // Relationship Json Path
     private static final String RELATIONSHIP_LIST = "relationship-list";
@@ -99,6 +103,20 @@ public class RestUtil {
     private static final String LOCKEDBOOLEAN = "lockedBoolean";
     private static final String HOSTNAME = "hostName";
     private static final String IMAGEID = "imageId";
+
+    //Attribute Names for PNF
+    private static final String PNF_NETWORK_FUNCTION = "networkFunction";
+    private static final String PNF_NETWORK_ROLE = "networkRole";
+    private static final String PNF_RESOURCE_VERSION = "resourceVersion";
+    private static final String PNF_NAME2 = "name2";
+    private static final String PNF_NAME2_SOURCE = "name2Source";
+    private static final String PNF_EQUIPMENT_TYPE = "equipType";
+    private static final String PNF_EQUIPMENT_VENDOR = "equipVendor";
+    private static final String PNF_EQUIPMENT_MODEL = "equipModel";
+    private static final String PNF_MANAGEMENT_OPTIONS = "managementOptions";
+    private static final String PNF_SW_VERSION = "swVersion";
+    private static final String PNF_FRAME_ID = "frameId";
+    private static final String PNF_SERIAL_NUMBER = "serialNumber";
 
     /**
      * Validates the URL parameter.
@@ -183,6 +201,8 @@ public class RestUtil {
             return null;
         }
 
+        log.info("ResourceLink from AAI:" + resourceLink);
+
         // Build URl to get ServiceInstance Payload
         String url = baseURL + resourceLink;
 
@@ -196,6 +216,7 @@ public class RestUtil {
             // Only return the empty Json on the root level. i.e service instance
             return null;
         }
+        log.info("Message from AAI:" + JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(serviceInstancePayload)) );
 
         List<String> genericVNFLinkLst = extractRelatedLink(serviceInstancePayload, CATALOG_GENERIC_VNF);
         log.info(LogMessages.NUMBER_OF_API_CALLS, "genericVNF", genericVNFLinkLst.size());
@@ -212,6 +233,8 @@ public class RestUtil {
             if (isEmptyJson(genericVNFPayload)) {
                 log.info(LogMessages.NOT_FOUND, "GenericVNF with url ", genericVNFLink);
             } else {
+                log.info("Message from AAI for VNF " + genericVNFURL + ",message body:" + JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(genericVNFPayload)) );
+
                 // Logic to Create the Generic VNF Instance POJO object
                 VnfInstance vnfInstance = VnfInstance.fromJson(genericVNFPayload);
                 vnfLst.add(vnfInstance);
@@ -224,8 +247,35 @@ public class RestUtil {
 
             }
         }
+
+        //Obtain PNF (Physical Network Function)
+        List<String> genericPNFLinkLst = extractRelatedLink(serviceInstancePayload, CATALOG_PNF);
+        log.info(LogMessages.NUMBER_OF_API_CALLS, "PNF", genericPNFLinkLst.size());
+        log.info(LogMessages.API_CALL_LIST, "PNF", printOutAPIList(genericPNFLinkLst));
+
+        String genericPNFPayload = null;
+        List<PnfInstance> pnfLst = new ArrayList<PnfInstance>(); // List of the PNF POJO object
+
+        for (String genericPNFLink : genericPNFLinkLst) {
+            // With latest AAI development, in order to retrieve the both generic PNF
+            String genericPNFURL = baseURL + genericPNFLink;
+            // Response from generic PNF API call
+            genericPNFPayload =
+                    getResource(aaiClient, genericPNFURL, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
+
+            if (isEmptyJson(genericPNFPayload)) {
+                log.info(LogMessages.NOT_FOUND, "GenericPNF with url ", genericPNFLink);
+            } else {
+                log.info("Message from AAI for PNF " + genericPNFLink + ",message body:" + JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(genericPNFPayload)) );
+
+                // Logic to Create the Generic VNF Instance POJO object
+                PnfInstance pnfInstance = PnfInstance.fromJson(genericPNFPayload);
+                pnfLst.add(pnfInstance);
+            }
+        }
+
         // Transform to common model and return
-        return transform(ServiceInstance.fromJson(serviceInstancePayload), vnfLst, vnfcMap, vnf_vfmodule_vserver_Map);
+        return transform(ServiceInstance.fromJson(serviceInstancePayload), vnfLst, vnfcMap, vnf_vfmodule_vserver_Map, pnfLst);
     }
 
     /*
@@ -250,6 +300,7 @@ public class RestUtil {
             if (isEmptyJson(vnfcPayload)) {
                 log.info(LogMessages.NOT_FOUND, "VNFC with url", vnfcLink);
             } else {
+                log.info("Message from AAI for VNFC with url " + vnfcLink + ",message body:" + JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(vnfcPayload)) );
                 // Logic to Create the VNFC POJO object
                 VnfcInstance vnfcInstance = VnfcInstance.fromJson(vnfcPayload);
                 vnfcLst.add(vnfcInstance);
@@ -322,18 +373,18 @@ public class RestUtil {
      * Transform AAI Representation to Common Model
      */
     private static ModelContext transform(ServiceInstance svcInstance, List<VnfInstance> vnfLst,
-            Map<String, List<VnfcInstance>> vnfcMap,  Map<String, Map<String, List<Vserver>>> vnf_vfmodule_vserver_Map) {
+            Map<String, List<VnfcInstance>> vnfcMap,  Map<String, Map<String, List<Vserver>>> vnf_vfmodule_vserver_Map, List<PnfInstance> pnfLst_fromAAi) {
         ModelContext context = new ModelContext();
         Service service = new Service();
-        service.setInvariantUuid(svcInstance.getModelInvariantId());
+        service.setModelInvariantUUID(svcInstance.getModelInvariantId());
         service.setName(svcInstance.getServiceInstanceName());
         service.setUuid(svcInstance.getServiceInstanceId());
         service.setDataQuality(DataQuality.ok());
-        List<VF> vfLst = new ArrayList<VF>();
+        List<VNF> vfLst = new ArrayList<VNF>();
 
         for (VnfInstance vnf : vnfLst) {
-            VF vf = new VF();
-            vf.setInvariantUuid(vnf.getModelInvariantId());
+            VNF vf = new VNF();
+            vf.setModelInvariantUUID(vnf.getModelInvariantId());
             vf.setName(vnf.getVnfName());
             vf.setUuid(vnf.getModelVersionId());
             vf.setType(vnf.getVnfType());
@@ -350,7 +401,7 @@ public class RestUtil {
 
                     for (VnfcInstance vnfc : vnfcInstanceLst) {
                         VNFC vnfcModel = new VNFC();
-                        vnfcModel.setInvariantUuid(vnfc.getModelInvariantId());
+                        vnfcModel.setModelInvariantUUID(vnfc.getModelInvariantId());
                         vnfcModel.setName(vnfc.getVnfcName());
                         vnfcModel.setUuid(vnfc.getModelVersionId());
                         vnfcLst.add(vnfcModel);
@@ -381,7 +432,7 @@ public class RestUtil {
 
                             VFModule vfModule = new VFModule();
                             vfModule.setUuid(modelVersionId);
-                            vfModule.setInvariantUuid(modelInvariantId);
+                            vfModule.setModelInvariantUUID(modelInvariantId);
                             vfModule.setMaxInstances(getMaxInstance(vfmoduleEntry.getKey(), maxInstanceMap));
                             vfModule.setDataQuality(DataQuality.ok());
 
@@ -440,9 +491,140 @@ public class RestUtil {
         } // done the vnfInstance
 
         context.setService(service);
-        context.setVfs(vfLst);
+        context.setVnfs(vfLst);
+        //Add PNF info
+        context.setPnfs(transformPNF(pnfLst_fromAAi));
 
         return context;
+    }
+
+    /*
+     * Transform AAI Representation to Common Model
+     */
+    public static List<PNF> transformPNF(List<PnfInstance> pnfLst_from_AAI) {
+        if (pnfLst_from_AAI.isEmpty()) {
+            log.info(LogMessages.API_CALL_LIST, "Nill PNF list");
+           return null;
+        }
+        List<PNF> pnfLst = new ArrayList<PNF>();
+
+        for (PnfInstance pnf_from_aai : pnfLst_from_AAI) {
+            PNF pnf = new PNF();
+            pnf.setModelInvariantUUID(pnf_from_aai.getPnfId());
+            pnf.setName(pnf_from_aai.getPnfName());
+            pnf.setModelVersionID(pnf_from_aai.getModelVersionId());
+            pnf.setModelInvariantUUID(pnf_from_aai.getModelInvariantId());
+            pnf.setDataQuality(DataQuality.ok());
+            List<Attribute>  attributeList = new ArrayList<Attribute>();
+            pnf.setAttributes(attributeList);
+
+            // Iterate through the ENUM Attribute list
+            for (Attribute.Name  name: Attribute.Name.values()) {
+                if (name.toString().equals(PNF_NETWORK_FUNCTION )) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.networkFunction);
+                    att.setValue(String.valueOf( pnf_from_aai.getNfFunction()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_NETWORK_ROLE )) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.networkRole);
+                    att.setValue(String.valueOf( pnf_from_aai.getNfRole()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_RESOURCE_VERSION)) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.resourceVersion);
+                    att.setValue(String.valueOf( pnf_from_aai.getResourceVersion()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_NAME2)) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.name2);
+                    att.setValue(String.valueOf( pnf_from_aai.getPnfName2()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_NAME2_SOURCE )) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.name2Source);
+                    att.setValue(String.valueOf( pnf_from_aai.getPnfName2Source()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_EQUIPMENT_TYPE )) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.equipType);
+                    att.setValue(String.valueOf( pnf_from_aai.getEquipmentType()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_EQUIPMENT_VENDOR )) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.equipVendor);
+                    att.setValue(String.valueOf( pnf_from_aai.getEquipmentVendor()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_EQUIPMENT_MODEL)) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.equipModel);
+                    att.setValue(String.valueOf( pnf_from_aai.getEquipmentModel()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_MANAGEMENT_OPTIONS)) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.managementOptions);
+                    att.setValue(String.valueOf( pnf_from_aai.getManagementOptions()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_SW_VERSION)) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.swVersion);
+                    att.setValue(String.valueOf( pnf_from_aai.getManagementOptions()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_FRAME_ID)) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.frameId);
+                    att.setValue(String.valueOf( pnf_from_aai.getFrameId()));
+                    attributeList.add(att);
+                }
+
+                if (name.toString().equals(PNF_SERIAL_NUMBER)) {
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.serialNumber);
+                    att.setValue(String.valueOf( pnf_from_aai.getSerialNumber()));
+                    attributeList.add(att);
+                }
+
+            }
+
+            pnf.setAttributes(attributeList);
+            pnfLst.add(pnf);
+
+        } // done the vnfInstance
+
+
+        return pnfLst;
     }
 
 

@@ -42,6 +42,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.onap.pomba.common.datatypes.ModelContext;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
@@ -127,4 +128,35 @@ public class RestUtilTest {
         }
         return content.toString();
     }
+
+
+    ////
+    @Test
+    public void testretrieveAAIModelDataFromAAI() throws Exception {
+
+        String transactionId = UUID.randomUUID().toString();
+        String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
+        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
+        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
+        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
+        // 2. simulate the response of AAI (1 vnf and 1 pnf)
+        addResponse( "/aai/v11/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        "junit/aai-service-instance.json", aaiEnricherRule);
+
+        // 3. simulate the rsp of VNF
+        addResponse( "/aai/v13/network/generic-vnfs/generic-vnf/8a9ddb25-2e79-449c-a40d-5011bac0da39?depth=2",
+        "junit/genericVnfInput.json", aaiEnricherRule);
+
+        // 4. simulate the response of PNF based on the resourceLink in (2)
+        //note: match pnf_id in junit/aai-service-instance.json
+        addResponse( "/aai/v13/network/pnfs/pnf/amdocsPnfName",
+        "junit/pnfSampleInput.json", aaiEnricherRule);
+
+        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
+
+        assertEquals(modelCtx.getVnfs().size(), 1);
+        assertEquals(modelCtx.getPnfs().size(), 1);
+
+    }
+
 }
