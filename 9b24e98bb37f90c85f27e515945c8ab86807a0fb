@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9adffdf1_336ba7f2",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 507,
+      "author": {
+        "id": 1077
+      },
+      "writtenOn": "2019-01-09T17:12:52Z",
+      "side": 1,
+      "message": "Assume that all caller functions either throw and exception or know how to interpret null as an empty list or unset",
+      "revId": "9b24e98bb37f90c85f27e515945c8ab86807a0fb",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
