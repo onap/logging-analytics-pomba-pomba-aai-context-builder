@@ -12,10 +12,12 @@
         "frame-id": "99888",
         "serial-number": "c44b872f6830498b88c4989d67b2a6b7",
         "status": "ACTIVE",
+        "nf-function": "nf-Function-123",
         "nf-role": "22222",
         "model-invariant-id": "12345",
         "model-version-id": "2123",
          "admin_state_up": true,
+         "resource-version": "28",
         "tenant_id": "c44b872f6830498b88c4989d67b2a6b7",
         "created_at": "2018-03-20T16:49:01Z",
         "provider:network_type": "vlan"
