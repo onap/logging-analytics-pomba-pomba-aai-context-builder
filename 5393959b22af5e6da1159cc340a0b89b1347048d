@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9adffdf1_33e2c22f",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 497,
+      "author": {
+        "id": 2965
+      },
+      "writtenOn": "2019-01-10T17:22:47Z",
+      "side": 1,
+      "message": "The content of the response should be at DEBUG level.\nYou can log a one-liner to INFO to show that something is being sent back to ctx-aggregator, but not the whole response.",
+      "range": {
+        "startLine": 497,
+        "startChar": 12,
+        "endLine": 497,
+        "endChar": 16
+      },
+      "revId": "5393959b22af5e6da1159cc340a0b89b1347048d",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
