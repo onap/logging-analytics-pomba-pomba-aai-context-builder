@@ -494,6 +494,8 @@ public class RestUtil {
         //Add PNF info
         context.setPnfs(transformPNF(pnfLst_fromAAi));
 
+        log.info("ModelContext body: {}", JsonUtils.toPrettyJsonString(context));
+
         return context;
     }
 
@@ -509,7 +511,7 @@ public class RestUtil {
 
         for (PnfInstance pnf_from_aai : pnfLst_from_AAI) {
             PNF pnf = new PNF();
-            pnf.setModelInvariantUUID(pnf_from_aai.getPnfId());
+            pnf.setUuid(pnf_from_aai.getPnfId());
             pnf.setName(pnf_from_aai.getPnfName());
             pnf.setModelVersionID(pnf_from_aai.getModelVersionId());
             pnf.setModelInvariantUUID(pnf_from_aai.getModelInvariantId());
