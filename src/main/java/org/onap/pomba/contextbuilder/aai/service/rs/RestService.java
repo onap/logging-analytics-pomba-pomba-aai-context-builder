@@ -33,7 +33,7 @@ import org.onap.pomba.contextbuilder.aai.model.GenericResponse;
 
 
 @Api
-@Path("/service")
+@Path("{version: v2}/service")
 @Produces({MediaType.APPLICATION_JSON})
 public interface RestService {
 

@@ -521,7 +521,8 @@ public class RestUtil {
 
             // Iterate through the ENUM Attribute list
             for (Attribute.Name  name: Attribute.Name.values()) {
-                if (name.toString().equals(PNF_NETWORK_FUNCTION )) {
+                if ((name.toString().equals(PNF_NETWORK_FUNCTION ))
+                        &&(pnf_from_aai.getNfFunction() != null)){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.networkFunction);
@@ -529,7 +530,8 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_NETWORK_ROLE )) {
+                if ((name.toString().equals(PNF_NETWORK_ROLE ))
+                        && (pnf_from_aai.getNfRole() != null )){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.networkRole);
@@ -537,7 +539,8 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_RESOURCE_VERSION)) {
+                if ((name.toString().equals(PNF_RESOURCE_VERSION))
+                        && (pnf_from_aai.getResourceVersion() != null)){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.resourceVersion);
@@ -545,7 +548,8 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_NAME2)) {
+                if ((name.toString().equals(PNF_NAME2))
+                        && (pnf_from_aai.getPnfName2() != null )){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.name2);
@@ -553,7 +557,8 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_NAME2_SOURCE )) {
+                if ((name.toString().equals(PNF_NAME2_SOURCE ))
+                        && (pnf_from_aai.getPnfName2Source() != null)){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.name2Source);
@@ -561,7 +566,8 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_EQUIPMENT_TYPE )) {
+                if ((name.toString().equals(PNF_EQUIPMENT_TYPE ))
+                        && (pnf_from_aai.getEquipmentType() != null)){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.equipType);
@@ -569,7 +575,8 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_EQUIPMENT_VENDOR )) {
+                if ((name.toString().equals(PNF_EQUIPMENT_VENDOR ))
+                        && (pnf_from_aai.getEquipmentVendor() != null)){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.equipVendor);
@@ -577,7 +584,8 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_EQUIPMENT_MODEL)) {
+                if ((name.toString().equals(PNF_EQUIPMENT_MODEL))
+                        && (pnf_from_aai.getEquipmentModel() != null)){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.equipModel);
@@ -585,7 +593,8 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_MANAGEMENT_OPTIONS)) {
+                if ((name.toString().equals(PNF_MANAGEMENT_OPTIONS))
+                        &&(pnf_from_aai.getManagementOptions() != null)){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.managementOptions);
@@ -593,15 +602,17 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_SW_VERSION)) {
+                if ((name.toString().equals(PNF_SW_VERSION))
+                        &&(pnf_from_aai.getSwVersion()!= null)){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.swVersion);
-                    att.setValue(String.valueOf( pnf_from_aai.getManagementOptions()));
+                    att.setValue(String.valueOf( pnf_from_aai.getSwVersion()));
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_FRAME_ID)) {
+                if ((name.toString().equals(PNF_FRAME_ID))
+                        &&(pnf_from_aai.getFrameId() != null)){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.frameId);
@@ -609,7 +620,8 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if (name.toString().equals(PNF_SERIAL_NUMBER)) {
+                if ((name.toString().equals(PNF_SERIAL_NUMBER))
+                        &&(pnf_from_aai.getSerialNumber() != null)){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.serialNumber);

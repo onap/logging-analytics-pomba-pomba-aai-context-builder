@@ -34,7 +34,7 @@ public class ConsumerService {
     }
 
     public Object getWelcomeMsg() {
-        return restTemplate.exchange(url+ "/aaicontextbuilder/service/hello?name=User",HttpMethod.GET, null, String.class).getBody();
+        return restTemplate.exchange(url+ "/aaicontextbuilder/v2/service/hello?name=User",HttpMethod.GET, null, String.class).getBody();
     }
 
 }
