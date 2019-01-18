@@ -23,6 +23,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import javax.validation.Valid;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -79,6 +82,11 @@ public class PnfInstance {
     @SerializedName("model-version-id")
     @Expose
     private String modelVersionId;
+
+    @SerializedName("p-interfaces")
+    @Expose
+    @Valid
+    private PInterfaceInstanceList pInterfaceInstanceList;
 
     public String getModelInvariantId() {
         return modelInvariantId;
@@ -205,6 +213,13 @@ public class PnfInstance {
         this.modelVersionId = modelVersionId;
     }
 
+    public PInterfaceInstanceList getPInterfaceInstanceList() {
+        return pInterfaceInstanceList;
+    }
+
+    public void setPInterfaceInstanceList(PInterfaceInstanceList pInterfaceInstanceList) {
+        this.pInterfaceInstanceList = pInterfaceInstanceList;
+    }
 
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -247,9 +262,10 @@ public class PnfInstance {
     * @param serialNumber
     * @param modelInvariantId
     * @param modelVersionId
+    * @param pInterfaceInstanceList
     *
     */
-   public PnfInstance(String uuid, String name, String networkRole, String name2, String name2Source,String equipmentType,String equipmentVendor,String equipmentModel,String managementOptions,String swVersion, String frameId, String serialNumber, String modelInvariantId, String modelVersionId) {
+   public PnfInstance(String uuid, String name, String networkRole, String name2, String name2Source,String equipmentType,String equipmentVendor,String equipmentModel,String managementOptions,String swVersion, String frameId, String serialNumber, String modelInvariantId, String modelVersionId, PInterfaceInstanceList pInterfaceInstanceList) {
        super();
        this.pnfId = uuid;
        this.pnfName = name;
@@ -265,6 +281,7 @@ public class PnfInstance {
        this.serialNumber = serialNumber;
        this.modelInvariantId = modelInvariantId;
        this.modelVersionId = modelVersionId;
+       this.pInterfaceInstanceList = pInterfaceInstanceList;
    }
 
 
@@ -287,12 +304,13 @@ public class PnfInstance {
                 .append("serialNumber", serialNumber)
                 .append("modelInvariantId", modelInvariantId)
                 .append("modelVersionId", modelVersionId)
+                .append("pInterfaceInstanceList", pInterfaceInstanceList)
                .toString();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(pnfId).append(frameId).append(serialNumber).append(modelInvariantId).append(modelVersionId).toHashCode();
+        return new HashCodeBuilder().append(pnfId).append(frameId).append(serialNumber).append(modelInvariantId).append(modelVersionId).append(pInterfaceInstanceList).toHashCode();
     }
 
     @Override

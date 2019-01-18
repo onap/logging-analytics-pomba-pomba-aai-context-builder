@@ -1,0 +1,65 @@
+{
+   "hostname": "mtn96compute.cci.att.com",
+   "fqdn": "mtn96compute.cci.att.com",
+   "pserver-id": "auto-generated-skeleton",
+   "pserver-name2": "pserverName2-hello",
+   "ptnii-equip-name": "ptnii-equip-name-hello",
+   "equip-type": "Firewall",
+   "equip-vendor": "equip-vendor-hello",
+   "equip-model": "equip-model-hello",
+   "internet-topology": "internet-topology-hello",
+   "purpose": "purpose-something-for-fun",
+   "serial-number": "1223128888",
+   "in-maint": false,
+   "resource-version": "1544034123458",
+   "p-interfaces":{
+	     "p-interface": [
+	      {
+	        "interface-name": "bdc3cc2a-c73e-414f-7ddb-367de92801cb",
+	        "speed-value": "1225",
+	        "speed-units": "mbs",
+	        "port-description": "port-used-for-junit",
+	        "equipment-identifier": "8df84f0a-737a-4628-be9c-c3c78454f9d9",
+	        "interface-role": "123134236",
+	        "interface-type": "Software",
+	        "prov-status": "2",
+	        "in-maint": "true",
+	        "resource-version": "99888",
+	        "serial-number": "c44b872f6830498b88c4989d67b2a6b7",
+	        "status": "ACTIVE",
+	        "inv-status": "TBD"
+	     }
+	   ]
+	},
+   "relationship-list": {
+      "relationship":    [
+            {
+         "related-to": "vserver",
+         "relationship-label": "tosca.relationships.HostedOn",
+         "related-link": "/aai/v13/cloud-infrastructure/cloud-regions/cloud-region/CloudOwner/RegionOne/tenants/tenant/b49b830686654191bb1e952a74b014ad/vservers/vserver/b494cd6e-b9f3-45e0-afe7-e1d1a5f5d74a",
+         "relationship-data":          [
+                        {
+               "relationship-key": "cloud-region.cloud-owner",
+               "relationship-value": "CloudOwner"
+            },
+                        {
+               "relationship-key": "cloud-region.cloud-region-id",
+               "relationship-value": "RegionOne"
+            },
+                        {
+               "relationship-key": "tenant.tenant-id",
+               "relationship-value": "b49b830686654191bb1e952a74b014ad"
+            },
+                        {
+               "relationship-key": "vserver.vserver-id",
+               "relationship-value": "b494cd6e-b9f3-45e0-afe7-e1d1a5f5d74a"
+            }
+         ],
+         "related-to-property": [         {
+            "property-key": "vserver.vserver-name",
+           "property-value": "Firewall-0"
+         }]
+      }
+     ]
+      }
+}

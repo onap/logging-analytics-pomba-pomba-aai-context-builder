@@ -21,6 +21,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -53,9 +56,19 @@ public class Vserver {
     @SerializedName("resource-version")
     @Expose
     private String resourceVersion;
+
     @SerializedName("relationship-list")
     @Expose
     private RelationshipList relationshipList;
+
+    private List<PserverInstance> pserverInstanceList;
+    public List<PserverInstance> getPserverInstanceList() {
+        return pserverInstanceList;
+    }
+
+    public void setPserverInstanceList(List<PserverInstance> pserverInstanceList) {
+        this.pserverInstanceList = pserverInstanceList;
+    }
 
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
