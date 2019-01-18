@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,6 +44,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.onap.pomba.common.datatypes.ModelContext;
+import org.onap.pomba.common.datatypes.VNF;
+import org.onap.pomba.common.datatypes.VFModule;
+import org.onap.pomba.common.datatypes.VM;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
@@ -132,7 +136,7 @@ public class RestUtilTest {
 
     ////
     @Test
-    public void testretrieveAAIModelDataFromAAI() throws Exception {
+    public void testretrieveAAIModelDataFromAAI_PNF() throws Exception {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
@@ -157,6 +161,50 @@ public class RestUtilTest {
         assertEquals(modelCtx.getVnfs().size(), 1);
         assertEquals(modelCtx.getPnfs().size(), 1);
 
+    }
+    ///Verify the relationship serviceInstanceId -> vnf -> vserver
+    @Test
+    public void testretrieveAAIModelDataFromAAI_VSERVER_PSERVER() throws Exception {
+
+        String transactionId = UUID.randomUUID().toString();
+        String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
+        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
+        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
+        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
+        // 2. simulate the response of AAI (1 vnf)
+        // note: match serviceInstanceId in (1)
+        addResponse( "/aai/v11/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        "junit/aai-service-instance_set2.json", aaiEnricherRule);
+
+        // 3. simulate the rsp of VNF (with 1 vserver)
+        // note: match vnf_id in (2)
+        addResponse( "/aai/v13/network/generic-vnfs/generic-vnf/8a9ddb25-2e79-449c-a40d-5011bac0da39?depth=2",
+        "junit/genericVnfInput_set2.json", aaiEnricherRule);
+
+        // 4. simulate the rsp of vserer
+        // note: match to vserver-id to the path of "vserver" in (3)
+        addResponse(
+                "/aai/v13/cloud-infrastructure/cloud-regions/cloud-region/CloudOwner/RegionOne/tenants/tenant"
+                        + "/b49b830686654191bb1e952a74b014ad/vservers/vserver/b494cd6e-b9f3-45e0-afe7-e1d1a5f5d74a",
+                "junit/aai-vserver.json", aaiEnricherRule);
+
+        // 5. simulate the rsp of pserver
+        // note: match pserver hostname to the path of "pserver" in (4)
+        addResponse(
+                "/aai/v13/cloud-infrastructure/pservers/pserver/mtn96compute.cci.att.com",
+                "junit/pserverInput_set2.json", aaiEnricherRule);
+
+        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
+
+        // verify results
+        List<VNF> vnfList = modelCtx.getVnfs();
+        assertEquals(vnfList.size(), 1);
+        List<VFModule>  vfModuleList = vnfList.get(0).getVfModules();
+        assertEquals(vfModuleList.size(), 1);
+        List<VM> vmList = vfModuleList.get(0).getVms();
+        assertEquals(vmList.size(), 1);
+        assertEquals(vmList.get(0).getUuid(), "b494cd6e-b9f3-45e0-afe7-e1d1a5f5d74a"); //vserver-id
+        assertEquals(vmList.get(0).getPServer().getName(), "mtn96compute.cci.att.com"); //pserver-name
     }
 
 }
