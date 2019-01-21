@@ -16,6 +16,24 @@
       "revId": "148c2cb1ca5db2afb767bd0eab9c77a27f0b7844",
       "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9adffdf1_836b0984",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/datatype/Vserver.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 4353
+      },
+      "writtenOn": "2019-01-21T20:09:24Z",
+      "side": 1,
+      "message": "This vserver defination is to reflect the aai input structure, \"pserver\" is coming as an array of relationship-list. Until the input structure is decoded and mapped to VM, \"pserver\" remains in the list and cannot be changed to a single element.\n\nIt is for internal use before converting to the external VM.",
+      "parentUuid": "9adffdf1_0035cf44",
+      "revId": "148c2cb1ca5db2afb767bd0eab9c77a27f0b7844",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
     }
   ]
 }
