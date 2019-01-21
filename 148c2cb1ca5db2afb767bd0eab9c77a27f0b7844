@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9adffdf1_0035cf44",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/datatype/Vserver.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 2015
+      },
+      "writtenOn": "2019-01-21T15:57:27Z",
+      "side": 1,
+      "message": "It is not a critical, but would not be better to define only one instance of pserver per vserver instead of List.\nBecause, anyway in the model we support only one pserver per vserver",
+      "revId": "148c2cb1ca5db2afb767bd0eab9c77a27f0b7844",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
