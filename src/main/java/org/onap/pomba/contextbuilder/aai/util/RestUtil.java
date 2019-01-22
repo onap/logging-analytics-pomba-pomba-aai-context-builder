@@ -84,7 +84,6 @@ public class RestUtil {
     private static final String CATALOG_VSERVER = "vserver";
     private static final String CATALOG_IMAGE = "image";
     private static final String CATALOG_PSERVER = "pserver";
-    private static final String CATALOG_P_INTERFACE = "p-interface";
     private static final String VF_MODULES = "vf-modules";
     private static final String VF_MODULE = "vf-module";
 
@@ -482,86 +481,95 @@ public class RestUtil {
             List<VFModule> vfModuleLst = new ArrayList<VFModule>();
             //Map to calculate the Vf Module MaxInstance.
             if (vnf.getVfModules() != null) {
+                List<VfModule> vfModuleList_from_aai = vnf.getVfModules().getVfModule();
                 ConcurrentMap<String, AtomicInteger> maxInstanceMap =
-                        buildMaxInstanceMap(vnf.getVfModules().getVfModule());
+                        buildMaxInstanceMap(vfModuleList_from_aai);
 
-                for ( Map.Entry<String, Map<String, List<Vserver>>> entry:    vnf_vfmodule_vserver_Map.entrySet() ) {
-                    // find the vnf-id
-                    if (key.equals(entry.getKey())) {
+                for (VfModule t_vfModule : vfModuleList_from_aai ) {
+                    VFModule vfModule = new VFModule();
+                    vfModule.setUuid(t_vfModule.getVfModuleId());
+                    vfModule.setModelInvariantUUID(t_vfModule.getModelInvariantId());
+                    vfModule.setName(t_vfModule.getVfMduleName());
+                    vfModule.setModelVersionID(t_vfModule.getModelVersionId());
+                    vfModule.setModelCustomizationUUID(t_vfModule.getModelCustomizationId());
+                    vfModule.setMaxInstances(maxInstanceMap.size());
+                    vfModule.setDataQuality(DataQuality.ok());
 
-                        Map<String, List<Vserver>> vfmodule_vserver_map= entry.getValue();
+                    for ( Map.Entry<String, Map<String, List<Vserver>>> entry:    vnf_vfmodule_vserver_Map.entrySet() ) {
+                        // find the vnf-id
+                        if (key.equals(entry.getKey())) {
 
-                        for ( Map.Entry<String, List<Vserver>> vfmoduleEntry:  vfmodule_vserver_map.entrySet() ){
-                            // The key is modelversionId$modelInvariantid
-                            String[] s = vfmoduleEntry.getKey().split("\\" + DELIMITER);
-                            String vfModuleId = s[0];
-                            String modelInvariantId = s[1];
-                            String vfModuleName = s[2];
-                            String modelVersionId = s[3];
-                            String modelCustomizationId = s[4];
+                            Map<String, List<Vserver>> vfmodule_vserver_map= entry.getValue();
 
-                            VFModule vfModule = new VFModule();
-                            vfModule.setUuid(vfModuleId);
-                            vfModule.setModelInvariantUUID(modelInvariantId);
-                            vfModule.setName(vfModuleName);
-                            vfModule.setModelVersionID(modelVersionId);
-                            vfModule.setModelCustomizationUUID(modelCustomizationId);
-                            vfModule.setMaxInstances(getMaxInstance(vfmoduleEntry.getKey(), maxInstanceMap));
-                            vfModule.setDataQuality(DataQuality.ok());
+                            for ( Map.Entry<String, List<Vserver>> vfmoduleEntry:  vfmodule_vserver_map.entrySet() ){
+                                // The key is modelversionId$modelInvariantid
+                                String[] s = vfmoduleEntry.getKey().split("\\" + DELIMITER);
+                                String vfModuleId = s[0];
+                                String modelInvariantId = s[1];
 
-                            List<Vserver>  vserverList = vfmoduleEntry.getValue();
+                                if ((vfModuleId.equals(t_vfModule.getVfModuleId()))
+                                &&  (modelInvariantId.equals(t_vfModule.getModelInvariantId()))){
 
-                            // Handle VM
-                            List<VM>   vmList = new ArrayList<VM>();
-                            for (Vserver vserver: vserverList) {
+                                    List<Vserver>  vserverList = vfmoduleEntry.getValue();
+                                    vfModule.setMaxInstances(getMaxInstance(vfmoduleEntry.getKey(), maxInstanceMap));
 
-                                List<Attribute>  attributeList = new ArrayList<Attribute>();
+                                    // Handle VM
+                                    List<VM>   vmList = new ArrayList<VM>();
+                                    for (Vserver vserver: vserverList) {
 
-                                // Iterate through the ENUM Attribute list
-                                for (Attribute.Name  name: Attribute.Name.values()) {
-                                    if (name.toString().equals(ATTRIBUTE_LOCKEDBOOLEAN)) {
-                                        Attribute att = new Attribute();
-                                        att.setDataQuality(DataQuality.ok());
-                                        att.setName(Attribute.Name.lockedBoolean);
-                                        att.setValue(String.valueOf(vserver.getInMaint()));
-                                        attributeList.add(att);
+                                        List<Attribute>  attributeList = new ArrayList<Attribute>();
+
+                                        // Iterate through the ENUM Attribute list
+                                        for (Attribute.Name  name: Attribute.Name.values()) {
+                                            if (name.toString().equals(ATTRIBUTE_LOCKEDBOOLEAN)) {
+                                                Attribute att = new Attribute();
+                                                att.setDataQuality(DataQuality.ok());
+                                                att.setName(Attribute.Name.lockedBoolean);
+                                                att.setValue(String.valueOf(vserver.getInMaint()));
+                                                attributeList.add(att);
+                                            }
+
+                                            if (name.toString().equals(ATTRIBUTE_HOSTNAME)) {
+                                                Attribute att = new Attribute();
+                                                att.setDataQuality(DataQuality.ok());
+                                                att.setName(Attribute.Name.hostName);
+                                                att.setValue(getVserverAttribute(vserver, CATALOG_PSERVER));
+                                                attributeList.add(att);
+                                            }
+
+                                            if (name.toString().equals(ATTRIBUTE_IMAGEID)) {
+                                                Attribute att = new Attribute();
+                                                att.setDataQuality(DataQuality.ok());
+                                                att.setName(Attribute.Name.imageId);
+                                                att.setValue(getVserverAttribute(vserver, CATALOG_IMAGE));
+                                                attributeList.add(att);
+                                            }
+                                        }
+                                        VM vm = new VM();
+                                        vm.setUuid(vserver.getVserverId());
+                                        vm.setName(vserver.getVserverName());
+                                        vm.setAttributes(attributeList);
+
+                                        //Update pserver here
+                                        List<PserverInstance> pserverInstanceList = vserver.getPserverInstanceList();
+                                        Pserver pServer = null;
+                                        if (pserverInstanceList != null) {
+                                            pServer = getPserverInfo (pserverInstanceList);
+                                        }
+                                        vm.setPServer(pServer);
+                                        vmList.add(vm);
                                     }
 
-                                    if (name.toString().equals(ATTRIBUTE_HOSTNAME)) {
-                                        Attribute att = new Attribute();
-                                        att.setDataQuality(DataQuality.ok());
-                                        att.setName(Attribute.Name.hostName);
-                                        att.setValue(getVserverAttribute(vserver, CATALOG_PSERVER));
-                                        attributeList.add(att);
-                                    }
-
-                                    if (name.toString().equals(ATTRIBUTE_IMAGEID)) {
-                                        Attribute att = new Attribute();
-                                        att.setDataQuality(DataQuality.ok());
-                                        att.setName(Attribute.Name.imageId);
-                                        att.setValue(getVserverAttribute(vserver, CATALOG_IMAGE));
-                                        attributeList.add(att);
+                                    if (vmList.size() > 0) {
+                                        vfModule.setVms(vmList);
                                     }
                                 }
-                                VM vm = new VM();
-                                vm.setUuid(vserver.getVserverId());
-                                vm.setName(vserver.getVserverName());
-                                vm.setAttributes(attributeList);
-                                vmList.add(vm);
-
-                                //Update pserver here
-                                List<PserverInstance> pserverInstanceList = vserver.getPserverInstanceList();
-                                Pserver pServer = null;
-                                if (pserverInstanceList != null) {
-                                    pServer = getPserverInfo (pserverInstanceList);
-                                }
-                                vm.setPServer(pServer);
                             }
-                            vfModule.setVms(vmList);
-                            vfModuleLst.add(vfModule);
                         }
                     }
+                    vfModuleLst.add(vfModule);
                 }
+
             }  // done the vfmodule
 
             vf.setVfModules(vfModuleLst);
@@ -708,7 +716,7 @@ public class RestUtil {
         List<PInterface> pInterfaceList = new ArrayList<PInterface>();
         for (PInterfaceInstance pInterfaceInst_aai: pInterfaceInstanceList) {
             PInterface pInterface = new PInterface();
-            pInterface.setUuid(pInterfaceInst_aai.getEquipmentIdentifier() );
+            // pInterface.setUuid( ); // there is no mapping data for UUID from AAI data.
             pInterface.setName(pInterfaceInst_aai.getInterfaceName());
             pInterface.setDataQuality(DataQuality.ok());
 
@@ -1093,11 +1101,7 @@ public class RestUtil {
         for (VfModule vfModule : vfModuleList) {
             // group the key by vf-module-id, model-invariant-id,vf-module-name, model-version-id and model-customization-id
             String key = new StringBuilder().append(vfModule.getVfModuleId()).append(DELIMITER)
-                    .append(vfModule.getModelInvariantId()).append(DELIMITER)
-                    .append(vfModule.getVfMduleName()).append(DELIMITER)
-                    .append(vfModule.getModelVersionId()).append(DELIMITER)
-                    .append(vfModule.getModelCustomizationId()
-                            ).toString();
+                    .append(vfModule.getModelInvariantId()).toString();
 
             if (key.length() > 0) {
                 map.putIfAbsent(key, new AtomicInteger(0));
@@ -1275,10 +1279,7 @@ public class RestUtil {
             List<String> relatedLinkList = new ArrayList<String>();
             JSONObject obj = vfmoduleArray.optJSONObject(i);
             String key = (String)obj.get("vf-module-id") + DELIMITER
-                       + (String)obj.get("model-invariant-id")+ DELIMITER
-                       + (String)obj.get("vf-module-name")+ DELIMITER
-                       + (String)obj.get("model-version-id")+ DELIMITER
-                       + (String)obj.get("model-customization-id");
+                       + (String)obj.get("model-invariant-id");
 
             log.debug("Fetching the relationship");
 
