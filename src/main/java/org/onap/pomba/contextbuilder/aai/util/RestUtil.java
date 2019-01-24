@@ -636,11 +636,11 @@ public class RestUtil {
                      attributeList.add(att);
                  }
                  if ((name.toString().equals( ATTRIBUTE_EQUIPMENT_MODEL ))
-                         &&(pserverInstance.getEquipVendor() != null)){
+                         &&(pserverInstance.getEquipModel() != null)){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.equipModel);
-                     att.setValue(String.valueOf(pserverInstance.getEquipVendor()));
+                     att.setValue(String.valueOf(pserverInstance.getEquipModel()));
                      attributeList.add(att);
                  }
                  if ((name.toString().equals( ATTRIBUTE_FQDN ))
@@ -721,81 +721,9 @@ public class RestUtil {
             pInterface.setDataQuality(DataQuality.ok());
 
             List<Attribute>  pInterface_attributeList = new ArrayList<Attribute>();
-            pInterface.setAttributes(pInterface_attributeList);
-
-            // Iterate through the ENUM Attribute list
-            for (Attribute.Name  name: Attribute.Name.values()) {
-                if ((name.toString().equals(ATTRIBUTE_SPEED_VALUE ))
-                        &&(pInterfaceInst_aai.getSpeedValue() != null)){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.speedValue);
-                    att.setValue(String.valueOf( pInterfaceInst_aai.getSpeedValue()));
-                    pInterface_attributeList.add(att);
-                }
-
-                if ((name.toString().equals(ATTRIBUTE_SPEED_UNITS ))
-                        &&(pInterfaceInst_aai.getSpeedUnits() != null)){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.speedUnits);
-                    att.setValue(String.valueOf( pInterfaceInst_aai.getSpeedUnits()));
-                    pInterface_attributeList.add(att);
-                }
-
-                if ((name.toString().equals(ATTRIBUTE_PORT_DESCRIPTION ))
-                        &&(pInterfaceInst_aai.getPortDescription() != null)){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.description);
-                    att.setValue(String.valueOf( pInterfaceInst_aai.getPortDescription()));
-                    pInterface_attributeList.add(att);
-                }
-
-                if ((name.toString().equals(ATTRIBUTE_EQUIPTMENT_ID ))
-                        &&(pInterfaceInst_aai.getEquipmentIdentifier() != null)){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.equipmentID);
-                    att.setValue(String.valueOf( pInterfaceInst_aai.getEquipmentIdentifier()));
-                    pInterface_attributeList.add(att);
-                }
-
-                if ((name.toString().equals(ATTRIBUTE_INTERFACE_ROLE ))
-                        &&(pInterfaceInst_aai.getInterfaceRole() != null)){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.interfaceRole);
-                    att.setValue(String.valueOf( pInterfaceInst_aai.getInterfaceRole()));
-                    pInterface_attributeList.add(att);
-                }
-
-                if ((name.toString().equals(ATTRIBUTE_INTERFACE_TYPE ))
-                        &&(pInterfaceInst_aai.getInterfaceType() != null)){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.interfaceType);
-                    att.setValue(String.valueOf( pInterfaceInst_aai.getInterfaceType()));
-                    pInterface_attributeList.add(att);
-                }
-
-                if ((name.toString().equals( ATTRIBUTE_RESOURCE_VERSION ))
-                        &&(pInterfaceInst_aai.getResourceVersion() != null)){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.resourceVersion);
-                    att.setValue(String.valueOf( pInterfaceInst_aai.getResourceVersion()));
-                    pInterface_attributeList.add(att);
-                }
-
-                if ((name.toString().equals( ATTRIBUTE_LOCKEDBOOLEAN  ))
-                        &&(pInterfaceInst_aai.getInMaint() != null)){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.lockedBoolean);
-                    att.setValue(String.valueOf( pInterfaceInst_aai.getInMaint()));
-                    pInterface_attributeList.add(att);
-                }
+            updatePInterfaceAttributeList (pInterfaceInst_aai, pInterface_attributeList) ;
+            if (pInterface_attributeList.size() > 0) {
+                pInterface.setAttributes(pInterface_attributeList);
             }
 
             if (pInterface_attributeList.size() > 0) {
@@ -958,82 +886,11 @@ public class RestUtil {
                     pInterface.setDataQuality(DataQuality.ok());
 
                     List<Attribute>  pInterface_attributeList = new ArrayList<Attribute>();
-                    pInterface.setAttributes(pInterface_attributeList);
-
-                    // Iterate through the ENUM Attribute list
-                    for (Attribute.Name  name: Attribute.Name.values()) {
-                        if ((name.toString().equals(ATTRIBUTE_SPEED_VALUE ))
-                                &&(pInterfaceInst_aai.getSpeedValue() != null)){
-                            Attribute att = new Attribute();
-                            att.setDataQuality(DataQuality.ok());
-                            att.setName(Attribute.Name.speedValue);
-                            att.setValue(String.valueOf( pInterfaceInst_aai.getSpeedValue()));
-                            pInterface_attributeList.add(att);
-                        }
-
-                        if ((name.toString().equals(ATTRIBUTE_SPEED_UNITS ))
-                                &&(pInterfaceInst_aai.getSpeedUnits() != null)){
-                            Attribute att = new Attribute();
-                            att.setDataQuality(DataQuality.ok());
-                            att.setName(Attribute.Name.speedUnits);
-                            att.setValue(String.valueOf( pInterfaceInst_aai.getSpeedUnits()));
-                            pInterface_attributeList.add(att);
-                        }
-
-                        if ((name.toString().equals(ATTRIBUTE_PORT_DESCRIPTION ))
-                                &&(pInterfaceInst_aai.getPortDescription() != null)){
-                            Attribute att = new Attribute();
-                            att.setDataQuality(DataQuality.ok());
-                            att.setName(Attribute.Name.description);
-                            att.setValue(String.valueOf( pInterfaceInst_aai.getPortDescription()));
-                            pInterface_attributeList.add(att);
-                        }
-
-                        if ((name.toString().equals(ATTRIBUTE_EQUIPTMENT_ID ))
-                                &&(pInterfaceInst_aai.getEquipmentIdentifier() != null)){
-                            Attribute att = new Attribute();
-                            att.setDataQuality(DataQuality.ok());
-                            att.setName(Attribute.Name.equipmentID);
-                            att.setValue(String.valueOf( pInterfaceInst_aai.getEquipmentIdentifier()));
-                            pInterface_attributeList.add(att);
-                        }
-
-                        if ((name.toString().equals(ATTRIBUTE_INTERFACE_ROLE ))
-                                &&(pInterfaceInst_aai.getInterfaceRole() != null)){
-                            Attribute att = new Attribute();
-                            att.setDataQuality(DataQuality.ok());
-                            att.setName(Attribute.Name.interfaceRole);
-                            att.setValue(String.valueOf( pInterfaceInst_aai.getInterfaceRole()));
-                            pInterface_attributeList.add(att);
-                        }
-
-                        if ((name.toString().equals(ATTRIBUTE_INTERFACE_TYPE ))
-                                &&(pInterfaceInst_aai.getInterfaceType() != null)){
-                            Attribute att = new Attribute();
-                            att.setDataQuality(DataQuality.ok());
-                            att.setName(Attribute.Name.interfaceType);
-                            att.setValue(String.valueOf( pInterfaceInst_aai.getInterfaceType()));
-                            pInterface_attributeList.add(att);
-                        }
-
-                        if ((name.toString().equals( ATTRIBUTE_RESOURCE_VERSION ))
-                                &&(pInterfaceInst_aai.getResourceVersion() != null)){
-                            Attribute att = new Attribute();
-                            att.setDataQuality(DataQuality.ok());
-                            att.setName(Attribute.Name.resourceVersion);
-                            att.setValue(String.valueOf( pInterfaceInst_aai.getResourceVersion()));
-                            pInterface_attributeList.add(att);
-                        }
-
-                        if ((name.toString().equals( ATTRIBUTE_LOCKEDBOOLEAN  ))
-                                &&(pInterfaceInst_aai.getInMaint() != null)){
-                            Attribute att = new Attribute();
-                            att.setDataQuality(DataQuality.ok());
-                            att.setName(Attribute.Name.lockedBoolean);
-                            att.setValue(String.valueOf( pInterfaceInst_aai.getInMaint()));
-                            pInterface_attributeList.add(att);
-                        }
+                    updatePInterfaceAttributeList (pInterfaceInst_aai, pInterface_attributeList) ;
+                    if (pInterface_attributeList.size() > 0) {
+                        pInterface.setAttributes(pInterface_attributeList);
                     }
+
                     pInterfaceList.add(pInterface);
                 }
 
@@ -1049,6 +906,84 @@ public class RestUtil {
         return pnfLst;
     }
 
+    private static void updatePInterfaceAttributeList(PInterfaceInstance pInterfaceInst_aai, List<Attribute>  pInterface_attributeList ) {
+        // Iterate through the ENUM Attribute list
+        for (Attribute.Name  name: Attribute.Name.values()) {
+            if ((name.toString().equals(ATTRIBUTE_SPEED_VALUE ))
+                    &&(pInterfaceInst_aai.getSpeedValue() != null)){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.speedValue);
+                att.setValue(String.valueOf( pInterfaceInst_aai.getSpeedValue()));
+                pInterface_attributeList.add(att);
+            }
+
+            if ((name.toString().equals(ATTRIBUTE_SPEED_UNITS ))
+                    &&(pInterfaceInst_aai.getSpeedUnits() != null)){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.speedUnits);
+                att.setValue(String.valueOf( pInterfaceInst_aai.getSpeedUnits()));
+                pInterface_attributeList.add(att);
+            }
+
+            if ((name.toString().equals(ATTRIBUTE_PORT_DESCRIPTION ))
+                    &&(pInterfaceInst_aai.getPortDescription() != null)){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.description);
+                att.setValue(String.valueOf( pInterfaceInst_aai.getPortDescription()));
+                pInterface_attributeList.add(att);
+            }
+
+            if ((name.toString().equals(ATTRIBUTE_EQUIPTMENT_ID ))
+                    &&(pInterfaceInst_aai.getEquipmentIdentifier() != null)){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.equipmentID);
+                att.setValue(String.valueOf( pInterfaceInst_aai.getEquipmentIdentifier()));
+                pInterface_attributeList.add(att);
+            }
+
+            if ((name.toString().equals(ATTRIBUTE_INTERFACE_ROLE ))
+                    &&(pInterfaceInst_aai.getInterfaceRole() != null)){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.interfaceRole);
+                att.setValue(String.valueOf( pInterfaceInst_aai.getInterfaceRole()));
+                pInterface_attributeList.add(att);
+            }
+
+            if ((name.toString().equals(ATTRIBUTE_INTERFACE_TYPE ))
+                    &&(pInterfaceInst_aai.getInterfaceType() != null)){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.interfaceType);
+                att.setValue(String.valueOf( pInterfaceInst_aai.getInterfaceType()));
+                pInterface_attributeList.add(att);
+            }
+
+            if ((name.toString().equals( ATTRIBUTE_RESOURCE_VERSION ))
+                    &&(pInterfaceInst_aai.getResourceVersion() != null)){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.resourceVersion);
+                att.setValue(String.valueOf( pInterfaceInst_aai.getResourceVersion()));
+                pInterface_attributeList.add(att);
+            }
+
+            if ((name.toString().equals( ATTRIBUTE_LOCKEDBOOLEAN  ))
+                    &&(pInterfaceInst_aai.getInMaint() != null)){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.lockedBoolean);
+                att.setValue(String.valueOf( pInterfaceInst_aai.getInMaint()));
+                pInterface_attributeList.add(att);
+            }
+        }
+        return;
+
+    }
 
     /*
      * Return the Vserver Attribute value by looking through the relationship. i.e. if "related-to" is "pserver", we will get
