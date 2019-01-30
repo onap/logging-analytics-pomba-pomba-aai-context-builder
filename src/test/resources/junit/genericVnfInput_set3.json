@@ -62,6 +62,22 @@
                         "property-value": "Firewall1"
                     }
                 ]
+            },
+            {
+                "related-to": "l3-network",
+                "related-link": "/aai/v13/network/l3-networks/l3-network/01e8d84a-l3-network-1",
+                "relationship-data": [
+                    {
+                        "relationship-key": "l3-network.network-id",
+                        "relationship-value": "01e8d84a-l3-network-1"
+                    }
+                ],
+                "related-to-property": [
+                    {
+                        "property-key": "l3-network.network-name",
+                        "property-value": "NET_1106"
+                    }
+                ]
             }
         ]
     },

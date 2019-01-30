@@ -40,40 +40,6 @@
                         "property-value": "Firewall1"
                     }
                 ]
-            },
-            {
-                "related-to": "l3-network",
-                "relationship-label": "org.onap.relationships.inventory.Uses",
-                "related-link": "/aai/v13/network/l3-networks/l3-network/HNP1d77c-1094-41ec-b7f3-94bb30951870",
-                "relationship-data": [
-                    {
-                        "relationship-key": "l3-network.network-id",
-                        "relationship-value": "HNP1d77c-1094-41ec-b7f3-94bb30951870"
-                    }
-                ],
-                "related-to-property": [
-                    {
-                        "property-key": "l3-network.network-name",
-                        "property-value": "HNPORTALOAM.OAM"
-                    }
-                ]
-            },
-            {
-                "related-to": "l3-network",
-                "relationship-label": "org.onap.relationships.inventory.Uses",
-                "related-link": "/aai/v13/network/l3-networks/l3-network/HNP1d77c-1094-41ec-b7f3-94bb30951872",
-                "relationship-data": [
-                    {
-                        "relationship-key": "l3-network.network-id",
-                        "relationship-value": "HNP1d77c-1094-41ec-b7f3-94bb30951872"
-                    }
-                ],
-                "related-to-property": [
-                    {
-                        "property-key": "l3-network.network-name",
-                        "property-value": "HNPORTAL_SRIOV_2"
-                    }
-                ]
             }
         ]
     },

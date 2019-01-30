@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
+import org.onap.pomba.contextbuilder.aai.datatype.L3networkInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.RelatedToProperty;
 import org.onap.pomba.contextbuilder.aai.datatype.Relationship;
 import org.onap.pomba.contextbuilder.aai.datatype.RelationshipDatum;
@@ -53,7 +54,7 @@ public class VfModuleTest {
 		vfModule.setRelationshipList(relationshipList);
 
 		assertEquals("vfModuleId", vfModule.getVfModuleId());
-		assertEquals("vfModuleName", vfModule.getVfMduleName());
+		assertEquals("vfModuleName", vfModule.getVfModuleName());
 		assertEquals("heatStackId", vfModule.getHeatStackId());
 		assertEquals("orchestrationStatus", vfModule.getOrchestrationStatus());
 		assertTrue(vfModule.getIsBaseVfModule());
@@ -67,10 +68,10 @@ public class VfModuleTest {
 
 	@Test
 	public void testVfModuleWithParameters() {
-		VfModule vfModule = new VfModule("vfModuleId", "vfModuleName", "heatStackId", "orchestrationStatus", true, "resourceVersion", "modelInvariantId", "modelVersionId", "modelCustomizationId", 1, new RelationshipList() );
+		VfModule vfModule = new VfModule("vfModuleId", "vfModuleName", "heatStackId", "orchestrationStatus", true, "resourceVersion", "modelInvariantId", "modelVersionId", "modelCustomizationId", 1, new RelationshipList() , new ArrayList<L3networkInstance>());
 
 		assertEquals("vfModuleId", vfModule.getVfModuleId());
-		assertEquals("vfModuleName", vfModule.getVfMduleName());
+		assertEquals("vfModuleName", vfModule.getVfModuleName());
 		assertEquals("heatStackId", vfModule.getHeatStackId());
 		assertEquals("orchestrationStatus", vfModule.getOrchestrationStatus());
 		assertTrue(vfModule.getIsBaseVfModule());
@@ -87,9 +88,9 @@ public class VfModuleTest {
 
 	@Test
 	public void testVfModuleEquals() {
-		VfModule vfModule1 = new VfModule("vfModuleId1", "vfModuleName1", "heatStackId1", "orchestrationStatus1", true, "resourceVersion1", "modelInvariantId1", "modelVersionId1", "modelCustomizationId1", 1, new RelationshipList() );
-		VfModule vfModule2 = new VfModule("vfModuleId2", "vfModuleName2", "heatStackId2", "orchestrationStatus2", true, "resourceVersion2", "modelInvariantId2", "modelVersionId2", "modelCustomizationId2", 1, new RelationshipList() );
-		VfModule vfModule3 = new VfModule("vfModuleId1", "vfModuleName1", "heatStackId1", "orchestrationStatus1", true, "resourceVersion1", "modelInvariantId1", "modelVersionId1", "modelCustomizationId1", 1, new RelationshipList() );
+		VfModule vfModule1 = new VfModule("vfModuleId1", "vfModuleName1", "heatStackId1", "orchestrationStatus1", true, "resourceVersion1", "modelInvariantId1", "modelVersionId1", "modelCustomizationId1", 1, new RelationshipList() , new ArrayList<L3networkInstance>());
+		VfModule vfModule2 = new VfModule("vfModuleId2", "vfModuleName2", "heatStackId2", "orchestrationStatus2", true, "resourceVersion2", "modelInvariantId2", "modelVersionId2", "modelCustomizationId2", 1, new RelationshipList() , new ArrayList<L3networkInstance>());
+		VfModule vfModule3 = new VfModule("vfModuleId1", "vfModuleName1", "heatStackId1", "orchestrationStatus1", true, "resourceVersion1", "modelInvariantId1", "modelVersionId1", "modelCustomizationId1", 1, new RelationshipList() , new ArrayList<L3networkInstance>());
 
 		assertTrue(vfModule1.equals(vfModule1));
 		assertTrue(!vfModule1.equals(vfModule2));
