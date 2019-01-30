@@ -10,22 +10,6 @@
     "relationship-list": {
         "relationship": [
             {
-          	  	"related-to": "pserver",
-      	      	"relationship-label": "tosca.relationships.HostedOn",
-        	  	"related-link": "/aai/v13/cloud-infrastructure/pservers/pserver/mtn96compute.cci.att.com",
-            	"relationship-data": [
-            	    {
-               		  "relationship-key": "pserver.hostname",
-               		  "relationship-value": "mtn96compute.cci.att.com"
-            	    }
-            	  ],
-            	"related-to-property": [
-               	  {	  "property-key": "pserver.fqdn",
-                	  "property-value": "mtn96compute.cci.att.com"
-                  }
- 				]
-       		},
-            {
                 "related-to": "generic-vnf",
                 "related-link": "/aai/v13/network/generic-vnfs/generic-vnf/8a9ddb25-2e79-449c-a40d-5011bac0da39",
                 "relationship-data": [

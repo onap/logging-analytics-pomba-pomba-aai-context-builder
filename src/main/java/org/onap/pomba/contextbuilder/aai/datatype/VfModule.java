@@ -19,6 +19,9 @@ package org.onap.pomba.contextbuilder.aai.datatype;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
 import javax.validation.Valid;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -61,6 +64,8 @@ public class VfModule {
     @Valid
     private RelationshipList relationshipList;
 
+    private List<L3networkInstance> l3NetworkList;
+
     /**
      * No args constructor for use in serialization
      *
@@ -82,7 +87,7 @@ public class VfModule {
      * @param relationshipList
      * @param modelVersionId
      */
-    public VfModule(String vfModuleId, String vfModuleName, String heatStackId, String orchestrationStatus, Boolean isBaseVfModule, String resourceVersion, String modelInvariantId, String modelVersionId, String modelCustomizationId, Integer moduleIndex, RelationshipList relationshipList) {
+    public VfModule(String vfModuleId, String vfModuleName, String heatStackId, String orchestrationStatus, Boolean isBaseVfModule, String resourceVersion, String modelInvariantId, String modelVersionId, String modelCustomizationId, Integer moduleIndex, RelationshipList relationshipList, List<L3networkInstance> l3NetworkList) {
         super();
         this.vfModuleId = vfModuleId;
         this.vfModuleName = vfModuleName;
@@ -95,6 +100,7 @@ public class VfModule {
         this.modelCustomizationId = modelCustomizationId;
         this.moduleIndex = moduleIndex;
         this.relationshipList = relationshipList;
+        this.l3NetworkList = l3NetworkList;
     }
 
     public String getVfModuleId() {
@@ -105,7 +111,7 @@ public class VfModule {
         this.vfModuleId = vfModuleId;
     }
 
-    public String getVfMduleName() {
+    public String getVfModuleName() {
         return vfModuleName;
     }
 
@@ -185,14 +191,22 @@ public class VfModule {
         this.relationshipList = relationshipList;
     }
 
+    public List<L3networkInstance> getL3NetworkList() {
+        return l3NetworkList;
+    }
+
+    public void setL3NetworkList(List<L3networkInstance> l3NetworkList) {
+        this.l3NetworkList = l3NetworkList;
+    }
+
     @Override
     public String toString() {
-        return new ToStringBuilder(this).append("vfModuleId", vfModuleId).append("vfModuleName", vfModuleName).append("heatStackId", heatStackId).append("orchestrationStatus", orchestrationStatus).append("isBaseVfModule", isBaseVfModule).append("resourceVersion", resourceVersion).append("modelInvariantId", modelInvariantId).append("modelVersionId", modelVersionId).append("modelCustomizationId", modelCustomizationId).append("moduleIndex", moduleIndex).append("relationshipList", relationshipList).toString();
+        return new ToStringBuilder(this).append("vfModuleId", vfModuleId).append("vfModuleName", vfModuleName).append("heatStackId", heatStackId).append("orchestrationStatus", orchestrationStatus).append("isBaseVfModule", isBaseVfModule).append("resourceVersion", resourceVersion).append("modelInvariantId", modelInvariantId).append("modelVersionId", modelVersionId).append("modelCustomizationId", modelCustomizationId).append("moduleIndex", moduleIndex).append("relationshipList", relationshipList).append("l3NetworkList", l3NetworkList).toString();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(modelCustomizationId).append(moduleIndex).append(vfModuleName).append(orchestrationStatus).append(vfModuleId).append(modelInvariantId).append(heatStackId).append(isBaseVfModule).append(resourceVersion).append(relationshipList).append(modelVersionId).toHashCode();
+        return new HashCodeBuilder().append(modelCustomizationId).append(moduleIndex).append(vfModuleName).append(orchestrationStatus).append(vfModuleId).append(modelInvariantId).append(heatStackId).append(isBaseVfModule).append(resourceVersion).append(relationshipList).append(l3NetworkList).append(modelVersionId).toHashCode();
     }
 
     @Override
@@ -204,7 +218,7 @@ public class VfModule {
             return false;
         }
         VfModule rhs = ((VfModule) other);
-        return new EqualsBuilder().append(modelCustomizationId, rhs.modelCustomizationId).append(moduleIndex, rhs.moduleIndex).append(vfModuleName, rhs.vfModuleName).append(orchestrationStatus, rhs.orchestrationStatus).append(vfModuleId, rhs.vfModuleId).append(modelInvariantId, rhs.modelInvariantId).append(heatStackId, rhs.heatStackId).append(isBaseVfModule, rhs.isBaseVfModule).append(resourceVersion, rhs.resourceVersion).append(relationshipList, rhs.relationshipList).append(modelVersionId, rhs.modelVersionId).isEquals();
+        return new EqualsBuilder().append(modelCustomizationId, rhs.modelCustomizationId).append(moduleIndex, rhs.moduleIndex).append(vfModuleName, rhs.vfModuleName).append(orchestrationStatus, rhs.orchestrationStatus).append(vfModuleId, rhs.vfModuleId).append(modelInvariantId, rhs.modelInvariantId).append(heatStackId, rhs.heatStackId).append(isBaseVfModule, rhs.isBaseVfModule).append(resourceVersion, rhs.resourceVersion).append(relationshipList, rhs.relationshipList).append(l3NetworkList, rhs.l3NetworkList).append(modelVersionId, rhs.modelVersionId).isEquals();
     }
 
 }

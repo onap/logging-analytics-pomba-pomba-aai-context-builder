@@ -41,6 +41,7 @@ import org.onap.pomba.common.datatypes.VNF;
 import org.onap.pomba.common.datatypes.VFModule;
 import org.onap.pomba.common.datatypes.VM;
 import org.onap.pomba.common.datatypes.VNFC;
+import org.onap.pomba.common.datatypes.Network;
 import org.onap.pomba.contextbuilder.aai.common.LogMessages;
 import org.onap.pomba.contextbuilder.aai.datatype.Relationship;
 import org.onap.pomba.contextbuilder.aai.datatype.RelationshipList;
@@ -51,6 +52,7 @@ import org.onap.pomba.contextbuilder.aai.datatype.VnfcInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.Vserver;
 import org.onap.pomba.contextbuilder.aai.datatype.PserverInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.PInterfaceInstance;
+import org.onap.pomba.contextbuilder.aai.datatype.L3networkInstance;
 import org.onap.pomba.contextbuilder.aai.exception.AuditError;
 import org.onap.pomba.contextbuilder.aai.exception.AuditException;
 import org.slf4j.Logger;
@@ -84,6 +86,7 @@ public class RestUtil {
     private static final String CATALOG_VSERVER = "vserver";
     private static final String CATALOG_IMAGE = "image";
     private static final String CATALOG_PSERVER = "pserver";
+    private static final String CATALOG_L3_NETWORK = "l3-network";
     private static final String VF_MODULES = "vf-modules";
     private static final String VF_MODULE = "vf-module";
 
@@ -129,6 +132,12 @@ public class RestUtil {
     private static final String ATTRIBUTE_EQUIPTMENT_ID = "equipmentID";
     private static final String ATTRIBUTE_INTERFACE_ROLE = "interfaceRole";
     private static final String ATTRIBUTE_INTERFACE_TYPE = "interfaceType";
+    private static final String ATTRIBUTE_NETWORK_TYPE = "networkType";
+    private static final String ATTRIBUTE_NETWORK_TECHNOLOGY = "networkTechnology";
+    private static final String ATTRIBUTE_PHYSICAL_NETWORK_NAME = "physicalNetworkName";
+    private static final String ATTRIBUTE_SHARED_NETWORK_BOOLEAN = "sharedNetworkBoolean";
+
+
 
     /**
      * Validates the URL parameter.
@@ -197,12 +206,15 @@ public class RestUtil {
         String serviceInstancePayload = null;
         String genericVNFPayload = null;
 
-        List<VnfInstance> vnfLst = new ArrayList<VnfInstance>(); // List of the VNF POJO object
+        List<VnfInstance> vnfLst = new ArrayList<>(); // List of the VNF POJO object
         //Map to track multiple vnfc under the Gerneric VNF id. The key = vnf-id. The value = list of vnfc instance
-        Map<String, List<VnfcInstance>> vnfcMap = new HashMap<String, List<VnfcInstance>>();
+        Map<String, List<VnfcInstance>> vnfcMap = new HashMap<>();
 
         //Map to track the relationship between vnf->vfmodule->verver
-        Map<String, Map<String, List<Vserver>>> vnf_vfmodule_vserver_Map = new HashMap<String, Map<String, List<Vserver>>>();
+        Map<String, Map<String, List<Vserver>>> vnfVfmoduleVserverMap = new HashMap<>();
+
+        //Map to track multiple l3-network under the Gerneric VNF id. The key = vnf-id. The value = list of l3-network instance
+        Map<String, List<L3networkInstance>> l3networkMapInVnf = new HashMap<>();
 
         // Obtain resource-link based on resource-type = service-Instance
         String resourceLink = obtainResouceLinkBasedOnServiceInstanceFromAAI(aaiClient, baseURL, aaiPathToSearchNodeQuery, serviceInstanceId, transactionId, aaiBasicAuthorization);
@@ -213,8 +225,7 @@ public class RestUtil {
             return null;
         }
 
-        log.info("ResourceLink from AAI:" + resourceLink);
-
+        log.info(String.format("ResourceLink from AAI: %s", resourceLink));
         // Build URl to get ServiceInstance Payload
         String url = baseURL + resourceLink;
 
@@ -228,7 +239,8 @@ public class RestUtil {
             // Only return the empty Json on the root level. i.e service instance
             return null;
         }
-        log.info("Message from AAI:" + JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(serviceInstancePayload)) );
+
+        log.info("Message from AAI:%s", JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(serviceInstancePayload)));
 
         List<String> genericVNFLinkLst = extractRelatedLink(serviceInstancePayload, CATALOG_GENERIC_VNF);
         log.info(LogMessages.NUMBER_OF_API_CALLS, "genericVNF", genericVNFLinkLst.size());
@@ -245,27 +257,67 @@ public class RestUtil {
             if (isEmptyJson(genericVNFPayload)) {
                 log.info(LogMessages.NOT_FOUND, "GenericVNF with url ", genericVNFLink);
             } else {
-                log.info("Message from AAI for VNF " + genericVNFURL + ",message body:" + JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(genericVNFPayload)) );
-
+                log.info("Message from AAI for VNF %s,message body: %s", genericVNFURL, JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(genericVNFPayload)));
                 // Logic to Create the Generic VNF Instance POJO object
                 VnfInstance vnfInstance = VnfInstance.fromJson(genericVNFPayload);
                 vnfLst.add(vnfInstance);
 
+                // Update VModule with l3-network list from aai, if any.
+                buildVModuleWithL3NetworkInfo (vnfInstance, aaiClient, baseURL, transactionId,  aaiBasicAuthorization);
+
                 // Build the vnf_vnfc relationship map
-                vnfcMap = buildVnfcMap(vnfcMap, genericVNFPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization );
+                buildVnfcMap(vnfcMap, genericVNFPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization );
 
                 // Build vnf_vfmodule_vserver relationship map
-                vnf_vfmodule_vserver_Map= buildVfmoduleVserverMap(vnf_vfmodule_vserver_Map,  genericVNFPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization);
+                buildVfmoduleVserverMap(vnfVfmoduleVserverMap,  genericVNFPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization);
 
+                // Build the vnf_l3_network relationship map
+                buildVnfWithL3networkInfo(l3networkMapInVnf, genericVNFPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization );
             }
         }
 
         //Obtain PNF (Physical Network Function)
         List<PnfInstance> pnfLst = retrieveAAIModelData_PNF (aaiClient, baseURL, transactionId, serviceInstanceId, aaiBasicAuthorization, serviceInstancePayload) ;
 
+        //Obtain l3-network on service level
+        List<L3networkInstance> l3networkLstInService = retrieveAaiModelDataL3NetworkInServiceLevel (aaiClient, baseURL, transactionId, aaiBasicAuthorization, serviceInstancePayload) ;
 
         // Transform to common model and return
-        return transform(ServiceInstance.fromJson(serviceInstancePayload), vnfLst, vnfcMap, vnf_vfmodule_vserver_Map, pnfLst);
+        return transform(ServiceInstance.fromJson(serviceInstancePayload), vnfLst, vnfcMap, l3networkMapInVnf, vnfVfmoduleVserverMap, pnfLst, l3networkLstInService);
+    }
+
+    private static void buildVModuleWithL3NetworkInfo (VnfInstance vnfInstance,
+            RestClient aaiClient, String baseURL,
+            String transactionId,  String aaiBasicAuthorization
+            ) throws AuditException {
+
+        if ((vnfInstance != null ) && (vnfInstance.getVfModules()) != null) {
+            List<VfModule> vfModuleList_from_aai = vnfInstance.getVfModules().getVfModule();
+            for (VfModule t_vfModule : vfModuleList_from_aai ) {
+                RelationshipList vfModuleRelateionShipList = t_vfModule.getRelationshipList();
+                if ( vfModuleRelateionShipList != null) {
+                    List<Relationship> vfModuleRelateionShipLocalList = vfModuleRelateionShipList.getRelationship();
+                    if ( vfModuleRelateionShipLocalList != null) {
+                        List<String> relatedLinkList = new ArrayList<>();
+
+                        for ( Relationship vfModuleRelationShip : vfModuleRelateionShipLocalList ) {
+                            if (vfModuleRelationShip.getRelatedTo().equals(CATALOG_L3_NETWORK)) {
+                                String vfModule_L3_network_RelatedLink = vfModuleRelationShip.getRelatedLink();
+                                relatedLinkList.add(vfModule_L3_network_RelatedLink);
+                            }
+                        }
+
+                        if (!(relatedLinkList.isEmpty())) {
+                            List<L3networkInstance> l3nwInsLst = queryAaiForL3networkInfo (aaiClient,baseURL,transactionId,aaiBasicAuthorization,relatedLinkList);
+
+                            if ((l3nwInsLst != null) && (!l3nwInsLst.isEmpty())) {
+                                t_vfModule.setL3NetworkList(l3nwInsLst);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private static List<PnfInstance> retrieveAAIModelData_PNF(RestClient aaiClient, String baseURL,
@@ -275,12 +327,12 @@ public class RestUtil {
         log.info(LogMessages.NUMBER_OF_API_CALLS, "PNF", genericPNFLinkLst.size());
         log.info(LogMessages.API_CALL_LIST, "PNF", printOutAPIList(genericPNFLinkLst));
 
-        if ( genericPNFLinkLst.size() == 0) {
+        if ( genericPNFLinkLst.isEmpty()) {
            return null;
         }
 
         String genericPNFPayload = null;
-        List<PnfInstance> pnfLst = new ArrayList<PnfInstance>(); // List of the PNF POJO object
+        List<PnfInstance> pnfLst = new ArrayList<>(); // List of the PNF POJO object
 
         for (String genericPNFLink : genericPNFLinkLst) {
             // With latest AAI development, in order to retrieve the both generic PNF
@@ -292,8 +344,7 @@ public class RestUtil {
             if (isEmptyJson(genericPNFPayload)) {
                 log.info(LogMessages.NOT_FOUND, "GenericPNF with url ", genericPNFLink);
             } else {
-                log.info("Message from AAI for PNF " + genericPNFLink + ",message body:" + JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(genericPNFPayload)) );
-
+                log.info(String.format("Message from AAI for PNF %s ,message body: %s", genericPNFLink, JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(genericPNFPayload))));
                 // Logic to Create the Generic VNF Instance POJO object
                 PnfInstance pnfInstance = PnfInstance.fromJson(genericPNFPayload);
                 pnfLst.add(pnfInstance);
@@ -301,6 +352,45 @@ public class RestUtil {
         }
 
         return pnfLst;
+    }
+
+    private static List<L3networkInstance> queryAaiForL3networkInfo(RestClient aaiClient, String baseURL,
+            String transactionId, String aaiBasicAuthorization, List<String> genericL3networkLinkLst) throws AuditException {
+        if ( genericL3networkLinkLst.isEmpty()) {
+            return null;
+         }
+        log.info(LogMessages.NUMBER_OF_API_CALLS, "L3Network", genericL3networkLinkLst.size());
+        log.info(LogMessages.API_CALL_LIST, "L3Network", printOutAPIList(genericL3networkLinkLst));
+
+         String genericL3networkPayload = null;
+         List<L3networkInstance> l3nwLst = new ArrayList<>(); // List of the L3-Network POJO object
+
+         for (String genericNetworkLink : genericL3networkLinkLst) {
+             // With latest AAI development, in order to retrieve the both generic l3-network
+             String genericL3NetworkURL = baseURL + genericNetworkLink + DEPTH;
+             // Response from generic l3-network API call
+             genericL3networkPayload =
+                     getResource(aaiClient, genericL3NetworkURL, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
+
+             if (isEmptyJson(genericL3networkPayload)) {
+                 log.info(LogMessages.NOT_FOUND, "GenericPNF with url ", genericNetworkLink);
+             } else {
+                 log.info("Message from AAI for l3-network %s ,message body: %s", genericNetworkLink, JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(genericL3networkPayload)));
+                 // Logic to Create the Generic VNF Instance POJO object
+                 L3networkInstance l3NetworkInstance = L3networkInstance.fromJson(genericL3networkPayload);
+                 l3nwLst.add(l3NetworkInstance);
+             }
+         }
+
+         return l3nwLst;
+    }
+
+    private static List<L3networkInstance> retrieveAaiModelDataL3NetworkInServiceLevel(RestClient aaiClient, String baseURL,
+            String transactionId, String aaiBasicAuthorization, String relationShipPayload) throws AuditException {
+
+        List<String> genericL3networkLinkLst = extractRelatedLink(relationShipPayload, CATALOG_L3_NETWORK);
+
+        return (queryAaiForL3networkInfo (aaiClient,baseURL,transactionId,aaiBasicAuthorization,genericL3networkLinkLst) ) ;
     }
 
     /*
@@ -315,28 +405,43 @@ public class RestUtil {
         log.info(LogMessages.NUMBER_OF_API_CALLS, "vnfc", vnfcLinkLst.size());
         log.info(LogMessages.API_CALL_LIST, "vnfc", printOutAPIList(vnfcLinkLst));
 
-        List<VnfcInstance> vnfcLst = new ArrayList<VnfcInstance>();
+        List<VnfcInstance> vnfcLst = new ArrayList<>();
         for (String vnfcLink : vnfcLinkLst) {
             String vnfcURL = baseURL + vnfcLink;
             vnfcPayload = getResource(aaiClient, vnfcURL, aaiBasicAuthorization,  transactionId,
-                    MediaType.valueOf(MediaType.APPLICATION_XML));
+                    MediaType.valueOf(MediaType.APPLICATION_JSON));
 
             if (isEmptyJson(vnfcPayload)) {
                 log.info(LogMessages.NOT_FOUND, "VNFC with url", vnfcLink);
             } else {
-                log.info("Message from AAI for VNFC with url " + vnfcLink + ",message body:" + JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(vnfcPayload)) );
+                log.info(String.format("Message from AAI for VNFC with url %s, ,message body: %s", vnfcLink,  JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(vnfcPayload))));
                 // Logic to Create the VNFC POJO object
                 VnfcInstance vnfcInstance = VnfcInstance.fromJson(vnfcPayload);
                 vnfcLst.add(vnfcInstance);
             }
         }
 
-        if (vnfcLst.size() > 0) {
+        if (!vnfcLst.isEmpty()) {
             // Assume the vnf-id is unique as a key
             vnfcMap.put(getVnfId(genericVNFPayload), vnfcLst);
         }
 
         return vnfcMap;
+    }
+
+    /*
+     *  The map is to track the relationship of vnf-id with multiple l3-network relationship at vnf level
+     */
+    private static Map<String, List<L3networkInstance>> buildVnfWithL3networkInfo(Map<String, List<L3networkInstance>> l3networkMap_in_vnf, String genericVNFPayload, RestClient aaiClient, String baseURL,
+            String transactionId, String aaiBasicAuthorization) throws AuditException {
+
+        List<L3networkInstance> l3NwLst = retrieveAaiModelDataL3NetworkInServiceLevel (aaiClient, baseURL, transactionId, aaiBasicAuthorization, genericVNFPayload) ;
+
+        if ((l3NwLst != null ) && (!l3NwLst.isEmpty())) {
+            // Assume the vnf-id is unique as a key
+            l3networkMap_in_vnf.put(getVnfId(genericVNFPayload), l3NwLst);
+        }
+        return l3networkMap_in_vnf;
     }
 
     /*
@@ -350,21 +455,21 @@ public class RestUtil {
      */
     private static Map<String, Map<String, List<Vserver>>> buildVfmoduleVserverMap(Map<String, Map<String, List<Vserver>>> vnf_vfmodule_vserver_Map, String genericVNFPayload, RestClient aaiClient, String baseURL, String transactionId, String aaiBasicAuthorization) throws AuditException {
 
-        Map<String, List<Vserver>> vServerMap = new HashMap<String, List<Vserver>>();
+        Map<String, List<Vserver>> vServerMap = new HashMap<>();
 
         Map<String, List<String>> vServerRelatedLinkMap = extractRelatedLinkFromVfmodule(genericVNFPayload, CATALOG_VSERVER);
         String vnfId= getVnfId(genericVNFPayload);
         String vserverPayload = null;
 
 
-        if (vServerRelatedLinkMap !=null && vServerRelatedLinkMap.size() >0) {
+        if (vServerRelatedLinkMap !=null && (!vServerRelatedLinkMap.isEmpty())) {
             for(Map.Entry<String, List<String>>  entry : vServerRelatedLinkMap.entrySet()) {
 
                 List<String>   vserverLinkLst = entry.getValue();
-                log.info(LogMessages.NUMBER_OF_API_CALLS, "vserver", vserverLinkLst.size());
-                log.info(LogMessages.API_CALL_LIST, "vserver", printOutAPIList(vserverLinkLst));
+                log.info(LogMessages.NUMBER_OF_API_CALLS, CATALOG_VSERVER, vserverLinkLst.size());
+                log.info(LogMessages.API_CALL_LIST, CATALOG_VSERVER, printOutAPIList(vserverLinkLst));
 
-                List<Vserver> vserverLst = new ArrayList<Vserver>();
+                List<Vserver> vserverLst = new ArrayList<>();
                 for (String vserverLink : vserverLinkLst) {
                     String vserverURL = baseURL + vserverLink;
                     vserverPayload = getResource(aaiClient, vserverURL, aaiBasicAuthorization,  transactionId,
@@ -375,16 +480,16 @@ public class RestUtil {
                     } else {
                         // Logic to Create the Vserver POJO object
                         Vserver vserver = Vserver.fromJson(vserverPayload);
-                        vserver.setPserverInstanceList(getPserverInfo_from_aai(vserverPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization));
+                        vserver.setPserverInstanceList(getPserverInfoFromAai(vserverPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization));
                         vserverLst.add(vserver);
                     }
                 }
 
-                if (vserverLst.size() > 0) {
+                if (!vserverLst.isEmpty()) {
                     vServerMap.put(entry.getKey(), vserverLst);
                 }
             }
-            if (vServerMap.size()> 0) {
+            if (!vServerMap.isEmpty()) {
                 vnf_vfmodule_vserver_Map.put(vnfId, vServerMap);
             }
         }
@@ -392,20 +497,20 @@ public class RestUtil {
         return vnf_vfmodule_vserver_Map;
     }
 
-    private static List<PserverInstance> getPserverInfo_from_aai (String vserverPayload, RestClient aaiClient, String baseURL, String transactionId, String aaiBasicAuthorization) throws AuditException {
+    private static List<PserverInstance> getPserverInfoFromAai (String vserverPayload, RestClient aaiClient, String baseURL, String transactionId, String aaiBasicAuthorization) throws AuditException {
         if (vserverPayload == null) {
             //already reported.
             return null;
         }
 
         //Obtain related Pserver info
-        List<String> pserverRelatedLinkList = handleRelationship_general (vserverPayload,CATALOG_PSERVER );
+        List<String> pserverRelatedLinkList = handleRelationshipGeneral (vserverPayload,CATALOG_PSERVER );
         List<PserverInstance> pserverLst = null;
         if ((pserverRelatedLinkList == null) || (pserverRelatedLinkList.isEmpty())){
             // already reported
             return null;
         }
-        pserverLst = new ArrayList<PserverInstance>();
+        pserverLst = new ArrayList<>();
         for (String pserverRelatedLink : pserverRelatedLinkList) {
             String pserverURL = baseURL + pserverRelatedLink + DEPTH;;
             String pserverPayload = getResource(aaiClient, pserverURL, aaiBasicAuthorization,  transactionId,
@@ -414,8 +519,7 @@ public class RestUtil {
             if (isEmptyJson(pserverPayload)) {
                 log.info(LogMessages.NOT_FOUND, "PSERVER with url", pserverURL);
             } else {
-                log.info("Message from AAI for pserver " + pserverURL + ",message body:" + pserverPayload) ;
-
+                log.info("Message from AAI for pserver %s ,message body: %s", pserverURL,pserverPayload);
                 // Logic to Create the Pserver POJO object
                 PserverInstance pserver = PserverInstance.fromJson(pserverPayload);
 
@@ -437,7 +541,10 @@ public class RestUtil {
      * Transform AAI Representation to Common Model
      */
     private static ModelContext transform(ServiceInstance svcInstance, List<VnfInstance> vnfLst,
-            Map<String, List<VnfcInstance>> vnfcMap,  Map<String, Map<String, List<Vserver>>> vnf_vfmodule_vserver_Map, List<PnfInstance> pnfLst_fromAAi) {
+            Map<String, List<VnfcInstance>> vnfcMap,
+            Map<String, List<L3networkInstance>> l3networkMap_in_vnf,
+            Map<String, Map<String, List<Vserver>>> vnf_vfmodule_vserver_Map, List<PnfInstance> pnfLst_fromAAi,
+            List<L3networkInstance> l3networkLst_in_service) {
         ModelContext context = new ModelContext();
         Service service = new Service();
         service.setModelInvariantUUID(svcInstance.getModelInvariantId());
@@ -445,7 +552,7 @@ public class RestUtil {
         service.setModelVersionID(svcInstance.getModelVersionId());
         service.setUuid(svcInstance.getServiceInstanceId());
         service.setDataQuality(DataQuality.ok());
-        List<VNF> vfLst = new ArrayList<VNF>();
+        List<VNF> vfLst = new ArrayList<>();
 
         for (VnfInstance vnf : vnfLst) {
             VNF vf = new VNF();
@@ -459,7 +566,7 @@ public class RestUtil {
             String key = vnf.getVnfId();   // generic vnf-id (top level of the key)
 
             // ---------------- Handle VNFC data
-            List<VNFC> vnfcLst = new ArrayList<VNFC>();
+            List<VNFC> vnfcLst = new ArrayList<>();
             for (Map.Entry<String, List<VnfcInstance>> entry : vnfcMap.entrySet()) {
 
                 if (key.equals(entry.getKey())) {
@@ -476,9 +583,21 @@ public class RestUtil {
             }
             vf.setVnfcs(vnfcLst);
 
+            // add vnf level l3-network
+            List<Network> nwLst_in_vnf = null;
+            for (Map.Entry<String, List<L3networkInstance>> entry : l3networkMap_in_vnf.entrySet()) {
+                if (key.equals(entry.getKey())) {
+                    List<L3networkInstance> l3NwInstanceLst_in_vnf = entry.getValue();
+                    nwLst_in_vnf = transformL3Network (l3NwInstanceLst_in_vnf) ;
+                }
+            }
+
+            if ((nwLst_in_vnf != null) && (!nwLst_in_vnf.isEmpty())) {
+                vf.setNetworks(nwLst_in_vnf);
+            }
 
             // --------------- Handle the vfModule
-            List<VFModule> vfModuleLst = new ArrayList<VFModule>();
+            List<VFModule> vfModuleLst = new ArrayList<>();
             //Map to calculate the Vf Module MaxInstance.
             if (vnf.getVfModules() != null) {
                 List<VfModule> vfModuleList_from_aai = vnf.getVfModules().getVfModule();
@@ -489,11 +608,15 @@ public class RestUtil {
                     VFModule vfModule = new VFModule();
                     vfModule.setUuid(t_vfModule.getVfModuleId());
                     vfModule.setModelInvariantUUID(t_vfModule.getModelInvariantId());
-                    vfModule.setName(t_vfModule.getVfMduleName());
+                    vfModule.setName(t_vfModule.getVfModuleName());
                     vfModule.setModelVersionID(t_vfModule.getModelVersionId());
                     vfModule.setModelCustomizationUUID(t_vfModule.getModelCustomizationId());
                     vfModule.setMaxInstances(maxInstanceMap.size());
                     vfModule.setDataQuality(DataQuality.ok());
+                    List<Network> l3networkInVfModule = transformL3Network(t_vfModule.getL3NetworkList());
+                    if ((l3networkInVfModule != null) && (!l3networkInVfModule.isEmpty()) ){
+                        vfModule.setNetworks(l3networkInVfModule);
+                    }
 
                     for ( Map.Entry<String, Map<String, List<Vserver>>> entry:    vnf_vfmodule_vserver_Map.entrySet() ) {
                         // find the vnf-id
@@ -514,14 +637,14 @@ public class RestUtil {
                                     vfModule.setMaxInstances(getMaxInstance(vfmoduleEntry.getKey(), maxInstanceMap));
 
                                     // Handle VM
-                                    List<VM>   vmList = new ArrayList<VM>();
+                                    List<VM>   vmList = new ArrayList<>();
                                     for (Vserver vserver: vserverList) {
 
-                                        List<Attribute>  attributeList = new ArrayList<Attribute>();
+                                        List<Attribute>  attributeList = new ArrayList<>();
 
                                         // Iterate through the ENUM Attribute list
                                         for (Attribute.Name  name: Attribute.Name.values()) {
-                                            if (name.toString().equals(ATTRIBUTE_LOCKEDBOOLEAN)) {
+                                            if (name.name().equals(ATTRIBUTE_LOCKEDBOOLEAN)) {
                                                 Attribute att = new Attribute();
                                                 att.setDataQuality(DataQuality.ok());
                                                 att.setName(Attribute.Name.lockedBoolean);
@@ -529,7 +652,7 @@ public class RestUtil {
                                                 attributeList.add(att);
                                             }
 
-                                            if (name.toString().equals(ATTRIBUTE_HOSTNAME)) {
+                                            if (name.name().equals(ATTRIBUTE_HOSTNAME)) {
                                                 Attribute att = new Attribute();
                                                 att.setDataQuality(DataQuality.ok());
                                                 att.setName(Attribute.Name.hostName);
@@ -537,7 +660,7 @@ public class RestUtil {
                                                 attributeList.add(att);
                                             }
 
-                                            if (name.toString().equals(ATTRIBUTE_IMAGEID)) {
+                                            if (name.name().equals(ATTRIBUTE_IMAGEID)) {
                                                 Attribute att = new Attribute();
                                                 att.setDataQuality(DataQuality.ok());
                                                 att.setName(Attribute.Name.imageId);
@@ -560,7 +683,7 @@ public class RestUtil {
                                         vmList.add(vm);
                                     }
 
-                                    if (vmList.size() > 0) {
+                                    if (!vmList.isEmpty()) {
                                         vfModule.setVms(vmList);
                                     }
                                 }
@@ -581,10 +704,9 @@ public class RestUtil {
         context.setVnfs(vfLst);
         //Add PNF info
         context.setPnfs(transformPNF(pnfLst_fromAAi));
-        //Add Pserver info
-
-        log.info("ModelContext body: {}", JsonUtils.toPrettyJsonString(context));
-
+        //Add service-level l3-network info
+        context.setNetworkList(transformL3Network (l3networkLst_in_service));
+        log.info((String.format("ModelContext body: %s ", JsonUtils.toPrettyJsonString(context))));
         return context;
     }
 
@@ -600,91 +722,91 @@ public class RestUtil {
              pserver.setUuid(pserverInstance.getPserverId());
              pserver.setName(pserverInstance.getHostname());
 
-             List<Attribute>  attributeList = new ArrayList<Attribute>();
+             List<Attribute>  attributeList = new ArrayList<>();
              // Iterate through the ENUM Attribute list
              for (Attribute.Name  name: Attribute.Name.values()) {
-                 if ((name.toString().equals(ATTRIBUTE_NAME2 ))
-                         && (pserverInstance.getPserverName2() != null)){
+                 if ((name.name().equals(ATTRIBUTE_NAME2 ))
+                         && isValid(pserverInstance.getPserverName2())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.name2);
                      att.setValue(String.valueOf(pserverInstance.getPserverName2()));
                      attributeList.add(att);
                  }
-                 if ((name.toString().equals(ATTRIBUTE_PTNII_NAME ))
-                         && (pserverInstance.getPtniiEquipName() != null)){
+                 if ((name.name().equals(ATTRIBUTE_PTNII_NAME ))
+                         && isValid(pserverInstance.getPtniiEquipName())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.ptniiName);
                      att.setValue(String.valueOf(pserverInstance.getPtniiEquipName()));
                      attributeList.add(att);
                  }
-                 if ((name.toString().equals( ATTRIBUTE_EQUIPMENT_TYPE ))
-                         &&(pserverInstance.getEquipType() != null)){
+                 if ((name.name().equals( ATTRIBUTE_EQUIPMENT_TYPE ))
+                         && isValid(pserverInstance.getEquipType())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.equipType);
                      att.setValue(String.valueOf(pserverInstance.getEquipType()));
                      attributeList.add(att);
                  }
-                 if ((name.toString().equals( ATTRIBUTE_EQUIPMENT_VENDOR ))
-                         &&(pserverInstance.getEquipVendor() != null)){
+                 if ((name.name().equals( ATTRIBUTE_EQUIPMENT_VENDOR ))
+                         && isValid(pserverInstance.getEquipVendor())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.equipVendor);
                      att.setValue(String.valueOf(pserverInstance.getEquipVendor()));
                      attributeList.add(att);
                  }
-                 if ((name.toString().equals( ATTRIBUTE_EQUIPMENT_MODEL ))
-                         &&(pserverInstance.getEquipModel() != null)){
+                 if ((name.name().equals( ATTRIBUTE_EQUIPMENT_MODEL ))
+                         && isValid(pserverInstance.getEquipModel())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.equipModel);
                      att.setValue(String.valueOf(pserverInstance.getEquipModel()));
                      attributeList.add(att);
                  }
-                 if ((name.toString().equals( ATTRIBUTE_FQDN ))
-                         &&(pserverInstance.getFqdn() != null)){
+                 if ((name.name().equals( ATTRIBUTE_FQDN ))
+                         && isValid(pserverInstance.getFqdn())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.fqdn);
                      att.setValue(String.valueOf(pserverInstance.getFqdn()));
                      attributeList.add(att);
                  }
-                 if ((name.toString().equals( ATTRIBUTE_SERIAL_NUMBER  ))
-                         &&(pserverInstance.getSerialNumber() != null)){
+                 if ((name.name().equals( ATTRIBUTE_SERIAL_NUMBER  ))
+                         && isValid(pserverInstance.getSerialNumber())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.serialNumber);
                      att.setValue(String.valueOf(pserverInstance.getSerialNumber()));
                      attributeList.add(att);
                  }
-                 if ((name.toString().equals( ATTRIBUTE_TOPOLOGY  ))
-                         &&(pserverInstance.getInternetTopology() != null)){
+                 if ((name.name().equals( ATTRIBUTE_TOPOLOGY  ))
+                         && isValid(pserverInstance.getInternetTopology())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.topology);
                      att.setValue(String.valueOf(pserverInstance.getInternetTopology()));
                      attributeList.add(att);
                  }
-                 if ((name.toString().equals(ATTRIBUTE_LOCKEDBOOLEAN))
-                         &&(pserverInstance.getInMaint() != null)){
+                 if ((name.name().equals(ATTRIBUTE_LOCKEDBOOLEAN))
+                         && isValid(pserverInstance.getInMaint())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.lockedBoolean);
                      att.setValue(String.valueOf(pserverInstance.getInMaint()));
                      attributeList.add(att);
                  }
-                 if ((name.toString().equals(ATTRIBUTE_RESOURCE_VERSION))
-                         &&(pserverInstance.getResourceVersion() != null)){
+                 if ((name.name().equals(ATTRIBUTE_RESOURCE_VERSION))
+                         && isValid(pserverInstance.getResourceVersion())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.resourceVersion);
                      att.setValue(String.valueOf(pserverInstance.getResourceVersion()));
                      attributeList.add(att);
                  }
-                 if ((name.toString().equals(ATTRIBUTE_PURPOSE))
-                         &&(pserverInstance.getPurpose() != null)){
+                 if ((name.name().equals(ATTRIBUTE_PURPOSE))
+                         && isValid(pserverInstance.getPurpose())){
                      Attribute att = new Attribute();
                      att.setDataQuality(DataQuality.ok());
                      att.setName(Attribute.Name.purpose);
@@ -693,14 +815,14 @@ public class RestUtil {
                  }
              }
 
-             if (attributeList.size() > 0) {
+             if (!attributeList.isEmpty()) {
                  pserver.setAttributes(attributeList);
              }
 
              // Update P-Interface if any,
              PInterfaceInstanceList pInterfaceInstanceList = pserverInstance.getPInterfaceInstanceList();
-             if ((pInterfaceInstanceList != null) && (pInterfaceInstanceList.getPInterfaceList().size() > 0)) {
-                 pserver = UpdatePserverInfoWithPInterface (pserver, pInterfaceInstanceList.getPInterfaceList());
+             if ((pInterfaceInstanceList != null) && (!(pInterfaceInstanceList.getPInterfaceList().isEmpty()))) {
+                 pserver = updatePserverInfoWithPInterface (pserver, pInterfaceInstanceList.getPInterfaceList());
              }
 
              // NOTE: we only support one pserver per vserver hence we only add
@@ -711,28 +833,25 @@ public class RestUtil {
          return pserver;
     }
 
-    private static Pserver UpdatePserverInfoWithPInterface (Pserver pserver, List<PInterfaceInstance> pInterfaceInstanceList) {
+    private static Pserver updatePserverInfoWithPInterface (Pserver pserver, List<PInterfaceInstance> pInterfaceInstanceList) {
 
-        List<PInterface> pInterfaceList = new ArrayList<PInterface>();
+        List<PInterface> pInterfaceList = new ArrayList<>();
         for (PInterfaceInstance pInterfaceInst_aai: pInterfaceInstanceList) {
             PInterface pInterface = new PInterface();
             // pInterface.setUuid( ); // there is no mapping data for UUID from AAI data.
             pInterface.setName(pInterfaceInst_aai.getInterfaceName());
             pInterface.setDataQuality(DataQuality.ok());
 
-            List<Attribute>  pInterface_attributeList = new ArrayList<Attribute>();
+            List<Attribute>  pInterface_attributeList = new ArrayList<>();
             updatePInterfaceAttributeList (pInterfaceInst_aai, pInterface_attributeList) ;
-            if (pInterface_attributeList.size() > 0) {
+            if (!pInterface_attributeList.isEmpty()) {
                 pInterface.setAttributes(pInterface_attributeList);
             }
 
-            if (pInterface_attributeList.size() > 0) {
-                pInterface.setAttributes(pInterface_attributeList);
-            }
             pInterfaceList.add(pInterface);
         }
 
-        if (pInterfaceList.size() > 0) {
+        if (!pInterfaceList.isEmpty()) {
             pserver.setPInterfaceList(pInterfaceList);;
         }
 
@@ -747,154 +866,153 @@ public class RestUtil {
             log.info(LogMessages.API_CALL_LIST, "Nill PNF list");
            return null;
         }
-        List<PNF> pnfLst = new ArrayList<PNF>();
+        List<PNF> pnfLst = new ArrayList<>();
 
-        for (PnfInstance pnf_from_aai : pnfLst_from_AAI) {
+        for (PnfInstance pnfFromAai : pnfLst_from_AAI) {
             PNF pnf = new PNF();
-            pnf.setUuid(pnf_from_aai.getPnfId());
-            pnf.setName(pnf_from_aai.getPnfName());
-            pnf.setModelVersionID(pnf_from_aai.getModelVersionId());
-            pnf.setModelInvariantUUID(pnf_from_aai.getModelInvariantId());
+            pnf.setUuid(pnfFromAai.getPnfId());
+            pnf.setName(pnfFromAai.getPnfName());
+            pnf.setModelVersionID(pnfFromAai.getModelVersionId());
+            pnf.setModelInvariantUUID(pnfFromAai.getModelInvariantId());
             pnf.setDataQuality(DataQuality.ok());
-            List<Attribute>  attributeList = new ArrayList<Attribute>();
+            List<Attribute>  attributeList = new ArrayList<>();
             pnf.setAttributes(attributeList);
 
             // Iterate through the ENUM Attribute list
             for (Attribute.Name  name: Attribute.Name.values()) {
-                if ((name.toString().equals(ATTRIBUTE_NETWORK_FUNCTION ))
-                        &&(pnf_from_aai.getNfFunction() != null)){
+                if ((name.name().equals(ATTRIBUTE_NETWORK_FUNCTION ))
+                        && isValid(pnfFromAai.getNfFunction())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.networkFunction);
-                    att.setValue(String.valueOf( pnf_from_aai.getNfFunction()));
+                    att.setValue(String.valueOf( pnfFromAai.getNfFunction()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_NETWORK_ROLE ))
-                        && (pnf_from_aai.getNfRole() != null )){
+                if ((name.name().equals(ATTRIBUTE_NETWORK_ROLE ))
+                        && isValid(pnfFromAai.getNfRole())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.networkRole);
-                    att.setValue(String.valueOf( pnf_from_aai.getNfRole()));
+                    att.setValue(String.valueOf( pnfFromAai.getNfRole()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_RESOURCE_VERSION))
-                        && (pnf_from_aai.getResourceVersion() != null)){
+                if ((name.name().equals(ATTRIBUTE_RESOURCE_VERSION))
+                        && isValid(pnfFromAai.getResourceVersion())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.resourceVersion);
-                    att.setValue(String.valueOf( pnf_from_aai.getResourceVersion()));
+                    att.setValue(String.valueOf( pnfFromAai.getResourceVersion()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_NAME2))
-                        && (pnf_from_aai.getPnfName2() != null )){
+                if ((name.name().equals(ATTRIBUTE_NAME2))
+                        && isValid(pnfFromAai.getPnfName2() )){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.name2);
-                    att.setValue(String.valueOf( pnf_from_aai.getPnfName2()));
+                    att.setValue(String.valueOf( pnfFromAai.getPnfName2()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_NAME2_SOURCE ))
-                        && (pnf_from_aai.getPnfName2Source() != null)){
+                if ((name.name().equals(ATTRIBUTE_NAME2_SOURCE ))
+                        && isValid(pnfFromAai.getPnfName2Source())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.name2Source);
-                    att.setValue(String.valueOf( pnf_from_aai.getPnfName2Source()));
+                    att.setValue(String.valueOf( pnfFromAai.getPnfName2Source()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_EQUIPMENT_TYPE ))
-                        && (pnf_from_aai.getEquipmentType() != null)){
+                if ((name.name().equals(ATTRIBUTE_EQUIPMENT_TYPE ))
+                        && isValid(pnfFromAai.getEquipmentType())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.equipType);
-                    att.setValue(String.valueOf( pnf_from_aai.getEquipmentType()));
+                    att.setValue(String.valueOf( pnfFromAai.getEquipmentType()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_EQUIPMENT_VENDOR ))
-                        && (pnf_from_aai.getEquipmentVendor() != null)){
+                if ((name.name().equals(ATTRIBUTE_EQUIPMENT_VENDOR ))
+                        && isValid(pnfFromAai.getEquipmentVendor())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.equipVendor);
-                    att.setValue(String.valueOf( pnf_from_aai.getEquipmentVendor()));
+                    att.setValue(String.valueOf( pnfFromAai.getEquipmentVendor()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_EQUIPMENT_MODEL))
-                        && (pnf_from_aai.getEquipmentModel() != null)){
+                if ((name.name().equals(ATTRIBUTE_EQUIPMENT_MODEL))
+                        && isValid(pnfFromAai.getEquipmentModel())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.equipModel);
-                    att.setValue(String.valueOf( pnf_from_aai.getEquipmentModel()));
+                    att.setValue(String.valueOf( pnfFromAai.getEquipmentModel()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_MANAGEMENT_OPTIONS))
-                        &&(pnf_from_aai.getManagementOptions() != null)){
+                if ((name.name().equals(ATTRIBUTE_MANAGEMENT_OPTIONS))
+                        && isValid(pnfFromAai.getManagementOptions())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.managementOptions);
-                    att.setValue(String.valueOf( pnf_from_aai.getManagementOptions()));
+                    att.setValue(String.valueOf( pnfFromAai.getManagementOptions()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_SW_VERSION))
-                        &&(pnf_from_aai.getSwVersion()!= null)){
+                if ((name.name().equals(ATTRIBUTE_SW_VERSION))
+                        && isValid(pnfFromAai.getSwVersion())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.swVersion);
-                    att.setValue(String.valueOf( pnf_from_aai.getSwVersion()));
+                    att.setValue(String.valueOf( pnfFromAai.getSwVersion()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_FRAME_ID))
-                        &&(pnf_from_aai.getFrameId() != null)){
+                if ((name.name().equals(ATTRIBUTE_FRAME_ID))
+                        && isValid(pnfFromAai.getFrameId())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.frameId);
-                    att.setValue(String.valueOf( pnf_from_aai.getFrameId()));
+                    att.setValue(String.valueOf( pnfFromAai.getFrameId()));
                     attributeList.add(att);
                 }
 
-                if ((name.toString().equals(ATTRIBUTE_SERIAL_NUMBER))
-                        &&(pnf_from_aai.getSerialNumber() != null)){
+                if ((name.name().equals(ATTRIBUTE_SERIAL_NUMBER))
+                        && isValid(pnfFromAai.getSerialNumber())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.serialNumber);
-                    att.setValue(String.valueOf( pnf_from_aai.getSerialNumber()));
+                    att.setValue(String.valueOf( pnfFromAai.getSerialNumber()));
                     attributeList.add(att);
                 }
-
             }
 
             pnf.setAttributes(attributeList);
 
             // Update P-Interface
-            if ((pnf_from_aai.getPInterfaceInstanceList() != null)
-              &&(pnf_from_aai.getPInterfaceInstanceList().getPInterfaceList().size()> 0)) {
+            if ((pnfFromAai.getPInterfaceInstanceList() != null)
+              &&(!(pnfFromAai.getPInterfaceInstanceList().getPInterfaceList().isEmpty()))) {
 
-                List<PInterface> pInterfaceList = new ArrayList<PInterface>();
-                List<PInterfaceInstance> pInterfaceInstList_aai = pnf_from_aai.getPInterfaceInstanceList().getPInterfaceList();
+                List<PInterface> pInterfaceList = new ArrayList<>();
+                List<PInterfaceInstance> pInterfaceInstList_aai = pnfFromAai.getPInterfaceInstanceList().getPInterfaceList();
                 for (PInterfaceInstance pInterfaceInst_aai : pInterfaceInstList_aai) {
                     PInterface pInterface = new PInterface();
                     pInterface.setUuid(pInterfaceInst_aai.getEquipmentIdentifier() );
                     pInterface.setName(pInterfaceInst_aai.getInterfaceName());
                     pInterface.setDataQuality(DataQuality.ok());
 
-                    List<Attribute>  pInterface_attributeList = new ArrayList<Attribute>();
+                    List<Attribute>  pInterface_attributeList = new ArrayList<>();
                     updatePInterfaceAttributeList (pInterfaceInst_aai, pInterface_attributeList) ;
-                    if (pInterface_attributeList.size() > 0) {
+                    if (!pInterface_attributeList.isEmpty()) {
                         pInterface.setAttributes(pInterface_attributeList);
                     }
 
                     pInterfaceList.add(pInterface);
                 }
 
-                if (pInterfaceList.size() > 0) {
+                if (!pInterfaceList.isEmpty()) {
                     pnf.setPInterfaceList(pInterfaceList);
                 }
             }
@@ -906,79 +1024,166 @@ public class RestUtil {
         return pnfLst;
     }
 
-    private static void updatePInterfaceAttributeList(PInterfaceInstance pInterfaceInst_aai, List<Attribute>  pInterface_attributeList ) {
+    /*
+     * Transform AAI Representation to Common Model
+     */
+    public static List<Network> transformL3Network(List<L3networkInstance> l3networkLstFromAAI) {
+        if ((l3networkLstFromAAI == null ) || (l3networkLstFromAAI.isEmpty())) {
+            log.info(LogMessages.API_CALL_LIST, "Nill L3-Network list");
+           return null;
+        }
+        List<Network> l3NetworkLst = new ArrayList<>();
+
+        for (L3networkInstance l3networkFromAai : l3networkLstFromAAI) {
+            Network l3network = new Network();
+            l3network.setUuid(l3networkFromAai.getNetworkId());
+            l3network.setName(l3networkFromAai.getNetworkName());
+            l3network.setModelVersionID(l3networkFromAai.getModelVersionId());
+            l3network.setModelInvariantUUID(l3networkFromAai.getModelInvariantId());
+            l3network.setDataQuality(DataQuality.ok());
+            List<Attribute>  attributeList = new ArrayList<>();
+
+            // Iterate through the ENUM Attribute list
+            for (Attribute.Name  name: Attribute.Name.values()) {
+                if ((name.name().equals(ATTRIBUTE_NETWORK_TYPE  ))
+                        && isValid(l3networkFromAai.getNetworkType())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.networkType);
+                    att.setValue(String.valueOf( l3networkFromAai.getNetworkType()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_NETWORK_ROLE  ))
+                        && isValid(l3networkFromAai.getNetworkRole())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.networkRole);
+                    att.setValue(String.valueOf( l3networkFromAai.getNetworkRole()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_NETWORK_TECHNOLOGY  ))
+                        && isValid(l3networkFromAai.getNetworkTechnology())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.networkTechnology);
+                    att.setValue(String.valueOf( l3networkFromAai.getNetworkTechnology()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_RESOURCE_VERSION  ))
+                        && isValid(l3networkFromAai.getResourceVersion())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.resourceVersion);
+                    att.setValue(String.valueOf( l3networkFromAai.getResourceVersion()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_PHYSICAL_NETWORK_NAME  ))
+                        && isValid(l3networkFromAai.getPhysicalNetworkName())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.physicalNetworkName);
+                    att.setValue(String.valueOf( l3networkFromAai.getPhysicalNetworkName()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_SHARED_NETWORK_BOOLEAN ))
+                        && isValid(l3networkFromAai.getSharedNetworkBoolean())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.sharedNetworkBoolean);
+                    att.setValue(String.valueOf( l3networkFromAai.getSharedNetworkBoolean()));
+                    attributeList.add(att);
+                }
+
+            }
+
+            if (!attributeList.isEmpty()) {
+                l3network.setAttributes(attributeList);
+            }
+
+            l3NetworkLst.add(l3network);
+        } // done the vnfInstance
+
+        return l3NetworkLst;
+    }
+
+    private static void updatePInterfaceAttributeList(PInterfaceInstance pInterfaceInstFromAai, List<Attribute>  pInterfaceAttributeList ) {
         // Iterate through the ENUM Attribute list
         for (Attribute.Name  name: Attribute.Name.values()) {
-            if ((name.toString().equals(ATTRIBUTE_SPEED_VALUE ))
-                    &&(pInterfaceInst_aai.getSpeedValue() != null)){
+            if ((name.name().equals(ATTRIBUTE_SPEED_VALUE ))
+                    && isValid(pInterfaceInstFromAai.getSpeedValue())){
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
                 att.setName(Attribute.Name.speedValue);
-                att.setValue(String.valueOf( pInterfaceInst_aai.getSpeedValue()));
-                pInterface_attributeList.add(att);
+                att.setValue(String.valueOf( pInterfaceInstFromAai.getSpeedValue()));
+                pInterfaceAttributeList.add(att);
             }
 
-            if ((name.toString().equals(ATTRIBUTE_SPEED_UNITS ))
-                    &&(pInterfaceInst_aai.getSpeedUnits() != null)){
+            if ((name.name().equals(ATTRIBUTE_SPEED_UNITS ))
+                    && isValid(pInterfaceInstFromAai.getSpeedUnits())){
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
                 att.setName(Attribute.Name.speedUnits);
-                att.setValue(String.valueOf( pInterfaceInst_aai.getSpeedUnits()));
-                pInterface_attributeList.add(att);
+                att.setValue(String.valueOf( pInterfaceInstFromAai.getSpeedUnits()));
+                pInterfaceAttributeList.add(att);
             }
 
-            if ((name.toString().equals(ATTRIBUTE_PORT_DESCRIPTION ))
-                    &&(pInterfaceInst_aai.getPortDescription() != null)){
+            if ((name.name().equals(ATTRIBUTE_PORT_DESCRIPTION ))
+                    && isValid(pInterfaceInstFromAai.getPortDescription())){
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
                 att.setName(Attribute.Name.description);
-                att.setValue(String.valueOf( pInterfaceInst_aai.getPortDescription()));
-                pInterface_attributeList.add(att);
+                att.setValue(String.valueOf( pInterfaceInstFromAai.getPortDescription()));
+                pInterfaceAttributeList.add(att);
             }
 
-            if ((name.toString().equals(ATTRIBUTE_EQUIPTMENT_ID ))
-                    &&(pInterfaceInst_aai.getEquipmentIdentifier() != null)){
+            if ((name.name().equals(ATTRIBUTE_EQUIPTMENT_ID ))
+                    && isValid(pInterfaceInstFromAai.getEquipmentIdentifier())){
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
                 att.setName(Attribute.Name.equipmentID);
-                att.setValue(String.valueOf( pInterfaceInst_aai.getEquipmentIdentifier()));
-                pInterface_attributeList.add(att);
+                att.setValue(String.valueOf( pInterfaceInstFromAai.getEquipmentIdentifier()));
+                pInterfaceAttributeList.add(att);
             }
 
-            if ((name.toString().equals(ATTRIBUTE_INTERFACE_ROLE ))
-                    &&(pInterfaceInst_aai.getInterfaceRole() != null)){
+            if ((name.name().equals(ATTRIBUTE_INTERFACE_ROLE ))
+                    && isValid(pInterfaceInstFromAai.getInterfaceRole())){
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
                 att.setName(Attribute.Name.interfaceRole);
-                att.setValue(String.valueOf( pInterfaceInst_aai.getInterfaceRole()));
-                pInterface_attributeList.add(att);
+                att.setValue(String.valueOf( pInterfaceInstFromAai.getInterfaceRole()));
+                pInterfaceAttributeList.add(att);
             }
 
-            if ((name.toString().equals(ATTRIBUTE_INTERFACE_TYPE ))
-                    &&(pInterfaceInst_aai.getInterfaceType() != null)){
+            if ((name.name().equals(ATTRIBUTE_INTERFACE_TYPE ))
+                    && isValid(pInterfaceInstFromAai.getInterfaceType())){
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
                 att.setName(Attribute.Name.interfaceType);
-                att.setValue(String.valueOf( pInterfaceInst_aai.getInterfaceType()));
-                pInterface_attributeList.add(att);
+                att.setValue(String.valueOf( pInterfaceInstFromAai.getInterfaceType()));
+                pInterfaceAttributeList.add(att);
             }
 
-            if ((name.toString().equals( ATTRIBUTE_RESOURCE_VERSION ))
-                    &&(pInterfaceInst_aai.getResourceVersion() != null)){
+            if ((name.name().equals( ATTRIBUTE_RESOURCE_VERSION ))
+                    && isValid(pInterfaceInstFromAai.getResourceVersion())){
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
                 att.setName(Attribute.Name.resourceVersion);
-                att.setValue(String.valueOf( pInterfaceInst_aai.getResourceVersion()));
-                pInterface_attributeList.add(att);
+                att.setValue(String.valueOf( pInterfaceInstFromAai.getResourceVersion()));
+                pInterfaceAttributeList.add(att);
             }
 
-            if ((name.toString().equals( ATTRIBUTE_LOCKEDBOOLEAN  ))
-                    &&(pInterfaceInst_aai.getInMaint() != null)){
+            if ((name.name().equals( ATTRIBUTE_LOCKEDBOOLEAN  ))
+                    && isValid(pInterfaceInstFromAai.getInMaint())){
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
                 att.setName(Attribute.Name.lockedBoolean);
-                att.setValue(String.valueOf( pInterfaceInst_aai.getInMaint()));
-                pInterface_attributeList.add(att);
+                att.setValue(String.valueOf( pInterfaceInstFromAai.getInMaint()));
+                pInterfaceAttributeList.add(att);
             }
         }
         return;
@@ -990,7 +1195,7 @@ public class RestUtil {
      * the value of the attribute "hostname" from the last substring of the "related-link"
      * {
      *    "related-to": "pserver",
-     *    "related-link": "/aai/v11/cloud-infrastructure/pservers/pserver/rdm5r10c008.rdm5a.cci.att.com",
+     *    "related-link": "/aai/v13/cloud-infrastructure/pservers/pserver/rdm5r10c008.rdm5a.cci.att.com",
      *    "relationship-data": [         {
      *       "relationship-key": "pserver.hostname",
      *       "relationship-value": "rdm5r10c008.rdm5a.cci.att.com"
@@ -1018,7 +1223,7 @@ public class RestUtil {
      * Get the last substring from the related-link
      * For example the value of the attribute "hostname" will be "rdm5r10c008.rdm5a.cci.att.com"
      *    "related-to": "pserver",
-     *    "related-link": "/aai/v11/cloud-infrastructure/pservers/pserver/rdm5r10c008.rdm5a.cci.att.com",
+     *    "related-link": "/aai/v13/cloud-infrastructure/pservers/pserver/rdm5r10c008.rdm5a.cci.att.com",
      */
     private static String extractAttValue(String relatedLink) {
         return relatedLink.substring(relatedLink.lastIndexOf("/")+1);
@@ -1089,7 +1294,7 @@ public class RestUtil {
      * Extract the related-Link from Json payload. For example
      * {
      *      "related-to": "vnfc",
-     *      "related-link": "/aai/v11/network/vnfcs/vnfc/zrdm5aepdg01vmg003",
+     *      "related-link": "/aai/v13/network/vnfcs/vnfc/zrdm5aepdg01vmg003",
      *      "relationship-data": [
      *          { "relationship-key": "vnfc.vnfc-name",
      *          "relationship-value": "zrdm5aepdg01vmg003" }
@@ -1099,7 +1304,7 @@ public class RestUtil {
     private static List<String> extractRelatedLink(String payload, String catalog)  {
         JSONObject jsonPayload = new JSONObject(payload);
         JSONArray relationships = null;
-        List<String> relatedLinkList = new ArrayList<String>();
+        List<String> relatedLinkList = new ArrayList<>();
         log.debug("Fetching the related link");
 
         try {
@@ -1142,7 +1347,7 @@ public class RestUtil {
      */
     private static Map<String, List<String>> extractRelatedLinkFromVfmodule(String payload, String catalog) {
 
-        Map<String, List<String>> vServerRelatedLinkMap = new HashMap<String, List<String>>();
+        Map<String, List<String>> vServerRelatedLinkMap = new HashMap<>();
 
         JSONObject jsonPayload = new JSONObject(payload);
         JSONArray vfmoduleArray = null;
@@ -1161,13 +1366,13 @@ public class RestUtil {
         }
 
         if (vfmoduleArray != null && vfmoduleArray.length() > 0) {
-            vServerRelatedLinkMap = handleRelationship_vserver(vfmoduleArray, jsonPayload, catalog);
+            vServerRelatedLinkMap = handleRelationshipVserver(vfmoduleArray, jsonPayload, catalog);
         }
 
         return vServerRelatedLinkMap;
     }
 
-    private static List<String> handleRelationship_general(String payload_str, String catalog) {
+    private static List<String> handleRelationshipGeneral(String payload_str, String catalog) {
 
         if (payload_str == null) {
           return null;
@@ -1180,7 +1385,7 @@ public class RestUtil {
         try {
             JSONObject relationshipList = jsonPayload.getJSONObject(RELATIONSHIP_LIST);
             if (relationshipList != null) {
-                relatedLinkList = new ArrayList<String>();
+                relatedLinkList = new ArrayList<>();
                 relationships = relationshipList.getJSONArray(RELATIONSHIP);
             }
         } catch (JSONException e) {
@@ -1206,12 +1411,12 @@ public class RestUtil {
         return relatedLinkList;
     }
 
-    private static Map<String, List<String>> handleRelationship_vserver(JSONArray vfmoduleArray, JSONObject vnf_jsonPayload, String catalog) {
-        Map<String, List<String>> vServerRelatedLinkMap = new HashMap<String, List<String>>();
+    private static Map<String, List<String>> handleRelationshipVserver(JSONArray vfmoduleArray, JSONObject vnf_jsonPayload, String catalog) {
+        Map<String, List<String>> vServerRelatedLinkMap = new HashMap<>();
         JSONArray relationships = null;
         // If there are multiple vf-module, but one of vf-module missing relationship, we should log the exception and keep loop
         for (int i = 0; i < vfmoduleArray.length(); i++) {
-            List<String> relatedLinkList = new ArrayList<String>();
+            List<String> relatedLinkList = new ArrayList<>();
             JSONObject obj = vfmoduleArray.optJSONObject(i);
             String key = (String)obj.get("vf-module-id") + DELIMITER
                        + (String)obj.get("model-invariant-id");
@@ -1252,7 +1457,7 @@ public class RestUtil {
     }
 
     private static Map<String, List<String>> buildHeaders(String aaiBasicAuthorization, String transactionId) {
-        MultivaluedHashMap<String, String> headers = new MultivaluedHashMap<String, String>();
+        MultivaluedHashMap<String, String> headers = new MultivaluedHashMap<>();
         headers.put(TRANSACTION_ID, Collections.singletonList(transactionId));
         headers.put(FROM_APP_ID, Collections.singletonList(APP_NAME));
         headers.put(AUTHORIZATION, Collections.singletonList(aaiBasicAuthorization));
@@ -1303,15 +1508,14 @@ public class RestUtil {
      *     "result-data": [
      *         {
      *             "resource-type": "service-instance",
-     *             "resource-link": "/aai/v11/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb"
+     *             "resource-link": "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb"
      *         }
      *     ]
      * }
      */
     private static String extractResourceLinkBasedOnResourceType(String payload, String catalog) throws AuditException {
         String resourceLink = null;
-        log.info("Fetching the resource-link based on resource-type=" + catalog);
-
+        log.info(String.format("Fetching the resource-link based on resource-type= %s", catalog));
         try {
             JSONArray result_data_list = new JSONObject(payload).getJSONArray(RESULT_DATA);
             if (result_data_list != null) {
@@ -1332,5 +1536,18 @@ public class RestUtil {
         log.warn("resource-link CANNOT be found: ", payload );
 
         return resourceLink;
+    }
+
+    private static boolean isValid ( String inputField) {
+        if (inputField == null) {
+            return false;
+        }
+        String localInputField = inputField.trim();
+
+        if (localInputField.equals("")) {
+            return false;
+        }
+
+        return true;
     }
 }
