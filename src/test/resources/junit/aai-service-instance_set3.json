@@ -1,0 +1,43 @@
+{
+    "service-instance-id": "adc3cc2a-c73e-414f-8ddb-367de81300cb",
+    "service-instance-name": "Firewall1",
+    "model-invariant-id": "0c5a20de-87ad-442c-9190-f38ab0a6bb7f",
+    "model-version-id": "d3d6cf83-d03a-43cc-99ff-206d40bb9a72",
+    "resource-version": "1527637758480",
+    "relationship-list": {
+        "relationship": [
+            {
+                "related-to": "l3-network",
+                "related-link": "/aai/v13/network/l3-networks/l3-network/01e8d84a-l3-network-1",
+                "relationship-data": [
+                    {
+                        "relationship-key": "l3-network.network-id",
+                        "relationship-value": "01e8d84a-l3-network-1"
+                    }
+                ],
+                "related-to-property": [
+                    {
+                        "property-key": "l3-network.network-name",
+                        "property-value": "NET_1106"
+                    }
+                ]
+            },
+            {
+                "related-to": "l3-network",
+                "related-link": "/aai/v13/network/l3-networks/l3-network/01e8d84a-l3-network-2",
+                "relationship-data": [
+                    {
+                        "relationship-key": "l3-network.network-id",
+                        "relationship-value": "01e8d84a-l3-network-2"
+                    }
+                ],
+                "related-to-property": [
+                    {
+                        "property-key": "l3-network.network-name",
+                        "property-value": "NET_1108"
+                    }
+                ]
+            }
+        ]
+    }
+}

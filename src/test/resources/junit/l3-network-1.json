@@ -1,0 +1,93 @@
+{
+  "network-id" : "01e8d84a-l3-network-1",
+  "network-name" : "NET_1106",
+  "network-type" : "Network_Type_1",
+  "network-role" : "Network_Role_1",
+  "network-technology" : "Network_Technology_1",
+  "physical-network-name" : "physical-network-name-1",
+  "resource-version" : "1547484061986-1",
+  "model-invariant-id" : "pomba-model-invariant-001",
+  "model-version-id" : "pomba-model-version-001",
+  "model-customization-id" : "3b822416-475d-4e1c-aac3-2544b0a0fdfc",
+  "is-provider-network" : false,
+  "is-shared-network" : true,
+  "is-external-network" : false,
+  "relationship-list" : {
+    "relationship" : [ {
+      "related-to" : "service-instance",
+      "related-link" : "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+      "relationship-data" : [ {
+        "relationship-key" : "service-instance.service-instance-id",
+        "relationship-value" : "adc3cc2a-c73e-414f-8ddb-367de81300cb"
+      } ],
+      "related-to-property" : [ {
+        "property-key" : "service-instance.service-instance-name",
+        "property-value" : "Firewall1"
+      } ]
+    }, {
+      "related-to" : "generic-vnf",
+      "related-link" : "/aai/v13/network/generic-vnfs/generic-vnf/PombaDemoCust_001-VNF-id-001-2",
+      "relationship-data" : [ {
+        "relationship-key" : "generic-vnf.vnf-id",
+        "relationship-value" : "PombaDemoCust_001-VNF-id-001-2"
+      } ],
+      "related-to-property" : [ {
+        "property-key" : "generic-vnf.vnf-name",
+        "property-value" : "Firewall-2"
+      } ]
+    }, {
+      "related-to" : "generic-vnf",
+      "related-link" : "/aai/v13/network/generic-vnfs/generic-vnf/PombaDemoCust_002-VNF-id-002",
+      "relationship-data" : [ {
+        "relationship-key" : "generic-vnf.vnf-id",
+        "relationship-value" : "PombaDemoCust_002-VNF-id-002"
+      } ],
+      "related-to-property" : [ {
+        "property-key" : "generic-vnf.vnf-name",
+        "property-value" : "Firewall-1"
+      } ]
+    }, {
+      "related-to" : "generic-vnf",
+      "related-link" : "/aai/v13/network/generic-vnfs/generic-vnf/PombaDemoCust_002-VNF-id-002-2",
+      "relationship-data" : [ {
+        "relationship-key" : "generic-vnf.vnf-id",
+        "relationship-value" : "PombaDemoCust_002-VNF-id-002-2"
+      } ],
+      "related-to-property" : [ {
+        "property-key" : "generic-vnf.vnf-name",
+        "property-value" : "Firewall-2"
+      } ]
+    }, {
+      "related-to" : "generic-vnf",
+      "related-link" : "/aai/v13/network/generic-vnfs/generic-vnf/PombaDemoCust_001-VNF-id-001",
+      "relationship-data" : [ {
+        "relationship-key" : "generic-vnf.vnf-id",
+        "relationship-value" : "PombaDemoCust_001-VNF-id-001"
+      } ],
+      "related-to-property" : [ {
+        "property-key" : "generic-vnf.vnf-name",
+        "property-value" : "Firewall-1"
+      } ]
+    }, {
+      "related-to" : "vf-module",
+      "related-link" : "/aai/v13/network/generic-vnfs/generic-vnf/PombaDemoCust_002-VNF-id-002-2/vf-modules/vf-module/PombaDemoCust_002-VNF-id-002-VfModule002",
+      "relationship-data" : [ {
+        "relationship-key" : "generic-vnf.vnf-id",
+        "relationship-value" : "PombaDemoCust_002-VNF-id-002-2"
+      }, {
+        "relationship-key" : "vf-module.vf-module-id",
+        "relationship-value" : "PombaDemoCust_002-VNF-id-002-VfModule002"
+      } ]
+    }, {
+      "related-to" : "vf-module",
+      "related-link" : "/aai/v13/network/generic-vnfs/generic-vnf/PombaDemoCust_002-VNF-id-002/vf-modules/vf-module/PombaDemoCust_002-VNF-id-002-VfModule002",
+      "relationship-data" : [ {
+        "relationship-key" : "generic-vnf.vnf-id",
+        "relationship-value" : "PombaDemoCust_002-VNF-id-002"
+      }, {
+        "relationship-key" : "vf-module.vf-module-id",
+        "relationship-value" : "PombaDemoCust_002-VNF-id-002-VfModule002"
+      } ]
+    } ]
+  }
+}
