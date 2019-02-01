@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6f40a79f_23069d79",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-01T02:32:05Z",
+      "side": 1,
+      "message": "Check the Sonar report and fix issues where possible.\nhttps://sonar.onap.org/dashboard?id\u003dorg.onap.logging-analytics.pomba%3Apomba-aai-context-builder",
+      "revId": "4facd6fb13e6ddd8e3b9dfe7c5ebd2698ac2c77d",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4214e90e_c4895931",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 290,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-01T02:32:05Z",
+      "side": 1,
+      "message": "Don\u0027t start method names with Uppercase character. Violates method naming convention. Run Sonar lint plugin in eclipse.",
+      "range": {
+        "startLine": 290,
+        "startChar": 24,
+        "endLine": 290,
+        "endChar": 53
+      },
+      "revId": "4facd6fb13e6ddd8e3b9dfe7c5ebd2698ac2c77d",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "90d30755_c30cce83",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1060,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-01T02:32:05Z",
+      "side": 1,
+      "message": "Don\u0027t use .toString on an enum. Use .name()",
+      "range": {
+        "startLine": 1060,
+        "startChar": 26,
+        "endLine": 1060,
+        "endChar": 34
+      },
+      "revId": "4facd6fb13e6ddd8e3b9dfe7c5ebd2698ac2c77d",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "45d61dda_5dc9798d",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1079,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-01T02:32:05Z",
+      "side": 1,
+      "message": "Following Java naming conventions. Don\u0027t use underscores in variable names.",
+      "revId": "4facd6fb13e6ddd8e3b9dfe7c5ebd2698ac2c77d",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
