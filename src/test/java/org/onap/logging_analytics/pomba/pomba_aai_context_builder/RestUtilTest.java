@@ -70,18 +70,35 @@ public class RestUtilTest {
     public WireMockRule aaiEnricherRule = new WireMockRule(wireMockConfig().port(9808));
 
     @Test
-    public void testValidateURL() {
+    public void testValidateServiceInstanceId() {
         // Missing ServiceInstanceId or it is null
         try {
-            RestUtil.validateURL("");
+            RestUtil.validateServiceInstanceId("");
         } catch (AuditException e) {
             assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: serviceInstanceId"));
         }
 
         try {
-            RestUtil.validateURL(null);
+            RestUtil.validateServiceInstanceId(null);
         } catch (AuditException e) {
             assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: serviceInstanceId"));
+        }
+
+    }
+
+    @Test
+    public void testValidateXFromAppId() {
+        // Missing ServiceInstanceId or it is null
+        try {
+            RestUtil.validateXFromAppId("");
+        } catch (AuditException e) {
+            assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: X-FromAppId"));
+        }
+
+        try {
+            RestUtil.validateXFromAppId(null);
+        } catch (AuditException e) {
+            assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: X-FromAppId"));
         }
 
     }

@@ -19,9 +19,11 @@ package org.onap.pomba.contextbuilder.aai.service.rs;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -30,7 +32,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.onap.pomba.contextbuilder.aai.model.GenericResponse;
-
 
 @Api
 @Path("{version: v2}/service")
@@ -53,6 +54,9 @@ public interface RestService {
                     @ApiResponse(code = 500, message = "Unexpected Runtime error")
             })
     public Response getContext(@Context HttpHeaders headers,
-            @QueryParam("serviceInstanceId") String serviceInstanceId
+            @HeaderParam(HttpHeaders.AUTHORIZATION) @ApiParam(hidden=true) String authorization,
+            @HeaderParam(org.onap.pomba.contextbuilder.aai.util.RestUtil.FROM_APP_ID) @ApiParam(required=true) String xFromAppId,
+            @HeaderParam(org.onap.pomba.contextbuilder.aai.util.RestUtil.TRANSACTION_ID) String xTransactionId,
+            @QueryParam("serviceInstanceId") @ApiParam(required=true) String serviceInstanceId
             );
 }

@@ -73,9 +73,9 @@ public class RestUtil {
     private static final String SERVICE_INSTANCE_ID = "serviceInstanceId";
 
     // HTTP headers
-    private static final String TRANSACTION_ID = "X-TransactionId";
-    private static final String FROM_APP_ID = "X-FromAppId";
-    private static final String AUTHORIZATION = "Authorization";
+    public static final String TRANSACTION_ID = "X-TransactionId";
+    public static final String FROM_APP_ID = "X-FromAppId";
+    public static final String AUTHORIZATION = "Authorization";
 
     private static final String APP_NAME = "aaiCtxBuilder";
 
@@ -144,11 +144,28 @@ public class RestUtil {
      *
      * @throws AuditException if there is missing parameter
      */
-    public static void validateURL(String serviceInstanceId)
+    public static void validateServiceInstanceId(String serviceInstanceId)
             throws AuditException {
 
         if (serviceInstanceId == null || serviceInstanceId.isEmpty()) {
+            log.info("Null %s", SERVICE_INSTANCE_ID);
             throw new AuditException(AuditError.INVALID_REQUEST_URL_MISSING_PARAMETER + SERVICE_INSTANCE_ID,
+                    Status.BAD_REQUEST);
+        }
+
+    }
+
+    /**
+     * Validates the URL parameter.
+     *
+     * @throws AuditException if there is missing parameter
+     */
+    public static void validateXFromAppId(String xFromAppId)
+            throws AuditException {
+
+        if (xFromAppId == null || xFromAppId.isEmpty()) {
+            log.info("Null %s", FROM_APP_ID);
+            throw new AuditException(AuditError.INVALID_REQUEST_URL_MISSING_PARAMETER + FROM_APP_ID,
                     Status.BAD_REQUEST);
         }
 
