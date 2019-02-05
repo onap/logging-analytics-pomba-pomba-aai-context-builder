@@ -87,23 +87,6 @@ public class RestUtilTest {
     }
 
     @Test
-    public void testValidateXFromAppId() {
-        // Missing ServiceInstanceId or it is null
-        try {
-            RestUtil.validateXFromAppId("");
-        } catch (AuditException e) {
-            assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: X-FromAppId"));
-        }
-
-        try {
-            RestUtil.validateXFromAppId(null);
-        } catch (AuditException e) {
-            assertTrue(e.getMessage().contains("Invalid request URL, missing parameter: X-FromAppId"));
-        }
-
-    }
-
-    @Test
     public void testIsEmptyJson() {
         assertTrue(RestUtil.isEmptyJson("{}"));
         assertTrue(!RestUtil.isEmptyJson("{Not Empty}"));
