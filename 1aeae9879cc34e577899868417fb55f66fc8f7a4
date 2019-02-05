@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cd7d9436_b0661a5f",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-05T21:39:16Z",
+      "side": 1,
+      "message": "Rather than String format, you can simplify to achieve the same result:\nlog.error(\"Null {}\", SERVICE_INSTANCE_ID);",
+      "revId": "1aeae9879cc34e577899868417fb55f66fc8f7a4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4a00acbe_82356eb4",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-05T21:39:16Z",
+      "side": 1,
+      "message": "No need for String.format.",
+      "revId": "1aeae9879cc34e577899868417fb55f66fc8f7a4",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
