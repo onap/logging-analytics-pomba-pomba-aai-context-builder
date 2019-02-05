@@ -148,24 +148,8 @@ public class RestUtil {
             throws AuditException {
 
         if (serviceInstanceId == null || serviceInstanceId.isEmpty()) {
-            log.info("Null %s", SERVICE_INSTANCE_ID);
+            log.error(String.format("Null %s", SERVICE_INSTANCE_ID));
             throw new AuditException(AuditError.INVALID_REQUEST_URL_MISSING_PARAMETER + SERVICE_INSTANCE_ID,
-                    Status.BAD_REQUEST);
-        }
-
-    }
-
-    /**
-     * Validates the URL parameter.
-     *
-     * @throws AuditException if there is missing parameter
-     */
-    public static void validateXFromAppId(String xFromAppId)
-            throws AuditException {
-
-        if (xFromAppId == null || xFromAppId.isEmpty()) {
-            log.info("Null %s", FROM_APP_ID);
-            throw new AuditException(AuditError.INVALID_REQUEST_URL_MISSING_PARAMETER + FROM_APP_ID,
                     Status.BAD_REQUEST);
         }
 
@@ -191,6 +175,7 @@ public class RestUtil {
 
         fromAppId = headers.getRequestHeaders().getFirst(FROM_APP_ID);
         if ((fromAppId == null) || fromAppId.trim().isEmpty()) {
+            log.error(String.format("Null %s", FROM_APP_ID));
             throw new AuditException(AuditError.MISSING_HEADER_PARAMETER + FROM_APP_ID, Status.BAD_REQUEST);
         }
 
