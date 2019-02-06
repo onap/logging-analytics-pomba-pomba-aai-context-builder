@@ -181,6 +181,8 @@ public class PInterfaceInstance {
         this.speedUnits      = speedUnits;
         this.portDescription = portDescription;
         this.equipmentIdentifier = equipmentIdentifier;
+        this.interfaceRole      = interfaceRole;
+        this.interfaceType      = interfaceType;
         this.provStatus      = provStatus;
         this.resourceVersion = resourceVersion;
         this.inMaint = inMaint;

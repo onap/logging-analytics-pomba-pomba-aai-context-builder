@@ -260,7 +260,7 @@ public class PserverInstance {
            String ptniiEquipName, String equipType,String equipVendor,
            String equipModel,String fqdn,String internetTopology,
            String inMaint, String resourceVersion, String serialNumber,
-           String purpose, String relationshipList, PInterfaceInstanceList pInterfaceInstanceList) {
+           String purpose, PInterfaceInstanceList pInterfaceInstanceList) {
        super();
        this.pserverId = pserverId;
        this.hostname = hostname;
