@@ -1,0 +1,95 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4fc947cc_ae54aba6",
+        "filename": "src/test/java/org/onap/logging_analytics/pomba/pomba_aai_context_builder/L3networkInstanceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-07T14:48:35Z",
+      "side": 1,
+      "message": "Convert all tab characters to spaces.",
+      "revId": "4b09f26cc90254827fc9a1b406575ed40bc27eab",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "cbfa46af_95e17ef3",
+        "filename": "src/test/java/org/onap/logging_analytics/pomba/pomba_aai_context_builder/PnfInstanceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-07T14:48:35Z",
+      "side": 1,
+      "message": "convert tabs to spaces. Change your Eclipse settings.",
+      "revId": "4b09f26cc90254827fc9a1b406575ed40bc27eab",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6f5cc97a_a8173cc6",
+        "filename": "src/test/java/org/onap/logging_analytics/pomba/pomba_aai_context_builder/PnfInstanceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-07T14:48:35Z",
+      "side": 1,
+      "message": "What does this do? You not using the result.",
+      "revId": "4b09f26cc90254827fc9a1b406575ed40bc27eab",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7609efd9_cabfb94a",
+        "filename": "src/test/java/org/onap/logging_analytics/pomba/pomba_aai_context_builder/PnfInstanceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-07T14:48:35Z",
+      "side": 1,
+      "message": "Comparing against itself?",
+      "range": {
+        "startLine": 56,
+        "startChar": 20,
+        "endLine": 56,
+        "endChar": 32
+      },
+      "revId": "4b09f26cc90254827fc9a1b406575ed40bc27eab",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2816e56a_af8242a3",
+        "filename": "src/test/java/org/onap/logging_analytics/pomba/pomba_aai_context_builder/PserverInstanceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-07T14:48:35Z",
+      "side": 1,
+      "message": "Add a json comparison instead.",
+      "revId": "4b09f26cc90254827fc9a1b406575ed40bc27eab",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
