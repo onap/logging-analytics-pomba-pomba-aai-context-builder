@@ -53,6 +53,7 @@ import org.onap.pomba.contextbuilder.aai.datatype.Vserver;
 import org.onap.pomba.contextbuilder.aai.datatype.PserverInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.PInterfaceInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.L3networkInstance;
+import org.onap.pomba.contextbuilder.aai.datatype.LInterfaceInstance;
 import org.onap.pomba.contextbuilder.aai.exception.AuditError;
 import org.onap.pomba.contextbuilder.aai.exception.AuditException;
 import org.slf4j.Logger;
@@ -63,6 +64,8 @@ import org.onap.pomba.common.datatypes.PNF;
 import org.onap.pomba.common.datatypes.PInterface;
 import com.bazaarvoice.jolt.JsonUtils;
 import org.onap.pomba.common.datatypes.Pserver;
+import org.onap.pomba.common.datatypes.LInterface;
+
 
 public class RestUtil {
 
@@ -87,10 +90,13 @@ public class RestUtil {
     private static final String CATALOG_IMAGE = "image";
     private static final String CATALOG_PSERVER = "pserver";
     private static final String CATALOG_L3_NETWORK = "l3-network";
+    private static final String CATALOG_PNF = "pnf";
+    private static final String CATALOG_L_INTERFACE = "l-interface";
+
     private static final String VF_MODULES = "vf-modules";
     private static final String VF_MODULE = "vf-module";
 
-    private static final String CATALOG_PNF = "pnf";
+
 
     // Relationship Json Path
     private static final String RELATIONSHIP_LIST = "relationship-list";
@@ -136,7 +142,10 @@ public class RestUtil {
     private static final String ATTRIBUTE_NETWORK_TECHNOLOGY = "networkTechnology";
     private static final String ATTRIBUTE_PHYSICAL_NETWORK_NAME = "physicalNetworkName";
     private static final String ATTRIBUTE_SHARED_NETWORK_BOOLEAN = "sharedNetworkBoolean";
-
+    private static final String ATTRIBUTE_IS_PORT_MIRRORED = "isPortMirrored";
+    private static final String ATTRIBUTE_NETWORK_NAME = "networkName";
+    private static final String ATTRIBUTE_MAC_ADDR = "macAddr";
+    private static final String ATTRIBUTE_ADMIN_STATUS = "adminStatus";
 
 
     /**
@@ -482,7 +491,19 @@ public class RestUtil {
                     } else {
                         // Logic to Create the Vserver POJO object
                         Vserver vserver = Vserver.fromJson(vserverPayload);
-                        vserver.setPserverInstanceList(getPserverInfoFromAai(vserverPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization));
+
+                        // add pserver if any
+                        List<PserverInstance> pserverInstanceLst = getPserverInfoFromAai(vserverPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization);
+                        if ((pserverInstanceLst != null) && (!pserverInstanceLst.isEmpty())) {
+                            vserver.setPserverInstanceList(pserverInstanceLst);
+                        }
+
+                        // add L-interface List if any
+                        List<LInterfaceInstance> lInterfaceInstanceLst = getLInterfaceInstanceInfoFromAai(vserverPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization);
+                        if ((lInterfaceInstanceLst != null) && (!lInterfaceInstanceLst.isEmpty())) {
+                            vserver.setlInterfaceInstanceList(lInterfaceInstanceLst);
+                        }
+
                         vserverLst.add(vserver);
                     }
                 }
@@ -532,6 +553,38 @@ public class RestUtil {
         return pserverLst;
     }
 
+    private static List<LInterfaceInstance> getLInterfaceInstanceInfoFromAai (String vserverPayload, RestClient aaiClient, String baseURL, String transactionId, String aaiBasicAuthorization) throws AuditException {
+        if (vserverPayload == null) {
+            //already reported.
+            return null;
+        }
+
+        //Obtain related L-Interface instance info
+        List<String> lInterfaceRelatedLinkList = handleRelationshipGeneral (vserverPayload,CATALOG_L_INTERFACE );
+        List<LInterfaceInstance> lInterfaceLst = null;
+        if ((lInterfaceRelatedLinkList == null) || (lInterfaceRelatedLinkList.isEmpty())){
+            // already reported
+            return null;
+        }
+        lInterfaceLst = new ArrayList<>();
+        for (String lInterfaceRelatedLink : lInterfaceRelatedLinkList) {
+            String lInterfaceURL = baseURL + lInterfaceRelatedLink + DEPTH;;
+            String lInterfacePayload = getResource(aaiClient, lInterfaceURL, aaiBasicAuthorization,  transactionId,
+                    MediaType.valueOf(MediaType.APPLICATION_XML));
+
+            if (isEmptyJson(lInterfacePayload)) {
+                log.info(LogMessages.NOT_FOUND, "L-INTERFACE with url", lInterfaceURL);
+            } else {
+                log.info("Message from AAI for L-INTERFACE %s ,message body: %s", lInterfaceURL,lInterfacePayload);
+                // Logic to Create the Pserver POJO object
+                LInterfaceInstance lInterfaceInstance = LInterfaceInstance.fromJson(lInterfacePayload);
+
+                //update P-Interface if any.
+                lInterfaceLst.add(lInterfaceInstance);
+            }
+        }
+        return lInterfaceLst;
+    }
 
     private static String getVnfId(String genericVNFPayload) throws AuditException {
 
@@ -682,6 +735,17 @@ public class RestUtil {
                                             pServer = getPserverInfo (pserverInstanceList);
                                         }
                                         vm.setPServer(pServer);
+
+                                        //Update L-Interface here
+                                        List<LInterfaceInstance> lInterfaceInstanceList = vserver.getlInterfaceInstanceList();
+                                        List<LInterface> lInterfacelst = null;
+                                        if (lInterfaceInstanceList != null) {
+                                            lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
+                                        }
+                                        if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
+                                            vm.setLInterfaceList(lInterfacelst);
+                                        }
+
                                         vmList.add(vm);
                                     }
 
@@ -834,6 +898,89 @@ public class RestUtil {
 
          return pserver;
     }
+
+    private static List<LInterface>  getLInterfaceLstInfo (List<LInterfaceInstance> lInterfaceInstanceList) {
+        if (lInterfaceInstanceList == null) {
+           return null;
+        }
+
+        List<LInterface> lInterfaceLst = new ArrayList<>();
+
+        for (LInterfaceInstance lInterfaceInstance: lInterfaceInstanceList) {
+            LInterface lInterface = new LInterface();
+            lInterface.setUuid(lInterfaceInstance.getInterfaceId());
+            lInterface.setName(lInterfaceInstance.getInterfaceName());
+
+            List<Attribute>  attributeList = new ArrayList<>();
+            // Iterate through the ENUM Attribute list
+            for (Attribute.Name  name: Attribute.Name.values()) {
+                if ((name.name().equals(ATTRIBUTE_INTERFACE_ROLE))
+                        && isValid(lInterfaceInstance.getInterfaceRole())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.interfaceRole);
+                    att.setValue(String.valueOf(lInterfaceInstance.getInterfaceRole()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_IS_PORT_MIRRORED))
+                        && isValid(lInterfaceInstance.getIsPortMirrored())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.isPortMirrored);
+                    att.setValue(String.valueOf(lInterfaceInstance.getIsPortMirrored()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_ADMIN_STATUS ))
+                        && isValid(lInterfaceInstance.getAdminStatus())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.adminStatus);
+                    att.setValue(String.valueOf(lInterfaceInstance.getAdminStatus()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_NETWORK_NAME ))
+                        && isValid(lInterfaceInstance.getNetworkName())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.networkName);
+                    att.setValue(String.valueOf(lInterfaceInstance.getNetworkName()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_MAC_ADDR ))
+                        && isValid(lInterfaceInstance.getMacAddr())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.macAddress);
+                    att.setValue(String.valueOf(lInterfaceInstance.getMacAddr()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_LOCKEDBOOLEAN))
+                        && isValid(lInterfaceInstance.getInMaint())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.lockedBoolean);
+                    att.setValue(String.valueOf(lInterfaceInstance.getInMaint()));
+                    attributeList.add(att);
+                }
+
+            }
+
+            if (!attributeList.isEmpty()) {
+                lInterface.setAttributes(attributeList);
+            }
+            lInterfaceLst.add(lInterface);
+        }
+
+        if (lInterfaceLst.isEmpty()) {
+            return null;
+        }
+        return lInterfaceLst;
+   }
 
     private static Pserver updatePserverInfoWithPInterface (Pserver pserver, List<PInterfaceInstance> pInterfaceInstanceList) {
 

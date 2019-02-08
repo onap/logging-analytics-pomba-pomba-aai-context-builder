@@ -62,12 +62,21 @@ public class Vserver {
     private RelationshipList relationshipList;
 
     private List<PserverInstance> pserverInstanceList;
+    private List<LInterfaceInstance> lInterfaceInstanceList;
     public List<PserverInstance> getPserverInstanceList() {
         return pserverInstanceList;
     }
 
     public void setPserverInstanceList(List<PserverInstance> pserverInstanceList) {
         this.pserverInstanceList = pserverInstanceList;
+    }
+
+    public List<LInterfaceInstance> getlInterfaceInstanceList() {
+        return lInterfaceInstanceList;
+    }
+
+    public void setlInterfaceInstanceList(List<LInterfaceInstance> lInterfaceInstanceList) {
+        this.lInterfaceInstanceList = lInterfaceInstanceList;
     }
 
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
