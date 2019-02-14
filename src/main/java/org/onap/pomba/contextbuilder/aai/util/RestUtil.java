@@ -116,8 +116,8 @@ public class RestUtil {
     private static final String ATTRIBUTE_LOCKEDBOOLEAN = "lockedBoolean";
     private static final String ATTRIBUTE_HOSTNAME = "hostName";
     private static final String ATTRIBUTE_IMAGEID = "imageId";
-    private static final String ATTRIBUTE_NETWORK_FUNCTION = "networkFunction";
-    private static final String ATTRIBUTE_NETWORK_ROLE = "networkRole";
+    private static final String ATTRIBUTE_NF_FUNCTION = "nfFunction";
+    private static final String ATTRIBUTE_NF_ROLE = "nfRole";
     private static final String ATTRIBUTE_RESOURCE_VERSION = "resourceVersion";
     private static final String ATTRIBUTE_NAME2 = "name2";
     private static final String ATTRIBUTE_NAME2_SOURCE = "name2Source";
@@ -146,6 +146,7 @@ public class RestUtil {
     private static final String ATTRIBUTE_NETWORK_NAME = "networkName";
     private static final String ATTRIBUTE_MAC_ADDR = "macAddr";
     private static final String ATTRIBUTE_ADMIN_STATUS = "adminStatus";
+    private static final String ATTRIBUTE_NFC_NAMING_CODE = "nfcNamingCode";
 
 
     /**
@@ -631,7 +632,27 @@ public class RestUtil {
                         VNFC vnfcModel = new VNFC();
                         vnfcModel.setModelInvariantUUID(vnfc.getModelInvariantId());
                         vnfcModel.setName(vnfc.getVnfcName());
+                        vnfcModel.setModelVersionID(vnfc.getModelVersionId());
                         vnfcModel.setUuid(vnfc.getModelVersionId());
+
+                        List<Attribute>  attributeList = new ArrayList<>();
+                        // Iterate through the ENUM Attribute list
+                        for (Attribute.Name  name: Attribute.Name.values()) {
+                            if ((name.name().equals(ATTRIBUTE_NFC_NAMING_CODE ))
+                                    && isValid(vnfc.getNfcNamingCode())){
+                                Attribute att = new Attribute();
+                                att.setDataQuality(DataQuality.ok());
+                                att.setName(Attribute.Name.nfcNamingCode);
+                                att.setValue(String.valueOf(vnfc.getNfcNamingCode()));
+                                attributeList.add(att);
+                            }
+                        }
+
+                        if (!attributeList.isEmpty()) {
+                            vnfcModel.setAttributes(attributeList);
+                        }
+
+
                         vnfcLst.add(vnfcModel);
                     }
                 }
@@ -1029,20 +1050,20 @@ public class RestUtil {
 
             // Iterate through the ENUM Attribute list
             for (Attribute.Name  name: Attribute.Name.values()) {
-                if ((name.name().equals(ATTRIBUTE_NETWORK_FUNCTION ))
+                if ((name.name().equals(ATTRIBUTE_NF_FUNCTION ))
                         && isValid(pnfFromAai.getNfFunction())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.networkFunction);
+                    att.setName(Attribute.Name.nfFunction);
                     att.setValue(String.valueOf( pnfFromAai.getNfFunction()));
                     attributeList.add(att);
                 }
 
-                if ((name.name().equals(ATTRIBUTE_NETWORK_ROLE ))
+                if ((name.name().equals(ATTRIBUTE_NF_ROLE ))
                         && isValid(pnfFromAai.getNfRole())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.networkRole);
+                    att.setName(Attribute.Name.nfRole);
                     att.setValue(String.valueOf( pnfFromAai.getNfRole()));
                     attributeList.add(att);
                 }
@@ -1203,7 +1224,7 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if ((name.name().equals(ATTRIBUTE_NETWORK_ROLE  ))
+                if ((name.name().equals(ATTRIBUTE_NF_ROLE  ))
                         && isValid(l3networkFromAai.getNetworkRole())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
@@ -1285,7 +1306,7 @@ public class RestUtil {
                     && isValid(pInterfaceInstFromAai.getPortDescription())){
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
-                att.setName(Attribute.Name.description);
+                att.setName(Attribute.Name.portDescription);
                 att.setValue(String.valueOf( pInterfaceInstFromAai.getPortDescription()));
                 pInterfaceAttributeList.add(att);
             }
