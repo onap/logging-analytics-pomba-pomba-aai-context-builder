@@ -116,8 +116,9 @@ public class RestUtil {
     private static final String ATTRIBUTE_LOCKEDBOOLEAN = "lockedBoolean";
     private static final String ATTRIBUTE_HOSTNAME = "hostName";
     private static final String ATTRIBUTE_IMAGEID = "imageId";
-    private static final String ATTRIBUTE_NETWORK_FUNCTION = "networkFunction";
-    private static final String ATTRIBUTE_NETWORK_ROLE = "networkRole";
+    private static final String ATTRIBUTE_NF_ROLE = "nfRole";
+    private static final String ATTRIBUTE_NF_TYPE = "nfType";
+    private static final String ATTRIBUTE_NF_FUNCTION = "nfFunction";
     private static final String ATTRIBUTE_RESOURCE_VERSION = "resourceVersion";
     private static final String ATTRIBUTE_NAME2 = "name2";
     private static final String ATTRIBUTE_NAME2_SOURCE = "name2Source";
@@ -139,6 +140,7 @@ public class RestUtil {
     private static final String ATTRIBUTE_INTERFACE_ROLE = "interfaceRole";
     private static final String ATTRIBUTE_INTERFACE_TYPE = "interfaceType";
     private static final String ATTRIBUTE_NETWORK_TYPE = "networkType";
+    private static final String ATTRIBUTE_NETWORK_ROLE = "networkRole";
     private static final String ATTRIBUTE_NETWORK_TECHNOLOGY = "networkTechnology";
     private static final String ATTRIBUTE_PHYSICAL_NETWORK_NAME = "physicalNetworkName";
     private static final String ATTRIBUTE_SHARED_NETWORK_BOOLEAN = "sharedNetworkBoolean";
@@ -146,6 +148,8 @@ public class RestUtil {
     private static final String ATTRIBUTE_NETWORK_NAME = "networkName";
     private static final String ATTRIBUTE_MAC_ADDR = "macAddr";
     private static final String ATTRIBUTE_ADMIN_STATUS = "adminStatus";
+    private static final String ATTRIBUTE_NFC_NAMING_CODE = "nfcNamingCode";
+    private static final String ATTRIBUTE_NF_NAMING_CODE = "nfNamingCode";
 
 
     /**
@@ -617,7 +621,7 @@ public class RestUtil {
             vf.setType(vnf.getVnfType());
             vf.setModelVersionID(vnf.getModelVersionId());
             vf.setDataQuality(DataQuality.ok());
-
+            vf.setAttributes(populateVnfAttributeList(vnf));
             String key = vnf.getVnfId();   // generic vnf-id (top level of the key)
 
             // ---------------- Handle VNFC data
@@ -631,7 +635,9 @@ public class RestUtil {
                         VNFC vnfcModel = new VNFC();
                         vnfcModel.setModelInvariantUUID(vnfc.getModelInvariantId());
                         vnfcModel.setName(vnfc.getVnfcName());
+                        vnfcModel.setModelVersionID(vnfc.getModelVersionId());
                         vnfcModel.setUuid(vnfc.getModelVersionId());
+                        vnfcModel.setAttributes(populateVnfcAttributeList(vnfc));
                         vnfcLst.add(vnfcModel);
                     }
                 }
@@ -774,6 +780,91 @@ public class RestUtil {
         context.setNetworkList(transformL3Network (l3networkLst_in_service));
         log.info((String.format("ModelContext body: %s ", JsonUtils.toPrettyJsonString(context))));
         return context;
+    }
+
+    private static List<Attribute> populateVnfAttributeList (VnfInstance vnf) {
+        if (vnf == null) {
+           return null;
+        }
+
+        List<Attribute>  attributeList = new ArrayList<>();
+
+        for (Attribute.Name  name: Attribute.Name.values()) {
+            if ((name.name().equals(ATTRIBUTE_NF_NAMING_CODE ))
+                    && isValid(vnf.getNfNamingCode())){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.nfNamingCode);
+                att.setValue(String.valueOf(vnf.getNfNamingCode()));
+                attributeList.add(att);
+            }
+
+            if ((name.name().equals(ATTRIBUTE_NF_TYPE  ))
+                    && isValid(vnf.getNfType())){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.nfType);
+                att.setValue(String.valueOf(vnf.getNfType()));
+                attributeList.add(att);
+            }
+
+            if ((name.name().equals(ATTRIBUTE_NF_ROLE  ))
+                    && isValid(vnf.getNfRole())){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.nfRole);
+                att.setValue(String.valueOf(vnf.getNfRole()));
+                attributeList.add(att);
+            }
+
+            if ((name.name().equals(ATTRIBUTE_NF_FUNCTION  ))
+                    && isValid(vnf.getNfFunction())){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.nfFunction);
+                att.setValue(String.valueOf(vnf.getNfFunction()));
+                attributeList.add(att);
+            }
+        }
+
+        if (attributeList.size() > 0 ) {
+            return attributeList;
+        }
+        return null;
+    }
+
+    private static List<Attribute> populateVnfcAttributeList (VnfcInstance vnfc) {
+        if (vnfc == null) {
+           return null;
+        }
+
+        List<Attribute>  attributeList = new ArrayList<>();
+
+        for (Attribute.Name  name: Attribute.Name.values()) {
+            if ((name.name().equals(ATTRIBUTE_NFC_NAMING_CODE  ))
+                    && isValid(vnfc.getNfcNamingCode())){
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.nfcNamingCode);
+                att.setValue(String.valueOf(vnfc.getNfcNamingCode()));
+                attributeList.add(att);
+            }
+
+            if ((name.name().equals(ATTRIBUTE_LOCKEDBOOLEAN  ))
+             && (vnfc.getInMaintenance() != null) )
+            {
+                Attribute att = new Attribute();
+                att.setDataQuality(DataQuality.ok());
+                att.setName(Attribute.Name.nfcNamingCode);
+                att.setValue(String.valueOf(vnfc.getInMaintenance()));
+                attributeList.add(att);
+            }
+        }
+
+        if (attributeList.size() > 0 ) {
+            return attributeList;
+        }
+        return null;
     }
 
     private static Pserver getPserverInfo (List<PserverInstance> pserverInstanceList) {
@@ -1029,20 +1120,11 @@ public class RestUtil {
 
             // Iterate through the ENUM Attribute list
             for (Attribute.Name  name: Attribute.Name.values()) {
-                if ((name.name().equals(ATTRIBUTE_NETWORK_FUNCTION ))
-                        && isValid(pnfFromAai.getNfFunction())){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.networkFunction);
-                    att.setValue(String.valueOf( pnfFromAai.getNfFunction()));
-                    attributeList.add(att);
-                }
-
-                if ((name.name().equals(ATTRIBUTE_NETWORK_ROLE ))
+                if ((name.name().equals(ATTRIBUTE_NF_ROLE ))
                         && isValid(pnfFromAai.getNfRole())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.networkRole);
+                    att.setName(Attribute.Name.nfRole);
                     att.setValue(String.valueOf( pnfFromAai.getNfRole()));
                     attributeList.add(att);
                 }
@@ -1285,7 +1367,7 @@ public class RestUtil {
                     && isValid(pInterfaceInstFromAai.getPortDescription())){
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
-                att.setName(Attribute.Name.description);
+                att.setName(Attribute.Name.portDescription);
                 att.setValue(String.valueOf( pInterfaceInstFromAai.getPortDescription()));
                 pInterfaceAttributeList.add(att);
             }

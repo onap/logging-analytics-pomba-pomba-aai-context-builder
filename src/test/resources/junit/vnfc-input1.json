@@ -1,0 +1,15 @@
+{
+    "vnfc-name": "junit-vnfc-name1212",
+    "nfc-naming-code": "nfc-naming-code-1212",
+    "nfc-function": "nfcFunction1",
+    "prov-status": "11112222provStatus",
+    "orchestration-status": "orchestrationStatus1",
+    "ipaddress-v4-oam-vip": "8df84f0a-737a-4628-be9c-c3c78454f9d9",
+    "in-maint": "false",
+    "is-closed-loop-disabled": "true",
+    "model-invariant-id": "model-invariant-id1212",
+    "model-version-id": "model-version-id1212",
+    "model-customization-id": "modelCustomizationId99888",
+    "resource-version": "resourceVersion4989d67b2a6b7",
+    "cps": "cps12123"
+}
