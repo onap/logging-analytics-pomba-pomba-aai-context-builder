@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1b239597_aefe5684",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1053,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-15T02:30:12Z",
+      "side": 1,
+      "message": "I can\u0027t find an attribute called nfFunction in the PNF AAI model...",
+      "revId": "8dd5050a80557d083d2fe57790b4abdca509d948",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c21af19d_28e38904",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1227,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-15T02:30:12Z",
+      "side": 1,
+      "message": "I don\u0027t see an attribute called nfRole in the AAI l3-network model. This is networkRole, as it was before?",
+      "revId": "8dd5050a80557d083d2fe57790b4abdca509d948",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
