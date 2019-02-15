@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "38d129d0_d1727b34",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 641,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-02-15T16:50:20Z",
+      "side": 1,
+      "message": "Are there any JUnits to check that the proper attributes are returned?",
+      "revId": "51a0a2447d824df973a756866c69270b2187b5c1",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
