@@ -36,7 +36,31 @@
 		        "resource-version": "99888",
 		        "serial-number": "c44b872f6830498b88c4989d67b2a6b7",
 		        "status": "ACTIVE",
-		        "inv-status": "TBD"
+		        "inv-status": "TBD",
+			 	"l-interfaces" : {
+						"l-interface" : [
+						{
+						   "interface-id": "junit-l-interface-5",
+						   "interface-name": "junit-l-interface-name5",
+						   "interface-role": "interface-role5",
+						   "is-port-mirrored": "true",
+						   "admin-status": "admin-status5",
+						   "network-name": "network-name-amdocs",
+						   "macaddr": "macaddr-5",
+						   "in-maint": "true"
+						},
+						{
+						   "interface-id": "junit-l-interface-6",
+						   "interface-name": "junit-l-interface-name6",
+						   "interface-role": "interface-role6",
+						   "is-port-mirrored": "true",
+						   "admin-status": "admin-status6",
+						   "network-name": "network-name-amdocs",
+						   "macaddr": "macaddr-6",
+						   "in-maint": "true"
+						}
+					  ]
+					}
              }
            ]
         },

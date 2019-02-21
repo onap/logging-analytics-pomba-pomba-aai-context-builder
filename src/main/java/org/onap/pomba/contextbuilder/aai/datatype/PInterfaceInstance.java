@@ -62,6 +62,9 @@ public class PInterfaceInstance {
     @SerializedName("inv-status")
     @Expose
     private String invStatus;
+    @SerializedName("l-interfaces")
+    @Expose
+    private LInterfaceInstanceList lInterfaceInstanceList;
 
     public String getInterfaceName() {
         return interfaceName;
@@ -151,6 +154,14 @@ public class PInterfaceInstance {
         this.invStatus = invStatus;
     }
 
+    public LInterfaceInstanceList getLInterfaceInstanceList() {
+        return lInterfaceInstanceList;
+    }
+
+    public void setLInterfaceInstanceList(LInterfaceInstanceList lInterfaceInstanceList) {
+        this.lInterfaceInstanceList = lInterfaceInstanceList;
+    }
+
     /**
      * No args constructor for use in serialization
      *
@@ -174,7 +185,7 @@ public class PInterfaceInstance {
      */
     public PInterfaceInstance(String interfaceName,String speedValue,String speedUnits,
             String portDescription,String equipmentIdentifier,String interfaceRole,String interfaceType,
-            String provStatus,String resourceVersion,String  inMaint, String invStatus ) {
+            String provStatus,String resourceVersion,String  inMaint, String invStatus, LInterfaceInstanceList lInterfaceInstanceList) {
         super();
         this.interfaceName   = interfaceName;
         this.speedValue      = speedValue;
@@ -187,6 +198,7 @@ public class PInterfaceInstance {
         this.resourceVersion = resourceVersion;
         this.inMaint = inMaint;
         this.invStatus = invStatus;
+        this.lInterfaceInstanceList = lInterfaceInstanceList;
     }
 
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
@@ -211,7 +223,7 @@ public class PInterfaceInstance {
         return new ToStringBuilder(this).append("interfaceName", interfaceName).append("speedValue", speedValue).append("speedUnits", speedUnits)
                 .append("portDescription", portDescription).append("equipmentIdentifier", equipmentIdentifier).append("interfaceRole", interfaceRole)
                 .append("interfaceType", interfaceType).append("provStatus", provStatus).append("resourceVersion", resourceVersion)
-                .append("inMaint", inMaint).append("invStatus", invStatus)
+                .append("inMaint", inMaint).append("invStatus", invStatus).append("lInterfaceInstanceList", lInterfaceInstanceList)
                 .toString();
     }
 

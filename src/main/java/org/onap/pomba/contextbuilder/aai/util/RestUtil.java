@@ -91,8 +91,6 @@ public class RestUtil {
     private static final String CATALOG_PSERVER = "pserver";
     private static final String CATALOG_L3_NETWORK = "l3-network";
     private static final String CATALOG_PNF = "pnf";
-    private static final String CATALOG_L_INTERFACE = "l-interface";
-
     private static final String VF_MODULES = "vf-modules";
     private static final String VF_MODULE = "vf-module";
 
@@ -486,7 +484,7 @@ public class RestUtil {
 
                 List<Vserver> vserverLst = new ArrayList<>();
                 for (String vserverLink : vserverLinkLst) {
-                    String vserverURL = baseURL + vserverLink;
+                    String vserverURL = baseURL + vserverLink + DEPTH;
                     vserverPayload = getResource(aaiClient, vserverURL, aaiBasicAuthorization,  transactionId,
                             MediaType.valueOf(MediaType.APPLICATION_XML));
 
@@ -500,12 +498,6 @@ public class RestUtil {
                         List<PserverInstance> pserverInstanceLst = getPserverInfoFromAai(vserverPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization);
                         if ((pserverInstanceLst != null) && (!pserverInstanceLst.isEmpty())) {
                             vserver.setPserverInstanceList(pserverInstanceLst);
-                        }
-
-                        // add L-interface List if any
-                        List<LInterfaceInstance> lInterfaceInstanceLst = getLInterfaceInstanceInfoFromAai(vserverPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization);
-                        if ((lInterfaceInstanceLst != null) && (!lInterfaceInstanceLst.isEmpty())) {
-                            vserver.setlInterfaceInstanceList(lInterfaceInstanceLst);
                         }
 
                         vserverLst.add(vserver);
@@ -557,39 +549,6 @@ public class RestUtil {
         return pserverLst;
     }
 
-    private static List<LInterfaceInstance> getLInterfaceInstanceInfoFromAai (String vserverPayload, RestClient aaiClient, String baseURL, String transactionId, String aaiBasicAuthorization) throws AuditException {
-        if (vserverPayload == null) {
-            //already reported.
-            return null;
-        }
-
-        //Obtain related L-Interface instance info
-        List<String> lInterfaceRelatedLinkList = handleRelationshipGeneral (vserverPayload,CATALOG_L_INTERFACE );
-        List<LInterfaceInstance> lInterfaceLst = null;
-        if ((lInterfaceRelatedLinkList == null) || (lInterfaceRelatedLinkList.isEmpty())){
-            // already reported
-            return null;
-        }
-        lInterfaceLst = new ArrayList<>();
-        for (String lInterfaceRelatedLink : lInterfaceRelatedLinkList) {
-            String lInterfaceURL = baseURL + lInterfaceRelatedLink + DEPTH;;
-            String lInterfacePayload = getResource(aaiClient, lInterfaceURL, aaiBasicAuthorization,  transactionId,
-                    MediaType.valueOf(MediaType.APPLICATION_XML));
-
-            if (isEmptyJson(lInterfacePayload)) {
-                log.info(LogMessages.NOT_FOUND, "L-INTERFACE with url", lInterfaceURL);
-            } else {
-                log.info("Message from AAI for L-INTERFACE %s ,message body: %s", lInterfaceURL,lInterfacePayload);
-                // Logic to Create the Pserver POJO object
-                LInterfaceInstance lInterfaceInstance = LInterfaceInstance.fromJson(lInterfacePayload);
-
-                //update P-Interface if any.
-                lInterfaceLst.add(lInterfaceInstance);
-            }
-        }
-        return lInterfaceLst;
-    }
-
     private static String getVnfId(String genericVNFPayload) throws AuditException {
 
         VnfInstance vnfInstance = VnfInstance.fromJson(genericVNFPayload);
@@ -623,6 +582,18 @@ public class RestUtil {
             vf.setDataQuality(DataQuality.ok());
             vf.setAttributes(populateVnfAttributeList(vnf));
             String key = vnf.getVnfId();   // generic vnf-id (top level of the key)
+
+            //Update Vnf level L-Interface here
+            if ((vnf.getLInterfaceInstanceList() != null) && (!(vnf.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                List<LInterfaceInstance> lInterfaceInstanceList = vnf.getLInterfaceInstanceList().getLInterfaceList();
+              List<LInterface> lInterfacelst = null;
+              if (lInterfaceInstanceList != null) {
+                  lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
+              }
+              if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
+                  vf.setLInterfaceList(lInterfacelst);
+              }
+            }
 
             // ---------------- Handle VNFC data
             List<VNFC> vnfcLst = new ArrayList<>();
@@ -742,14 +713,16 @@ public class RestUtil {
                                         }
                                         vm.setPServer(pServer);
 
-                                        //Update L-Interface here
-                                        List<LInterfaceInstance> lInterfaceInstanceList = vserver.getlInterfaceInstanceList();
-                                        List<LInterface> lInterfacelst = null;
-                                        if (lInterfaceInstanceList != null) {
-                                            lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
-                                        }
-                                        if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
-                                            vm.setLInterfaceList(lInterfacelst);
+                                        //Update VServer level L-Interface here
+                                        if ((vserver.getLInterfaceInstanceList() != null) && (!(vserver.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                                            List<LInterfaceInstance> lInterfaceInstanceList = vserver.getLInterfaceInstanceList().getLInterfaceList();
+                                          List<LInterface> lInterfacelst = null;
+                                          if (lInterfaceInstanceList != null) {
+                                              lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
+                                          }
+                                          if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
+                                              vm.setLInterfaceList(lInterfacelst);
+                                          }
                                         }
 
                                         vmList.add(vm);
@@ -1081,6 +1054,17 @@ public class RestUtil {
             // pInterface.setUuid( ); // there is no mapping data for UUID from AAI data.
             pInterface.setName(pInterfaceInst_aai.getInterfaceName());
             pInterface.setDataQuality(DataQuality.ok());
+            //Update L-Interface here
+            if ((pInterfaceInst_aai.getLInterfaceInstanceList() != null) && (!(pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                List<LInterfaceInstance> lInterfaceInstanceList = pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList();
+              List<LInterface> lInterfacelst = null;
+              if (lInterfaceInstanceList != null) {
+                  lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
+              }
+              if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
+                  pInterface.setLInterfaceList(lInterfacelst);
+              }
+            }
 
             List<Attribute>  pInterface_attributeList = new ArrayList<>();
             updatePInterfaceAttributeList (pInterfaceInst_aai, pInterface_attributeList) ;
@@ -1233,6 +1217,17 @@ public class RestUtil {
                     pInterface.setUuid(pInterfaceInst_aai.getEquipmentIdentifier() );
                     pInterface.setName(pInterfaceInst_aai.getInterfaceName());
                     pInterface.setDataQuality(DataQuality.ok());
+                    //Update L-Interface here
+                    if ((pInterfaceInst_aai.getLInterfaceInstanceList() != null) && (!(pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                        List<LInterfaceInstance> lInterfaceInstanceList = pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList();
+                      List<LInterface> lInterfacelst = null;
+                      if (lInterfaceInstanceList != null) {
+                          lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
+                      }
+                      if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
+                          pInterface.setLInterfaceList(lInterfacelst);
+                      }
+                    }
 
                     List<Attribute>  pInterface_attributeList = new ArrayList<>();
                     updatePInterfaceAttributeList (pInterfaceInst_aai, pInterface_attributeList) ;
