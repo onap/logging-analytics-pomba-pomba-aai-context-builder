@@ -113,8 +113,11 @@ public class VnfInstance {
     @Expose
     @Valid
     private VfModules vfModules;
+    @SerializedName("l-interfaces")
+    @Expose
+    private LInterfaceInstanceList lInterfaceInstanceList;
 
-   private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+    private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
        public String toJson() {
            return gson.toJson(this);
@@ -167,8 +170,9 @@ public class VnfInstance {
      * @param isClosedLoopDisabled
      * @param licenseKey
      * @param managementV6Address
+     * @param lInterfaceInstanceList
      */
-    public VnfInstance(String vnfId, String vnfName, String vnfName2, String vnfType, String serviceId, String provisionStatus, String licenseKey, String equipmentRole, String orchestrationStatus, String heatStackId, String msoCatalogKey, String ipv4OamAddress, String ipv4Loopback0Address, String nmLanV6Address, String managementV6Address, Boolean inMaintenance, Boolean isClosedLoopDisabled, String resourceVersion, String modelInvariantId, String modelVersionId, String modelCustomizationId, String nfType, String nfFunction, String nfRole, String nfNamingCode, RelationshipList relationshipList, VfModules vfModules) {
+    public VnfInstance(String vnfId, String vnfName, String vnfName2, String vnfType, String serviceId, String provisionStatus, String licenseKey, String equipmentRole, String orchestrationStatus, String heatStackId, String msoCatalogKey, String ipv4OamAddress, String ipv4Loopback0Address, String nmLanV6Address, String managementV6Address, Boolean inMaintenance, Boolean isClosedLoopDisabled, String resourceVersion, String modelInvariantId, String modelVersionId, String modelCustomizationId, String nfType, String nfFunction, String nfRole, String nfNamingCode, RelationshipList relationshipList, VfModules vfModules, LInterfaceInstanceList lInterfaceInstanceList) {
         super();
         this.vnfId = vnfId;
         this.vnfName = vnfName;
@@ -197,6 +201,7 @@ public class VnfInstance {
         this.nfNamingCode = nfNamingCode;
         this.relationshipList = relationshipList;
         this.vfModules = vfModules;
+        this.lInterfaceInstanceList = lInterfaceInstanceList;
     }
 
     public String getVnfId() {
@@ -415,14 +420,22 @@ public class VnfInstance {
         this.vfModules = vfModules;
     }
 
+    public LInterfaceInstanceList getLInterfaceInstanceList() {
+        return lInterfaceInstanceList;
+    }
+
+    public void setLInterfaceInstanceList(LInterfaceInstanceList lInterfaceInstanceList) {
+        this.lInterfaceInstanceList = lInterfaceInstanceList;
+    }
+
     @Override
     public String toString() {
-        return new ToStringBuilder(this).append("vnfId", vnfId).append("vnfName", vnfName).append("vnfName2", vnfName2).append("vnfType", vnfType).append("serviceId", serviceId).append("provisionStatus", provisionStatus).append("licenseKey", licenseKey).append("equipmentRole", equipmentRole).append("orchestrationStatus", orchestrationStatus).append("heatStackId", heatStackId).append("msoCatalogKey", msoCatalogKey).append("ipv4OamAddress", ipv4OamAddress).append("ipv4Loopback0Address", ipv4Loopback0Address).append("nmLanV6Address", nmLanV6Address).append("managementV6Address", managementV6Address).append("inMaintenance", inMaintenance).append("isClosedLoopDisabled", isClosedLoopDisabled).append("resourceVersion", resourceVersion).append("modelInvariantId", modelInvariantId).append("modelVersionId", modelVersionId).append("modelCustomizationId", modelCustomizationId).append("nfType", nfType).append("nfFunction", nfFunction).append("nfRole", nfRole).append("nfNamingCode", nfNamingCode).append("relationshipList", relationshipList).append("vfModules", vfModules).toString();
+        return new ToStringBuilder(this).append("vnfId", vnfId).append("vnfName", vnfName).append("vnfName2", vnfName2).append("vnfType", vnfType).append("serviceId", serviceId).append("provisionStatus", provisionStatus).append("licenseKey", licenseKey).append("equipmentRole", equipmentRole).append("orchestrationStatus", orchestrationStatus).append("heatStackId", heatStackId).append("msoCatalogKey", msoCatalogKey).append("ipv4OamAddress", ipv4OamAddress).append("ipv4Loopback0Address", ipv4Loopback0Address).append("nmLanV6Address", nmLanV6Address).append("managementV6Address", managementV6Address).append("inMaintenance", inMaintenance).append("isClosedLoopDisabled", isClosedLoopDisabled).append("resourceVersion", resourceVersion).append("modelInvariantId", modelInvariantId).append("modelVersionId", modelVersionId).append("modelCustomizationId", modelCustomizationId).append("nfType", nfType).append("nfFunction", nfFunction).append("nfRole", nfRole).append("nfNamingCode", nfNamingCode).append("relationshipList", relationshipList).append("vfModules", vfModules).append("lInterfaceInstanceList", lInterfaceInstanceList).toString();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(modelCustomizationId).append(serviceId).append(ipv4Loopback0Address).append(vnfType).append(nfFunction).append(modelInvariantId).append(resourceVersion).append(vnfName2).append(relationshipList).append(nmLanV6Address).append(nfRole).append(nfType).append(modelVersionId).append(ipv4OamAddress).append(vnfName).append(inMaintenance).append(msoCatalogKey).append(provisionStatus).append(vfModules).append(equipmentRole).append(vnfId).append(orchestrationStatus).append(nfNamingCode).append(isClosedLoopDisabled).append(heatStackId).append(licenseKey).append(managementV6Address).toHashCode();
+        return new HashCodeBuilder().append(modelCustomizationId).append(serviceId).append(ipv4Loopback0Address).append(vnfType).append(nfFunction).append(modelInvariantId).append(resourceVersion).append(vnfName2).append(relationshipList).append(nmLanV6Address).append(nfRole).append(nfType).append(modelVersionId).append(ipv4OamAddress).append(vnfName).append(inMaintenance).append(msoCatalogKey).append(provisionStatus).append(vfModules).append(equipmentRole).append(vnfId).append(orchestrationStatus).append(nfNamingCode).append(isClosedLoopDisabled).append(heatStackId).append(licenseKey).append(managementV6Address).append(lInterfaceInstanceList).toHashCode();
     }
 
     @Override
@@ -434,7 +447,7 @@ public class VnfInstance {
             return false;
         }
         VnfInstance rhs = ((VnfInstance) other);
-        return new EqualsBuilder().append(modelCustomizationId, rhs.modelCustomizationId).append(serviceId, rhs.serviceId).append(ipv4Loopback0Address, rhs.ipv4Loopback0Address).append(vnfType, rhs.vnfType).append(nfFunction, rhs.nfFunction).append(modelInvariantId, rhs.modelInvariantId).append(resourceVersion, rhs.resourceVersion).append(vnfName2, rhs.vnfName2).append(relationshipList, rhs.relationshipList).append(nmLanV6Address, rhs.nmLanV6Address).append(nfRole, rhs.nfRole).append(nfType, rhs.nfType).append(modelVersionId, rhs.modelVersionId).append(ipv4OamAddress, rhs.ipv4OamAddress).append(vnfName, rhs.vnfName).append(inMaintenance, rhs.inMaintenance).append(msoCatalogKey, rhs.msoCatalogKey).append(provisionStatus, rhs.provisionStatus).append(vfModules, rhs.vfModules).append(equipmentRole, rhs.equipmentRole).append(vnfId, rhs.vnfId).append(orchestrationStatus, rhs.orchestrationStatus).append(nfNamingCode, rhs.nfNamingCode).append(isClosedLoopDisabled, rhs.isClosedLoopDisabled).append(heatStackId, rhs.heatStackId).append(licenseKey, rhs.licenseKey).append(managementV6Address, rhs.managementV6Address).isEquals();
+        return new EqualsBuilder().append(modelCustomizationId, rhs.modelCustomizationId).append(serviceId, rhs.serviceId).append(ipv4Loopback0Address, rhs.ipv4Loopback0Address).append(vnfType, rhs.vnfType).append(nfFunction, rhs.nfFunction).append(modelInvariantId, rhs.modelInvariantId).append(resourceVersion, rhs.resourceVersion).append(vnfName2, rhs.vnfName2).append(relationshipList, rhs.relationshipList).append(nmLanV6Address, rhs.nmLanV6Address).append(nfRole, rhs.nfRole).append(nfType, rhs.nfType).append(modelVersionId, rhs.modelVersionId).append(ipv4OamAddress, rhs.ipv4OamAddress).append(vnfName, rhs.vnfName).append(inMaintenance, rhs.inMaintenance).append(msoCatalogKey, rhs.msoCatalogKey).append(provisionStatus, rhs.provisionStatus).append(vfModules, rhs.vfModules).append(equipmentRole, rhs.equipmentRole).append(vnfId, rhs.vnfId).append(orchestrationStatus, rhs.orchestrationStatus).append(nfNamingCode, rhs.nfNamingCode).append(isClosedLoopDisabled, rhs.isClosedLoopDisabled).append(heatStackId, rhs.heatStackId).append(licenseKey, rhs.licenseKey).append(managementV6Address, rhs.managementV6Address).append(lInterfaceInstanceList, rhs.lInterfaceInstanceList).isEquals();
     }
 
 }

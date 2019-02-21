@@ -212,7 +212,7 @@ public class RestUtilTest {
 
     ////
     @Test
-    public void testretrieveAAIModelDataFromAAI_PInterface_with_PNF() throws Exception {
+    public void testretrieveAAIModelDataFromAAI_PInterface_LInterface_with_PNF() throws Exception {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
@@ -230,17 +230,20 @@ public class RestUtilTest {
         // 4. simulate the response of PNF based on the resourceLink in (2)
         //note: match pnf_id in junit/aai-service-instance.json
         addResponse( "/aai/v13/network/pnfs/pnf/amdocsPnfName" + DEPTH,
-        "junit/pnfInput_w_pInterface.json", aaiEnricherRule);
+        "junit/pnfInput_w_pInterface_LInterface.json", aaiEnricherRule);
 
         ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
 
         assertEquals(modelCtx.getVnfs().size(), 1);
         assertEquals(modelCtx.getPnfs().size(), 1);
-
+        assertEquals(modelCtx.getPnfs().get(0).getPInterfaceList().size(), 1);
+        assertEquals(modelCtx.getPnfs().get(0).getPInterfaceList().get(0).getLInterfaceList().size(), 2);
+        assertEquals(modelCtx.getPnfs().get(0).getPInterfaceList().get(0).getLInterfaceList().get(0).getName(), "junit-l-interface-name5"); //l-interface-name
+        assertEquals(modelCtx.getPnfs().get(0).getPInterfaceList().get(0).getLInterfaceList().get(1).getName(), "junit-l-interface-name6"); //l-interface-name
     }
 
     @Test
-    public void testretrieveAAIModelDataFromAAI_P_Interface_with_PSERVER() throws Exception {
+    public void testretrieveAAIModelDataFromAAI_PInterface_LInterface_with_PSERVER() throws Exception {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
@@ -264,11 +267,11 @@ public class RestUtilTest {
                         + "/b49b830686654191bb1e952a74b014ad/vservers/vserver/b494cd6e-b9f3-45e0-afe7-e1d1a5f5d74a",
                 "junit/aai-vserver.json", aaiEnricherRule);
 
-        // 5. simulate the rsp of pserver
+        // 5. simulate the rsp of pserver with P-interface which also contains L-interface.
         // note: match pserver hostname to the path of "pserver" in (4)
         addResponse(
                 "/aai/v13/cloud-infrastructure/pservers/pserver/mtn96compute.cci.att.com" + DEPTH,
-                "junit/pserverInput_with_pInterface.json", aaiEnricherRule);
+                "junit/pserverInput_with_pInterface_LInterface.json", aaiEnricherRule);
 
         ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
 
@@ -281,6 +284,9 @@ public class RestUtilTest {
         assertEquals(vmList.size(), 1);
         assertEquals(vmList.get(0).getPServer().getPInterfaceList().size(), 1);
         assertEquals(vmList.get(0).getPServer().getPInterfaceList().get(0).getName(), "bdc3cc2a-c73e-414f-7ddb-367de92801cb"); //interface-name
+        assertEquals(vmList.get(0).getPServer().getPInterfaceList().get(0).getLInterfaceList().size(), 2);
+        assertEquals(vmList.get(0).getPServer().getPInterfaceList().get(0).getLInterfaceList().get(0).getName(), "junit-l-interface-name7"); //l-interface-name
+        assertEquals(vmList.get(0).getPServer().getPInterfaceList().get(0).getLInterfaceList().get(1).getName(), "junit-l-interface-name8"); //l-interface-name
     }
 
     ///Verify the relationship serviceInstanceId -> l3network
