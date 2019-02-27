@@ -75,7 +75,6 @@ public class PserverInstance {
     private String purpose;
     @SerializedName("p-interfaces")
     @Expose
-    @Valid
     private PInterfaceInstanceList pInterfaceInstanceList;
 
     public String getPserverId() {

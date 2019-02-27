@@ -54,6 +54,7 @@ import org.onap.pomba.contextbuilder.aai.datatype.PserverInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.PInterfaceInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.L3networkInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.LInterfaceInstance;
+import org.onap.pomba.contextbuilder.aai.datatype.LogicalLinkInstance;
 import org.onap.pomba.contextbuilder.aai.exception.AuditError;
 import org.onap.pomba.contextbuilder.aai.exception.AuditException;
 import org.slf4j.Logger;
@@ -65,6 +66,7 @@ import org.onap.pomba.common.datatypes.PInterface;
 import com.bazaarvoice.jolt.JsonUtils;
 import org.onap.pomba.common.datatypes.Pserver;
 import org.onap.pomba.common.datatypes.LInterface;
+import org.onap.pomba.common.datatypes.LogicalLink;
 
 
 public class RestUtil {
@@ -90,9 +92,8 @@ public class RestUtil {
     private static final String CATALOG_IMAGE = "image";
     private static final String CATALOG_PSERVER = "pserver";
     private static final String CATALOG_L3_NETWORK = "l3-network";
+    private static final String CATALOG_LOGICAL_LINK = "logical-link";
     private static final String CATALOG_PNF = "pnf";
-    private static final String CATALOG_L_INTERFACE = "l-interface";
-
     private static final String VF_MODULES = "vf-modules";
     private static final String VF_MODULE = "vf-module";
 
@@ -119,7 +120,6 @@ public class RestUtil {
     private static final String ATTRIBUTE_NF_ROLE = "nfRole";
     private static final String ATTRIBUTE_NF_TYPE = "nfType";
     private static final String ATTRIBUTE_NF_FUNCTION = "nfFunction";
-    private static final String ATTRIBUTE_RESOURCE_VERSION = "resourceVersion";
     private static final String ATTRIBUTE_NAME2 = "name2";
     private static final String ATTRIBUTE_NAME2_SOURCE = "name2Source";
     private static final String ATTRIBUTE_EQUIPMENT_TYPE = "equipType";
@@ -150,6 +150,12 @@ public class RestUtil {
     private static final String ATTRIBUTE_ADMIN_STATUS = "adminStatus";
     private static final String ATTRIBUTE_NFC_NAMING_CODE = "nfcNamingCode";
     private static final String ATTRIBUTE_NF_NAMING_CODE = "nfNamingCode";
+    private static final String ATTRIBUTE_LINK_TYPE = "linkType";
+    private static final String ATTRIBUTE_ROUTING_PROTOCOL = "routingProtocol";
+    private static final String ATTRIBUTE_IP_VERSION = "ipVersion";
+    private static final String ATTRIBUTE_PROV_STATUS = "provStatus";
+    private static final String ATTRIBUTE_LINK_ROLE = "linkRole";
+    private static final String ATTRIBUTE_CIRCUIT_ID = "circuitId";
 
 
     /**
@@ -275,6 +281,16 @@ public class RestUtil {
                 log.info("Message from AAI for VNF %s,message body: %s", genericVNFURL, JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(genericVNFPayload)));
                 // Logic to Create the Generic VNF Instance POJO object
                 VnfInstance vnfInstance = VnfInstance.fromJson(genericVNFPayload);
+
+                //Obtain L-Interface level logical-link
+                if ((vnfInstance.getLInterfaceInstanceList() != null)
+                        &&(!(vnfInstance.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                          List<LInterfaceInstance> lInterfaceInstList_aai = vnfInstance.getLInterfaceInstanceList().getLInterfaceList();
+                          for (LInterfaceInstance lInterfaceInst_aai : lInterfaceInstList_aai) {
+                              lInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
+                                       transactionId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
+                          }
+                }
                 vnfLst.add(vnfInstance);
 
                 // Update VModule with l3-network list from aai, if any.
@@ -297,8 +313,12 @@ public class RestUtil {
         //Obtain l3-network on service level
         List<L3networkInstance> l3networkLstInService = retrieveAaiModelDataL3NetworkInServiceLevel (aaiClient, baseURL, transactionId, aaiBasicAuthorization, serviceInstancePayload) ;
 
+        //Obtain logical-link on service level
+        List<LogicalLinkInstance> logicalLinkInstanceLstInService = obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
+                transactionId,  aaiBasicAuthorization, ServiceInstance.fromJson(serviceInstancePayload).getRelationshipList());
+
         // Transform to common model and return
-        return transform(ServiceInstance.fromJson(serviceInstancePayload), vnfLst, vnfcMap, l3networkMapInVnf, vnfVfmoduleVserverMap, pnfLst, l3networkLstInService);
+        return transform(ServiceInstance.fromJson(serviceInstancePayload), vnfLst, vnfcMap, l3networkMapInVnf, vnfVfmoduleVserverMap, pnfLst, l3networkLstInService, logicalLinkInstanceLstInService);
     }
 
     private static void buildVModuleWithL3NetworkInfo (VnfInstance vnfInstance,
@@ -323,7 +343,7 @@ public class RestUtil {
                         }
 
                         if (!(relatedLinkList.isEmpty())) {
-                            List<L3networkInstance> l3nwInsLst = queryAaiForL3networkInfo (aaiClient,baseURL,transactionId,aaiBasicAuthorization,relatedLinkList);
+                             List<L3networkInstance> l3nwInsLst = queryAaiForL3networkInfo (aaiClient,baseURL,transactionId,aaiBasicAuthorization,relatedLinkList);
 
                             if ((l3nwInsLst != null) && (!l3nwInsLst.isEmpty())) {
                                 t_vfModule.setL3NetworkList(l3nwInsLst);
@@ -363,10 +383,94 @@ public class RestUtil {
                 // Logic to Create the Generic VNF Instance POJO object
                 PnfInstance pnfInstance = PnfInstance.fromJson(genericPNFPayload);
                 pnfLst.add(pnfInstance);
+
+                //Obtain P-Interface level logical-link
+                if ((pnfInstance.getPInterfaceInstanceList() != null)
+                        &&(!(pnfInstance.getPInterfaceInstanceList().getPInterfaceList().isEmpty()))) {
+                          List<PInterfaceInstance> pInterfaceInstList_aai = pnfInstance.getPInterfaceInstanceList().getPInterfaceList();
+                          for (PInterfaceInstance pInterfaceInst_aai : pInterfaceInstList_aai) {
+                              pInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
+                                       transactionId,  aaiBasicAuthorization, pInterfaceInst_aai.getRelationshipList()));
+
+                              //Obtain L-Interface level logical-link
+                              if ((pInterfaceInst_aai.getLInterfaceInstanceList() != null)
+                                      &&(!(pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                                        List<LInterfaceInstance> lInterfaceInstList_aai = pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList();
+                                        for (LInterfaceInstance lInterfaceInst_aai : lInterfaceInstList_aai) {
+                                            lInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
+                                                     transactionId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
+                                        }
+                              }
+                          }
+                }
             }
         }
 
         return pnfLst;
+    }
+
+    private static List<LogicalLinkInstance> obtainLogicalLinkInfoFromAai(RestClient aaiClient, String baseURL,
+            String transactionId, String aaiBasicAuthorization, RelationshipList logicalLinkRelateionShipList) throws AuditException {
+        if (logicalLinkRelateionShipList == null) {
+            return null;
+        }
+
+        List<Relationship> logicalLinkRelateionShipLocalList = logicalLinkRelateionShipList.getRelationship();
+        if ((logicalLinkRelateionShipLocalList == null) || (logicalLinkRelateionShipLocalList.size() < 1 )) {
+            return null;
+        }
+
+        List<String> relatedLinkList = new ArrayList<>();
+
+        for ( Relationship logicalLinkRelationShip : logicalLinkRelateionShipLocalList ) {
+            if (logicalLinkRelationShip.getRelatedTo().equals(CATALOG_LOGICAL_LINK)) {
+                String logicalLink_RelatedLink = logicalLinkRelationShip.getRelatedLink();
+                relatedLinkList.add(logicalLink_RelatedLink);
+            }
+        }
+
+        if (!(relatedLinkList.isEmpty())) {
+            List<LogicalLinkInstance> logicalLinkInsLst = queryAaiForLogicalLinkData (aaiClient,baseURL,transactionId,aaiBasicAuthorization,relatedLinkList);
+
+            if ((logicalLinkInsLst != null) && (!logicalLinkInsLst.isEmpty())) {
+
+                return logicalLinkInsLst;
+            }
+        }
+
+        return null;
+    }
+
+    private static List<LogicalLinkInstance> queryAaiForLogicalLinkData(RestClient aaiClient, String baseURL,
+            String transactionId, String aaiBasicAuthorization, List<String> genericRelatedLinkLst) throws AuditException {
+        if ( genericRelatedLinkLst.isEmpty()) {
+            return null;
+         }
+
+        log.info(LogMessages.NUMBER_OF_API_CALLS, "Logical-link", genericRelatedLinkLst.size());
+        log.info(LogMessages.API_CALL_LIST, "Logical-link", printOutAPIList(genericRelatedLinkLst));
+
+        String genericDataPayload = null;
+        List<LogicalLinkInstance> instanceLst = new ArrayList<>(); // List of the LogicalLinkInstance POJO object
+
+        for (String genericRelatedLink : genericRelatedLinkLst) {
+            String genericURL = baseURL + genericRelatedLink;
+            // Response from generic l3-network API call
+             genericDataPayload =
+                    getResource(aaiClient, genericURL, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
+
+            if (isEmptyJson(genericDataPayload)) {
+                log.info(LogMessages.NOT_FOUND, " url ", genericRelatedLink);
+            } else {
+                log.info("Message from AAI for logical-link %s ,message body: %s",genericRelatedLink, JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(genericDataPayload)));
+
+                  LogicalLinkInstance logicalLinkInstance = LogicalLinkInstance.fromJson(genericDataPayload);
+                  instanceLst.add(logicalLinkInstance);
+
+             }
+        }
+
+        return instanceLst;
     }
 
     private static List<L3networkInstance> queryAaiForL3networkInfo(RestClient aaiClient, String baseURL,
@@ -486,7 +590,7 @@ public class RestUtil {
 
                 List<Vserver> vserverLst = new ArrayList<>();
                 for (String vserverLink : vserverLinkLst) {
-                    String vserverURL = baseURL + vserverLink;
+                    String vserverURL = baseURL + vserverLink + DEPTH;
                     vserverPayload = getResource(aaiClient, vserverURL, aaiBasicAuthorization,  transactionId,
                             MediaType.valueOf(MediaType.APPLICATION_XML));
 
@@ -500,12 +604,17 @@ public class RestUtil {
                         List<PserverInstance> pserverInstanceLst = getPserverInfoFromAai(vserverPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization);
                         if ((pserverInstanceLst != null) && (!pserverInstanceLst.isEmpty())) {
                             vserver.setPserverInstanceList(pserverInstanceLst);
-                        }
 
-                        // add L-interface List if any
-                        List<LInterfaceInstance> lInterfaceInstanceLst = getLInterfaceInstanceInfoFromAai(vserverPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization);
-                        if ((lInterfaceInstanceLst != null) && (!lInterfaceInstanceLst.isEmpty())) {
-                            vserver.setlInterfaceInstanceList(lInterfaceInstanceLst);
+                            //Obtain l-Interface level logical-link
+                            if ((vserver.getLInterfaceInstanceList() != null)
+                                    &&(!(vserver.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                                      List<LInterfaceInstance> lInterfaceInstList_aai = vserver.getLInterfaceInstanceList().getLInterfaceList();
+                                      for (LInterfaceInstance lInterfaceInst_aai : lInterfaceInstList_aai) {
+                                          lInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
+                                                   transactionId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
+                                      }
+                            }
+
                         }
 
                         vserverLst.add(vserver);
@@ -548,46 +657,31 @@ public class RestUtil {
             } else {
                 log.info("Message from AAI for pserver %s ,message body: %s", pserverURL,pserverPayload);
                 // Logic to Create the Pserver POJO object
-                PserverInstance pserver = PserverInstance.fromJson(pserverPayload);
+                PserverInstance pserverInst = PserverInstance.fromJson(pserverPayload);
+
+                if ((pserverInst.getPInterfaceInstanceList() != null)
+                        &&(!(pserverInst.getPInterfaceInstanceList().getPInterfaceList().isEmpty()))) {
+                          List<PInterfaceInstance> pInterfaceInstList_aai = pserverInst.getPInterfaceInstanceList().getPInterfaceList();
+                          for (PInterfaceInstance pInterfaceInst_aai : pInterfaceInstList_aai) {
+                              //Obtain P-Interface level logical-link
+                              pInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
+                                       transactionId,  aaiBasicAuthorization, pInterfaceInst_aai.getRelationshipList()));
+
+                              List<LInterfaceInstance> lInterfaceInstList_aai = pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList();
+                              for (LInterfaceInstance lInterfaceInst_aai : lInterfaceInstList_aai) {
+                                  //Obtain L-Interface level logical-link
+                                  lInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
+                                           transactionId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
+                              }
+
+                          }
+                }
 
                 //update P-Interface if any.
-                pserverLst.add(pserver);
+                pserverLst.add(pserverInst);
             }
         }
         return pserverLst;
-    }
-
-    private static List<LInterfaceInstance> getLInterfaceInstanceInfoFromAai (String vserverPayload, RestClient aaiClient, String baseURL, String transactionId, String aaiBasicAuthorization) throws AuditException {
-        if (vserverPayload == null) {
-            //already reported.
-            return null;
-        }
-
-        //Obtain related L-Interface instance info
-        List<String> lInterfaceRelatedLinkList = handleRelationshipGeneral (vserverPayload,CATALOG_L_INTERFACE );
-        List<LInterfaceInstance> lInterfaceLst = null;
-        if ((lInterfaceRelatedLinkList == null) || (lInterfaceRelatedLinkList.isEmpty())){
-            // already reported
-            return null;
-        }
-        lInterfaceLst = new ArrayList<>();
-        for (String lInterfaceRelatedLink : lInterfaceRelatedLinkList) {
-            String lInterfaceURL = baseURL + lInterfaceRelatedLink + DEPTH;;
-            String lInterfacePayload = getResource(aaiClient, lInterfaceURL, aaiBasicAuthorization,  transactionId,
-                    MediaType.valueOf(MediaType.APPLICATION_XML));
-
-            if (isEmptyJson(lInterfacePayload)) {
-                log.info(LogMessages.NOT_FOUND, "L-INTERFACE with url", lInterfaceURL);
-            } else {
-                log.info("Message from AAI for L-INTERFACE %s ,message body: %s", lInterfaceURL,lInterfacePayload);
-                // Logic to Create the Pserver POJO object
-                LInterfaceInstance lInterfaceInstance = LInterfaceInstance.fromJson(lInterfacePayload);
-
-                //update P-Interface if any.
-                lInterfaceLst.add(lInterfaceInstance);
-            }
-        }
-        return lInterfaceLst;
     }
 
     private static String getVnfId(String genericVNFPayload) throws AuditException {
@@ -603,7 +697,8 @@ public class RestUtil {
             Map<String, List<VnfcInstance>> vnfcMap,
             Map<String, List<L3networkInstance>> l3networkMap_in_vnf,
             Map<String, Map<String, List<Vserver>>> vnf_vfmodule_vserver_Map, List<PnfInstance> pnfLst_fromAAi,
-            List<L3networkInstance> l3networkLst_in_service) {
+            List<L3networkInstance> l3networkLst_in_service,
+            List<LogicalLinkInstance> logicalLinkInstanceLstInService) {
         ModelContext context = new ModelContext();
         Service service = new Service();
         service.setModelInvariantUUID(svcInstance.getModelInvariantId());
@@ -623,6 +718,18 @@ public class RestUtil {
             vf.setDataQuality(DataQuality.ok());
             vf.setAttributes(populateVnfAttributeList(vnf));
             String key = vnf.getVnfId();   // generic vnf-id (top level of the key)
+
+            //Update Vnf level L-Interface here
+            if ((vnf.getLInterfaceInstanceList() != null) && (!(vnf.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                List<LInterfaceInstance> lInterfaceInstanceList = vnf.getLInterfaceInstanceList().getLInterfaceList();
+              List<LInterface> lInterfacelst = null;
+              if (lInterfaceInstanceList != null) {
+                  lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
+              }
+              if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
+                  vf.setLInterfaceList(lInterfacelst);
+              }
+            }
 
             // ---------------- Handle VNFC data
             List<VNFC> vnfcLst = new ArrayList<>();
@@ -742,14 +849,16 @@ public class RestUtil {
                                         }
                                         vm.setPServer(pServer);
 
-                                        //Update L-Interface here
-                                        List<LInterfaceInstance> lInterfaceInstanceList = vserver.getlInterfaceInstanceList();
-                                        List<LInterface> lInterfacelst = null;
-                                        if (lInterfaceInstanceList != null) {
-                                            lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
-                                        }
-                                        if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
-                                            vm.setLInterfaceList(lInterfacelst);
+                                        //Update VServer level L-Interface here
+                                        if ((vserver.getLInterfaceInstanceList() != null) && (!(vserver.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                                            List<LInterfaceInstance> lInterfaceInstanceList = vserver.getLInterfaceInstanceList().getLInterfaceList();
+                                          List<LInterface> lInterfacelst = null;
+                                          if (lInterfaceInstanceList != null) {
+                                              lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
+                                          }
+                                          if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
+                                              vm.setLInterfaceList(lInterfacelst);
+                                          }
                                         }
 
                                         vmList.add(vm);
@@ -778,6 +887,9 @@ public class RestUtil {
         context.setPnfs(transformPNF(pnfLst_fromAAi));
         //Add service-level l3-network info
         context.setNetworkList(transformL3Network (l3networkLst_in_service));
+        //Add service-level logical-link info
+        context.setLogicalLinkList(transformLogicalLink(logicalLinkInstanceLstInService));
+
         log.info((String.format("ModelContext body: %s ", JsonUtils.toPrettyJsonString(context))));
         return context;
     }
@@ -954,14 +1066,7 @@ public class RestUtil {
                      att.setValue(String.valueOf(pserverInstance.getInMaint()));
                      attributeList.add(att);
                  }
-                 if ((name.name().equals(ATTRIBUTE_RESOURCE_VERSION))
-                         && isValid(pserverInstance.getResourceVersion())){
-                     Attribute att = new Attribute();
-                     att.setDataQuality(DataQuality.ok());
-                     att.setName(Attribute.Name.resourceVersion);
-                     att.setValue(String.valueOf(pserverInstance.getResourceVersion()));
-                     attributeList.add(att);
-                 }
+
                  if ((name.name().equals(ATTRIBUTE_PURPOSE))
                          && isValid(pserverInstance.getPurpose())){
                      Attribute att = new Attribute();
@@ -1064,6 +1169,9 @@ public class RestUtil {
             if (!attributeList.isEmpty()) {
                 lInterface.setAttributes(attributeList);
             }
+
+            // add Logical-link info
+            lInterface.setLogicalLinkList(transformLogicalLink(lInterfaceInstance.getLogicalLinkInstanceList()));
             lInterfaceLst.add(lInterface);
         }
 
@@ -1081,12 +1189,26 @@ public class RestUtil {
             // pInterface.setUuid( ); // there is no mapping data for UUID from AAI data.
             pInterface.setName(pInterfaceInst_aai.getInterfaceName());
             pInterface.setDataQuality(DataQuality.ok());
+            //Update L-Interface here
+            if ((pInterfaceInst_aai.getLInterfaceInstanceList() != null) && (!(pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                List<LInterfaceInstance> lInterfaceInstanceList = pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList();
+              List<LInterface> lInterfacelst = null;
+              if (lInterfaceInstanceList != null) {
+                  lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
+              }
+              if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
+                  pInterface.setLInterfaceList(lInterfacelst);
+              }
+            }
 
             List<Attribute>  pInterface_attributeList = new ArrayList<>();
             updatePInterfaceAttributeList (pInterfaceInst_aai, pInterface_attributeList) ;
             if (!pInterface_attributeList.isEmpty()) {
                 pInterface.setAttributes(pInterface_attributeList);
             }
+
+            // add Logical-link info
+            pInterface.setLogicalLinkList(transformLogicalLink(pInterfaceInst_aai.getLogicalLinkInstanceList()));
 
             pInterfaceList.add(pInterface);
         }
@@ -1126,15 +1248,6 @@ public class RestUtil {
                     att.setDataQuality(DataQuality.ok());
                     att.setName(Attribute.Name.nfRole);
                     att.setValue(String.valueOf( pnfFromAai.getNfRole()));
-                    attributeList.add(att);
-                }
-
-                if ((name.name().equals(ATTRIBUTE_RESOURCE_VERSION))
-                        && isValid(pnfFromAai.getResourceVersion())){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.resourceVersion);
-                    att.setValue(String.valueOf( pnfFromAai.getResourceVersion()));
                     attributeList.add(att);
                 }
 
@@ -1233,6 +1346,17 @@ public class RestUtil {
                     pInterface.setUuid(pInterfaceInst_aai.getEquipmentIdentifier() );
                     pInterface.setName(pInterfaceInst_aai.getInterfaceName());
                     pInterface.setDataQuality(DataQuality.ok());
+                    //Update L-Interface here
+                    if ((pInterfaceInst_aai.getLInterfaceInstanceList() != null) && (!(pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList().isEmpty()))) {
+                        List<LInterfaceInstance> lInterfaceInstanceList = pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList();
+                      List<LInterface> lInterfacelst = null;
+                      if (lInterfaceInstanceList != null) {
+                          lInterfacelst = getLInterfaceLstInfo (lInterfaceInstanceList);
+                      }
+                      if ((lInterfacelst != null) && (!lInterfacelst.isEmpty())) {
+                          pInterface.setLInterfaceList(lInterfacelst);
+                      }
+                    }
 
                     List<Attribute>  pInterface_attributeList = new ArrayList<>();
                     updatePInterfaceAttributeList (pInterfaceInst_aai, pInterface_attributeList) ;
@@ -1240,6 +1364,8 @@ public class RestUtil {
                         pInterface.setAttributes(pInterface_attributeList);
                     }
 
+                    // add Logical-link info
+                    pInterface.setLogicalLinkList(transformLogicalLink(pInterfaceInst_aai.getLogicalLinkInstanceList()));
                     pInterfaceList.add(pInterface);
                 }
 
@@ -1254,6 +1380,8 @@ public class RestUtil {
 
         return pnfLst;
     }
+
+
 
     /*
      * Transform AAI Representation to Common Model
@@ -1303,15 +1431,6 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if ((name.name().equals(ATTRIBUTE_RESOURCE_VERSION  ))
-                        && isValid(l3networkFromAai.getResourceVersion())){
-                    Attribute att = new Attribute();
-                    att.setDataQuality(DataQuality.ok());
-                    att.setName(Attribute.Name.resourceVersion);
-                    att.setValue(String.valueOf( l3networkFromAai.getResourceVersion()));
-                    attributeList.add(att);
-                }
-
                 if ((name.name().equals(ATTRIBUTE_PHYSICAL_NETWORK_NAME  ))
                         && isValid(l3networkFromAai.getPhysicalNetworkName())){
                     Attribute att = new Attribute();
@@ -1340,6 +1459,137 @@ public class RestUtil {
         } // done the vnfInstance
 
         return l3NetworkLst;
+    }
+
+    /*
+     * Transform AAI Representation to Common Model
+     */
+    public static List<LogicalLink> transformLogicalLink(List<LogicalLinkInstance> logicalLinkInstanceLstFromAAI) {
+        if ((logicalLinkInstanceLstFromAAI == null ) || (logicalLinkInstanceLstFromAAI.isEmpty())) {
+            log.info(LogMessages.API_CALL_LIST, "Nill logical-link instance list");
+           return null;
+        }
+        List<LogicalLink> logicalLinkLst = new ArrayList<>();
+
+        for (LogicalLinkInstance logicalLinkInstFromAai : logicalLinkInstanceLstFromAAI) {
+            LogicalLink logicalLink = new LogicalLink();
+            logicalLink.setUuid(logicalLinkInstFromAai.getLinkId());
+            logicalLink.setName(logicalLinkInstFromAai.getLinkName());
+            logicalLink.setModelVersionID(logicalLinkInstFromAai.getModelVersionId());
+            logicalLink.setModelInvariantUUID(logicalLinkInstFromAai.getModelInvariantId());
+            logicalLink.setDataQuality(DataQuality.ok());
+            List<Attribute>  attributeList = new ArrayList<>();
+
+            // Iterate through the ENUM Attribute list
+            for (Attribute.Name  name: Attribute.Name.values()) {
+                if ((name.name().equals(ATTRIBUTE_LOCKEDBOOLEAN  ))
+                        && isValid(logicalLinkInstFromAai.getInMaint())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.lockedBoolean);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getInMaint()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_LINK_TYPE  ))
+                        && isValid(logicalLinkInstFromAai.getLinkType())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.linkType);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getLinkType()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_ROUTING_PROTOCOL  ))
+                        && isValid(logicalLinkInstFromAai.getRoutingProtocol())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.routingProtocol);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getRoutingProtocol()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_SPEED_VALUE  ))
+                        && isValid(logicalLinkInstFromAai.getSpeedValue())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.speedValue);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getSpeedValue()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_SPEED_UNITS  ))
+                        && isValid(logicalLinkInstFromAai.getSpeedUnits())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.speedUnits);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getSpeedUnits()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_IP_VERSION  ))
+                        && isValid(logicalLinkInstFromAai.getIpVersion())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.ipVersion);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getIpVersion()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_PROV_STATUS  ))
+                        && isValid(logicalLinkInstFromAai.getProvStatus())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.provStatus);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getProvStatus()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_LINK_ROLE  ))
+                        && isValid(logicalLinkInstFromAai.getLinkRole())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.linkRole);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getLinkRole()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_NAME2  ))
+                        && isValid(logicalLinkInstFromAai.getLinkName2())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.name2);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getLinkName2()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_CIRCUIT_ID  ))
+                        && isValid(logicalLinkInstFromAai.getCircuitId())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.circuitId);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getCircuitId()));
+                    attributeList.add(att);
+                }
+
+                if ((name.name().equals(ATTRIBUTE_PURPOSE  ))
+                        && isValid(logicalLinkInstFromAai.getPurpose())){
+                    Attribute att = new Attribute();
+                    att.setDataQuality(DataQuality.ok());
+                    att.setName(Attribute.Name.purpose);
+                    att.setValue(String.valueOf( logicalLinkInstFromAai.getPurpose()));
+                    attributeList.add(att);
+                }
+            }
+
+            if (!attributeList.isEmpty()) {
+                logicalLink.setAttributes(attributeList);
+            }
+
+            logicalLinkLst.add(logicalLink);
+        } // done the vnfInstance
+
+        return logicalLinkLst;
     }
 
     private static void updatePInterfaceAttributeList(PInterfaceInstance pInterfaceInstFromAai, List<Attribute>  pInterfaceAttributeList ) {
@@ -1396,15 +1646,6 @@ public class RestUtil {
                 att.setDataQuality(DataQuality.ok());
                 att.setName(Attribute.Name.interfaceType);
                 att.setValue(String.valueOf( pInterfaceInstFromAai.getInterfaceType()));
-                pInterfaceAttributeList.add(att);
-            }
-
-            if ((name.name().equals( ATTRIBUTE_RESOURCE_VERSION ))
-                    && isValid(pInterfaceInstFromAai.getResourceVersion())){
-                Attribute att = new Attribute();
-                att.setDataQuality(DataQuality.ok());
-                att.setName(Attribute.Name.resourceVersion);
-                att.setValue(String.valueOf( pInterfaceInstFromAai.getResourceVersion()));
                 pInterfaceAttributeList.add(att);
             }
 
@@ -1771,11 +2012,6 @@ public class RestUtil {
 
     private static boolean isValid ( String inputField) {
         if (inputField == null) {
-            return false;
-        }
-        String localInputField = inputField.trim();
-
-        if (localInputField.equals("")) {
             return false;
         }
 

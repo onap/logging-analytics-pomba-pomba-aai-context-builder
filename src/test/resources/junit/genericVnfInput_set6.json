@@ -1,0 +1,148 @@
+{
+    "vnf-id": "8a9ddb25-2e79-449c-a40d-5011bac0da39",
+    "vnf-name": "Firewall-1",
+    "vnf-type": "vFW-vSINK-service/vFWvSINK 0",
+    "service-id": "8ea56b0d-459d-4668-b363-c9567432d8b7",
+    "prov-status": "PREPROV",
+    "orchestration-status": "Created",
+    "in-maint": false,
+    "is-closed-loop-disabled": false,
+    "resource-version": "1527637940029",
+    "model-invariant-id": "59dd4d63-8f21-406c-98c0-3b057bb86820",
+    "model-version-id": "e2d52f32-a952-46f5-800c-c250903625d6",
+    "model-customization-id": "3b822416-475d-4e1c-aac3-2544b0a0fdfc",
+    "nf-type": "",
+    "nf-function": "",
+    "nf-role": "",
+    "nf-naming-code": "",
+ 	"l-interfaces" : {
+			"l-interface" : [
+			{
+			   "interface-id": "junit-l-interface-3",
+			   "interface-name": "junit-l-interface-name3",
+			   "interface-role": "interface-role3",
+			   "is-port-mirrored": "true",
+			   "admin-status": "admin-status3",
+			   "network-name": "network-name-amdocs",
+			   "macaddr": "macaddr-3",
+			   "in-maint": "true",
+			   "relationship-list": {
+				           "relationship": [
+				            {
+				                "related-to": "logical-link",
+				                "related-link": "/aai/v13/network/logical-links/logical-link/01e8d84a-logical-link-3",
+				                "relationship-data": [
+				                    {
+				                        "relationship-key": "logical-link.link-name",
+				                        "relationship-value": "01e8d84a-logical-link-3"
+				                    }
+				                ],
+				                "related-to-property": [
+				                    {
+				                        "property-key": "logical-link.circuit-id",
+				                        "property-value": "NET_8802"
+				                    }
+				                ]
+				            }
+				           ]
+				         }
+			},
+			{
+			   "interface-id": "junit-l-interface-4",
+			   "interface-name": "junit-l-interface-name4",
+			   "interface-role": "interface-role4",
+			   "is-port-mirrored": "true",
+			   "admin-status": "admin-status4",
+			   "network-name": "network-name-amdocs",
+			   "macaddr": "macaddr-4",
+			   "in-maint": "true",
+			   "relationship-list": {
+				           "relationship": [
+				            {
+				                "related-to": "logical-link",
+				                "related-link": "/aai/v13/network/logical-links/logical-link/01e8d84a-logical-link-4",
+				                "relationship-data": [
+				                    {
+				                        "relationship-key": "logical-link.link-name",
+				                        "relationship-value": "01e8d84a-logical-link-4"
+				                    }
+				                ],
+				                "related-to-property": [
+				                    {
+				                        "property-key": "logical-link.circuit-id",
+				                        "property-value": "NET_8802"
+				                    }
+				                ]
+				            }
+				           ]
+				         }
+			}
+		  ]
+		},
+    "relationship-list": {
+        "relationship": [
+            {
+                "related-to": "vserver",
+                "related-link": "/aai/v13/cloud-infrastructure/cloud-regions/cloud-region/CloudOwner/RegionOne/tenants/tenant/b49b830686654191bb1e952a74b014ad/vservers/vserver/b494cd6e-b9f3-45e0-afe7-e1d1a5f5d74a",
+                "relationship-data": [
+                    {
+                        "relationship-key": "cloud-region.cloud-owner",
+                        "relationship-value": "CloudOwner"
+                    },
+                    {
+                        "relationship-key": "cloud-region.cloud-region-id",
+                        "relationship-value": "RegionOne"
+                    },
+                    {
+                        "relationship-key": "tenant.tenant-id",
+                        "relationship-value": "b49b830686654191bb1e952a74b014ad"
+                    },
+                    {
+                        "relationship-key": "vserver.vserver-id",
+                        "relationship-value": "b494cd6e-b9f3-45e0-afe7-e1d1a5f5d74a"
+                    }
+                ]
+            },
+            {
+                "related-to": "service-instance",
+                "related-link": "/aai/v13/business/customers/customer/Demonstration/service-subscriptions/service-subscription/vFWCL/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+                "relationship-data": [
+                    {
+                        "relationship-key": "customer.global-customer-id",
+                        "relationship-value": "Demonstration"
+                    },
+                    {
+                        "relationship-key": "service-subscription.service-type",
+                        "relationship-value": "vFWCL"
+                    },
+                    {
+                        "relationship-key": "service-instance.service-instance-id",
+                        "relationship-value": "adc3cc2a-c73e-414f-8ddb-367de81300cb"
+                    }
+                ],
+                "related-to-property": [
+                    {
+                        "property-key": "service-instance.service-instance-name",
+                        "property-value": "Firewall1"
+                    }
+                ]
+            }
+        ]
+    },
+    "vf-modules": {
+        "vf-module": [
+            {
+                "vf-module-id": "1563b649-9e05-4288-b7d9-e3639a54ace6",
+                "vf-module-name": "vFW_SINC_Module-2",
+                "heat-stack-id": "vFW_SINC_Module-2/41c4533a-748d-4cf4-a8d3-eccdd0aeb0d4",
+                "orchestration-status": "active",
+                "is-base-vf-module": true,
+                "resource-version": "1527638439198",
+                "model-invariant-id": "74bc1518-282d-4148-860f-8892b6369456",
+                "model-version-id": "4e3d28cf-d654-41af-a47b-04b4bd0ac58e",
+                "model-customization-id": "cc51ab7d-9b03-4bd6-9104-09df0c7c7907",
+                "module-index": 0
+            }
+        ]
+    }
+}

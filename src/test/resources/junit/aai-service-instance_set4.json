@@ -1,0 +1,44 @@
+{
+    "service-instance-id": "adc3cc2a-c73e-414f-8ddb-367de81300cb",
+    "service-instance-name": "Firewall1",
+    "model-invariant-id": "0c5a20de-87ad-442c-9190-f38ab0a6bb7f",
+    "model-version-id": "d3d6cf83-d03a-43cc-99ff-206d40bb9a72",
+    "resource-version": "1527637758480",
+    "relationship-list": {
+        "relationship": [
+            {
+                "related-to": "logical-link",
+                "related-link": "/aai/v13/network/logical-links/logical-link/01e8d84a-logical-link-1",
+                "relationship-data": [
+                    {
+                        "relationship-key": "logical-link.link-name",
+                        "relationship-value": "01e8d84a-logical-link-1"
+                    }
+                ],
+                "related-to-property": [
+                    {
+                        "property-key": "logical-link.circuit-id",
+                        "property-value": "NET_8802"
+                    }
+                ]
+            },
+            {
+                "related-to": "logical-link",
+                "related-link": "/aai/v13/network/logical-links/logical-link/01e8d84a-logical-link-2",
+                "relationship-data": [
+                    {
+                        "relationship-key": "logical-link.link-name",
+                        "relationship-value": "01e8d84a-logical-link-2"
+                    }
+                ],
+                "related-to-property": [
+                    {
+                        "property-key": "logical-link.circuit-id",
+                        "property-value": "NET_8802"
+                    }
+                ]
+            }
+
+        ]
+    }
+}

@@ -7,40 +7,32 @@
     "in-maint": false,
     "is-closed-loop-disabled": false,
     "resource-version": "1528481820321",
+	"l-interfaces" : {
+			"l-interface" : [
+			{
+			   "interface-id": "junit-l-interface-1",
+			   "interface-name": "junit-l-interface-name1",
+			   "interface-role": "interface-role1",
+			   "is-port-mirrored": "true",
+			   "admin-status": "admin-status1",
+			   "network-name": "network-name-amdocs",
+			   "macaddr": "macaddr-1",
+			   "in-maint": "true"
+			},
+			{
+			   "interface-id": "junit-l-interface-2",
+			   "interface-name": "junit-l-interface-name2",
+			   "interface-role": "interface-role2",
+			   "is-port-mirrored": "true",
+			   "admin-status": "admin-status2",
+			   "network-name": "network-name-amdocs",
+			   "macaddr": "macaddr-2",
+			   "in-maint": "true"
+			}
+		  ]
+		},
     "relationship-list": {
         "relationship": [
-            {
-          	  	"related-to": "l-interface",
-      	      	"relationship-label": "tosca.relationships.HostedOn",
-        	  	"related-link": "/aai/v13/l-interfaces/l-interface/junit-l-interface-name1",
-            	"relationship-data": [
-            	    {
-               		  "relationship-key": "l-interface.interface-name",
-               		  "relationship-value": "junit-l-interface-name1"
-            	    }
-            	  ],
-            	"related-to-property": [
-               	  {	  "property-key": "l-interface.interface-id",
-                	  "property-value": "junit-l-interface-1"
-                  }
- 				]
-       		},
-            {
-          	  	"related-to": "l-interface",
-      	      	"relationship-label": "tosca.relationships.HostedOn",
-        	  	"related-link": "/aai/v13/l-interfaces/l-interface/junit-l-interface-name2",
-            	"relationship-data": [
-            	    {
-               		  "relationship-key": "l-interface.interface-name",
-               		  "relationship-value": "junit-l-interface-name2"
-            	    }
-            	  ],
-            	"related-to-property": [
-               	  {	  "property-key": "l-interface.interface-id",
-                	  "property-value": "junit-l-interface-2"
-                  }
- 				]
-       		},
             {
                 "related-to": "generic-vnf",
                 "related-link": "/aai/v13/network/generic-vnfs/generic-vnf/8a9ddb25-2e79-449c-a40d-5011bac0da39",
