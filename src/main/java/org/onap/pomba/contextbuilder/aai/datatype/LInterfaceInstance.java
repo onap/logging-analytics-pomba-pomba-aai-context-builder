@@ -23,6 +23,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -56,6 +59,18 @@ public class LInterfaceInstance {
     @SerializedName("in-maint")
     @Expose
     private String inMaint;
+    @SerializedName("relationship-list")
+    @Expose
+    private RelationshipList relationshipList;
+
+    private List<LogicalLinkInstance> logicalLinkInstanceList;
+    public List<LogicalLinkInstance> getLogicalLinkInstanceList() {
+        return logicalLinkInstanceList;
+    }
+
+    public void setLogicalLinkInstanceList(List<LogicalLinkInstance> logicalLinkInstanceList) {
+        this.logicalLinkInstanceList = logicalLinkInstanceList;
+    }
 
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -127,6 +142,14 @@ public class LInterfaceInstance {
         this.inMaint = inMaint;
     }
 
+    public RelationshipList getRelationshipList() {
+        return relationshipList;
+    }
+
+    public void setRelationshipList(RelationshipList relationshipList) {
+        this.relationshipList = relationshipList;
+    }
+
     public static LInterfaceInstance fromJson(String payload) throws AuditException {
         try {
             if (payload == null || payload.isEmpty()) {
@@ -159,7 +182,7 @@ public class LInterfaceInstance {
     */
    public LInterfaceInstance(String interfaceId, String interfaceName, String interfaceRole,
            String isPortMirrored, String adminStatus, String networkName,
-           String macAddr,String inMaint
+           String macAddr,String inMaint, RelationshipList relationshipList
            ) {
        super();
        this.interfaceId = interfaceId;
@@ -170,6 +193,7 @@ public class LInterfaceInstance {
        this.networkName = networkName;
        this.macAddr = macAddr;
        this.inMaint = inMaint;
+       this.relationshipList = relationshipList;
    }
 
 
@@ -186,6 +210,7 @@ public class LInterfaceInstance {
                 .append("networkName", networkName)
                 .append("macAddr", macAddr)
                 .append("inMaint", inMaint)
+                .append("relationshipList", relationshipList)
                .toString();
     }
 
@@ -200,6 +225,7 @@ public class LInterfaceInstance {
                 .append(networkName)
                 .append(macAddr)
                 .append(inMaint)
+                .append(relationshipList)
                 .toHashCode();
     }
 
@@ -221,6 +247,7 @@ public class LInterfaceInstance {
                 .append(networkName, rhs.networkName)
                 .append(macAddr, rhs.macAddr)
                 .append(inMaint, rhs.inMaint)
+                .append(relationshipList, rhs.relationshipList)
                .isEquals();
     }
 }

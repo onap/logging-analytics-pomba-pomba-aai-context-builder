@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.onap.pomba.contextbuilder.aai.datatype.Relationship;
 import org.onap.pomba.contextbuilder.aai.datatype.RelationshipList;
 import org.onap.pomba.contextbuilder.aai.datatype.Vserver;
+import org.onap.pomba.contextbuilder.aai.datatype.LInterfaceInstanceList;
 
 public class VserverTest {
 
@@ -62,7 +63,7 @@ public class VserverTest {
 
     @Test
     public void testVserverWithParameters() {
-        Vserver aVServer = new Vserver("vserverId", "vserverName", "vserverName2", "provStatus", "vserverSelflink", true, true, "resourceVersion", new RelationshipList());
+        Vserver aVServer = new Vserver("vserverId", "vserverName", "vserverName2", "provStatus", "vserverSelflink", true, true, "resourceVersion", new RelationshipList(), new LInterfaceInstanceList());
 
         assertEquals("vserverId", aVServer.getVserverId());
         assertEquals("vserverName", aVServer.getVserverName());
@@ -76,9 +77,9 @@ public class VserverTest {
 
     @Test
     public void testVserverEquals() {
-        Vserver aVServer1 = new Vserver("vserverId1", "vserverName1", "vserverName2", "provStatus1", "vserverSelflink1", true, true, "resourceVersion1", new RelationshipList());
-        Vserver aVServer2 = new Vserver("vserverId2", "vserverName2", "vserverName2", "provStatus2", "vserverSelflink2", false, false, "resourceVersion2", new RelationshipList());
-        Vserver aVServer3 = new Vserver("vserverId1", "vserverName1", "vserverName2", "provStatus1", "vserverSelflink1", true, true, "resourceVersion1", new RelationshipList());
+        Vserver aVServer1 = new Vserver("vserverId1", "vserverName1", "vserverName2", "provStatus1", "vserverSelflink1", true, true, "resourceVersion1", new RelationshipList(), new LInterfaceInstanceList());
+        Vserver aVServer2 = new Vserver("vserverId2", "vserverName2", "vserverName2", "provStatus2", "vserverSelflink2", false, false, "resourceVersion2", new RelationshipList(), new LInterfaceInstanceList());
+        Vserver aVServer3 = new Vserver("vserverId1", "vserverName1", "vserverName2", "provStatus1", "vserverSelflink1", true, true, "resourceVersion1", new RelationshipList(), new LInterfaceInstanceList());
 
         assertTrue(aVServer1.equals(aVServer1));
         assertFalse(aVServer1.equals(aVServer2));

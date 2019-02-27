@@ -1,0 +1,17 @@
+{
+  "link-name" : "01e8d84a-logical-link-1",
+  "link-id" : "link-id-1",
+  "model-version-id" : "model-version-id_1",
+  "model-invariant-id" : "model-invariant-id_1",
+  "link-type" : "link-type_1",
+  "routing-protocol" : "routing-protocol-1",
+  "speed-value" : "speed-value-1",
+  "speed-units" : "speed-units-001",
+  "ip-version" : "ip-version-001",
+  "prov-status" : "prov-status-1",
+  "link-role" : "link-role-1",
+  "link-name2" : "link-name2-1",
+  "circuit-id" : "circuit-id-001",
+  "purpose" : "purpose-1",
+  "in-maint" : false
+}

@@ -24,6 +24,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -56,27 +58,23 @@ public class Vserver {
     @SerializedName("resource-version")
     @Expose
     private String resourceVersion;
-
     @SerializedName("relationship-list")
     @Expose
     private RelationshipList relationshipList;
 
+    @SerializedName("l-interfaces")
+    @Expose
+    private LInterfaceInstanceList lInterfaceInstanceList;
+
+
     private List<PserverInstance> pserverInstanceList;
-    private List<LInterfaceInstance> lInterfaceInstanceList;
+
     public List<PserverInstance> getPserverInstanceList() {
         return pserverInstanceList;
     }
 
     public void setPserverInstanceList(List<PserverInstance> pserverInstanceList) {
         this.pserverInstanceList = pserverInstanceList;
-    }
-
-    public List<LInterfaceInstance> getlInterfaceInstanceList() {
-        return lInterfaceInstanceList;
-    }
-
-    public void setlInterfaceInstanceList(List<LInterfaceInstance> lInterfaceInstanceList) {
-        this.lInterfaceInstanceList = lInterfaceInstanceList;
     }
 
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
@@ -115,7 +113,7 @@ public class Vserver {
      * @param vserverId
      * @param isClosedLoopDisabled
      */
-    public Vserver(String vserverId, String vserverName, String vserverName2, String provStatus, String vserverSelflink, Boolean inMaint, Boolean isClosedLoopDisabled, String resourceVersion, RelationshipList relationshipList) {
+    public Vserver(String vserverId, String vserverName, String vserverName2, String provStatus, String vserverSelflink, Boolean inMaint, Boolean isClosedLoopDisabled, String resourceVersion, RelationshipList relationshipList, LInterfaceInstanceList lInterfaceInstanceList) {
         super();
         this.vserverId = vserverId;
         this.vserverName = vserverName;
@@ -126,6 +124,7 @@ public class Vserver {
         this.isClosedLoopDisabled = isClosedLoopDisabled;
         this.resourceVersion = resourceVersion;
         this.relationshipList = relationshipList;
+        this.lInterfaceInstanceList = lInterfaceInstanceList;
     }
 
     public String getVserverId() {
@@ -200,14 +199,22 @@ public class Vserver {
         this.relationshipList = relationshipList;
     }
 
+    public LInterfaceInstanceList getLInterfaceInstanceList() {
+        return lInterfaceInstanceList;
+    }
+
+    public void setLInterfaceInstanceList(LInterfaceInstanceList lInterfaceInstanceList) {
+        this.lInterfaceInstanceList = lInterfaceInstanceList;
+    }
+
     @Override
     public String toString() {
-        return new ToStringBuilder(this).append("vserverId", vserverId).append("vserverName", vserverName).append("vserverName2", vserverName2).append("provStatus", provStatus).append("vserverSelflink", vserverSelflink).append("inMaint", inMaint).append("isClosedLoopDisabled", isClosedLoopDisabled).append("resourceVersion", resourceVersion).append("relationshipList", relationshipList).toString();
+        return new ToStringBuilder(this).append("vserverId", vserverId).append("vserverName", vserverName).append("vserverName2", vserverName2).append("provStatus", provStatus).append("vserverSelflink", vserverSelflink).append("inMaint", inMaint).append("isClosedLoopDisabled", isClosedLoopDisabled).append("resourceVersion", resourceVersion).append("relationshipList", relationshipList).append("lInterfaceInstanceList", lInterfaceInstanceList).toString();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(relationshipList).append(provStatus).append(inMaint).append(vserverName2).append(resourceVersion).append(vserverSelflink).append(vserverName).append(vserverId).append(isClosedLoopDisabled).toHashCode();
+        return new HashCodeBuilder().append(relationshipList).append(lInterfaceInstanceList).append(provStatus).append(inMaint).append(vserverName2).append(resourceVersion).append(vserverSelflink).append(vserverName).append(vserverId).append(isClosedLoopDisabled).toHashCode();
     }
 
     @Override
@@ -219,7 +226,7 @@ public class Vserver {
             return false;
         }
         Vserver rhs = ((Vserver) other);
-        return new EqualsBuilder().append(relationshipList, rhs.relationshipList).append(provStatus, rhs.provStatus).append(inMaint, rhs.inMaint).append(vserverName2, rhs.vserverName2).append(resourceVersion, rhs.resourceVersion).append(vserverSelflink, rhs.vserverSelflink).append(vserverName, rhs.vserverName).append(vserverId, rhs.vserverId).append(isClosedLoopDisabled, rhs.isClosedLoopDisabled).isEquals();
+        return new EqualsBuilder().append(relationshipList, rhs.relationshipList).append(lInterfaceInstanceList, rhs.lInterfaceInstanceList).append(provStatus, rhs.provStatus).append(inMaint, rhs.inMaint).append(vserverName2, rhs.vserverName2).append(resourceVersion, rhs.resourceVersion).append(vserverSelflink, rhs.vserverSelflink).append(vserverName, rhs.vserverName).append(vserverId, rhs.vserverId).append(isClosedLoopDisabled, rhs.isClosedLoopDisabled).isEquals();
     }
 
 }

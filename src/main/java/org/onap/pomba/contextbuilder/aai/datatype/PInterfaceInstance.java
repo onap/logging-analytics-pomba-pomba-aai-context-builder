@@ -21,6 +21,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -62,6 +65,21 @@ public class PInterfaceInstance {
     @SerializedName("inv-status")
     @Expose
     private String invStatus;
+    @SerializedName("l-interfaces")
+    @Expose
+    private LInterfaceInstanceList lInterfaceInstanceList;
+    @SerializedName("relationship-list")
+    @Expose
+    private RelationshipList relationshipList;
+
+    private List<LogicalLinkInstance> logicalLinkInstanceList;
+    public List<LogicalLinkInstance> getLogicalLinkInstanceList() {
+        return logicalLinkInstanceList;
+    }
+
+    public void setLogicalLinkInstanceList(List<LogicalLinkInstance> logicalLinkInstanceList) {
+        this.logicalLinkInstanceList = logicalLinkInstanceList;
+    }
 
     public String getInterfaceName() {
         return interfaceName;
@@ -151,6 +169,22 @@ public class PInterfaceInstance {
         this.invStatus = invStatus;
     }
 
+    public LInterfaceInstanceList getLInterfaceInstanceList() {
+        return lInterfaceInstanceList;
+    }
+
+    public void setLInterfaceInstanceList(LInterfaceInstanceList lInterfaceInstanceList) {
+        this.lInterfaceInstanceList = lInterfaceInstanceList;
+    }
+
+    public RelationshipList getRelationshipList() {
+        return relationshipList;
+    }
+
+    public void setRelationshipList(RelationshipList relationshipList) {
+        this.relationshipList = relationshipList;
+    }
+
     /**
      * No args constructor for use in serialization
      *
@@ -174,7 +208,8 @@ public class PInterfaceInstance {
      */
     public PInterfaceInstance(String interfaceName,String speedValue,String speedUnits,
             String portDescription,String equipmentIdentifier,String interfaceRole,String interfaceType,
-            String provStatus,String resourceVersion,String  inMaint, String invStatus ) {
+            String provStatus,String resourceVersion,String  inMaint, String invStatus, LInterfaceInstanceList lInterfaceInstanceList,
+            RelationshipList relationshipList) {
         super();
         this.interfaceName   = interfaceName;
         this.speedValue      = speedValue;
@@ -187,6 +222,8 @@ public class PInterfaceInstance {
         this.resourceVersion = resourceVersion;
         this.inMaint = inMaint;
         this.invStatus = invStatus;
+        this.lInterfaceInstanceList = lInterfaceInstanceList;
+        this.relationshipList = relationshipList;
     }
 
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
@@ -211,7 +248,8 @@ public class PInterfaceInstance {
         return new ToStringBuilder(this).append("interfaceName", interfaceName).append("speedValue", speedValue).append("speedUnits", speedUnits)
                 .append("portDescription", portDescription).append("equipmentIdentifier", equipmentIdentifier).append("interfaceRole", interfaceRole)
                 .append("interfaceType", interfaceType).append("provStatus", provStatus).append("resourceVersion", resourceVersion)
-                .append("inMaint", inMaint).append("invStatus", invStatus)
+                .append("inMaint", inMaint).append("invStatus", invStatus).append("lInterfaceInstanceList", lInterfaceInstanceList)
+                .append("relationshipList", relationshipList)
                 .toString();
     }
 

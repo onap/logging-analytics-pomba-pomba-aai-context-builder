@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.onap.pomba.contextbuilder.aai.datatype.PInterfaceInstance;
+import org.onap.pomba.contextbuilder.aai.datatype.LInterfaceInstanceList;
 
 public class PInterfaceInstanceTest {
 
@@ -30,7 +31,7 @@ public class PInterfaceInstanceTest {
 	       PInterfaceInstance  pInterfaceInstance1 = new PInterfaceInstance
 	               ( "interfaceName1", "speedValue1", "speedUnits1",
 	                 "portDescription1", "equipmentIdentifier1", "interfaceRole1", "interfaceType1",
-	                 "provStatus1", "resourceVersion1",  "inMaint1",  "invStatus1" );
+	                 "provStatus1", "resourceVersion1",  "inMaint1",  "invStatus1" ,  new LInterfaceInstanceList(), null);
 
 	       PInterfaceInstance  pInterfaceInstance2 = new PInterfaceInstance ();
 	        pInterfaceInstance2.setInterfaceName("interfaceName1");
