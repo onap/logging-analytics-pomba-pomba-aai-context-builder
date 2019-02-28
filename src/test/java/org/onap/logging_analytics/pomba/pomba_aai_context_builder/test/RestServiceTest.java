@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -111,23 +112,25 @@ public class RestServiceTest {
         return headers;
     }
 
+    private static String generateGetCustomerInfoUrl (String baseURL, String aaiPathToSearchNodeQuery,String serviceInstanceId) {
+        return baseURL + MessageFormat.format(aaiPathToSearchNodeQuery, serviceInstanceId);
+    }
+
     ///Verify the relationship serviceInstanceId -> vnf -> vserver -> pserver
     @Test
     public void testGetContext_VSERVER_PSERVER() throws Exception {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
 
         // Test with No Partner Name
         final MultivaluedMap<String, String> multivaluedMapImpl = buildHeaders(
                 transactionId, testRestHeaders, httpBasicAuthorization);
 
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
         // 2. simulate the response of AAI (1 vnf)
         // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set2.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF (with 1 vserver)
@@ -175,17 +178,14 @@ public class RestServiceTest {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
 
         // Test with No Partner Name
         final MultivaluedMap<String, String> multivaluedMapImpl = buildHeaders(
                 transactionId, testRestHeaders, httpBasicAuthorization);
 
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
         // 2. simulate the response of AAI (1 vnf)
-        // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set2.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF (with 1 vserver)
@@ -255,17 +255,14 @@ public class RestServiceTest {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
 
         // Test with No Partner Name
         final MultivaluedMap<String, String> multivaluedMapImpl = buildHeaders(
                 transactionId, testRestHeaders, httpBasicAuthorization);
 
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
         // 2. simulate the response of AAI (1 vnf)
-        // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set2.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF (with 1 vserver)
@@ -314,17 +311,14 @@ public class RestServiceTest {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
 
         // Test with No Partner Name
         final MultivaluedMap<String, String> multivaluedMapImpl = buildHeaders(
                 transactionId, testRestHeaders, httpBasicAuthorization);
 
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
         // 2. simulate the response of AAI (1 vnf)
-        // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set2.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF (with 1 vserver)
@@ -372,17 +366,14 @@ public class RestServiceTest {
     public void testGetContext_LogicalLink_in_service_level() throws Exception {
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
 
         // Test with No Partner Name
         final MultivaluedMap<String, String> multivaluedMapImpl = buildHeaders(
                 transactionId, testRestHeaders, httpBasicAuthorization);
 
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
         // 2. simulate the response of AAI (1 vnf)
-        // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set4.json", aaiEnricherRule);
 
         // 3. simulate the rsp of logical-link
@@ -411,16 +402,14 @@ public class RestServiceTest {
     public void testGetContext_LogicalLink_in_PInterface_level_with_PNF() throws Exception {
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
 
         // Test with No Partner Name
         final MultivaluedMap<String, String> multivaluedMapImpl = buildHeaders(
                 transactionId, testRestHeaders, httpBasicAuthorization);
 
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
         // 2. simulate the response of AAI (1 vnf and 1 pnf)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF
@@ -464,17 +453,14 @@ public class RestServiceTest {
     public void testGetContext_LogicalLink_in_PInterface_level_with_PSERVER() throws Exception {
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
 
         // Test with No Partner Name
         final MultivaluedMap<String, String> multivaluedMapImpl = buildHeaders(
                 transactionId, testRestHeaders, httpBasicAuthorization);
 
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
         // 2. simulate the response of AAI (1 vnf)
-        // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set2.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF (with 1 vserver)
