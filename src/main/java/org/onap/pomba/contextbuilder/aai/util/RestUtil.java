@@ -146,7 +146,7 @@ public class RestUtil {
     private static final String ATTRIBUTE_SHARED_NETWORK_BOOLEAN = "sharedNetworkBoolean";
     private static final String ATTRIBUTE_IS_PORT_MIRRORED = "isPortMirrored";
     private static final String ATTRIBUTE_NETWORK_NAME = "networkName";
-    private static final String ATTRIBUTE_MAC_ADDR = "macAddr";
+    private static final String ATTRIBUTE_MAC_ADDRESS = "macAddress";
     private static final String ATTRIBUTE_ADMIN_STATUS = "adminStatus";
     private static final String ATTRIBUTE_NFC_NAMING_CODE = "nfcNamingCode";
     private static final String ATTRIBUTE_NF_NAMING_CODE = "nfNamingCode";
@@ -654,7 +654,7 @@ public class RestUtil {
             if (isEmptyJson(pserverPayload)) {
                 log.info(LogMessages.NOT_FOUND, "PSERVER with url", pserverURL);
             } else {
-                log.info("Message from AAI for pserver %s ,message body: %s", pserverURL,pserverPayload);
+                log.info(String.format("Message from AAI for pserver %s ,message body: %s", pserverURL,pserverPayload));
                 // Logic to Create the Pserver POJO object
                 PserverInstance pserverInst = PserverInstance.fromJson(pserverPayload);
 
@@ -1145,7 +1145,7 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if ((name.name().equals(ATTRIBUTE_MAC_ADDR ))
+                if ((name.name().equals(ATTRIBUTE_MAC_ADDRESS ))
                         && isValid(lInterfaceInstance.getMacAddr())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
@@ -1715,8 +1715,7 @@ public class RestUtil {
                     .append(vfModule.getModelInvariantId()).toString();
 
             if (key.length() > 0) {
-                map.putIfAbsent(key, new AtomicInteger(0));
-                map.get(key).incrementAndGet();
+                map.putIfAbsent(key, new AtomicInteger(0)); //alway 0
             }
 
         }
