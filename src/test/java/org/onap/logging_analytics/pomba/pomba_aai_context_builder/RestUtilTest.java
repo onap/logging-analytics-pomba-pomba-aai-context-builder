@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Rule;
@@ -92,33 +93,6 @@ public class RestUtilTest {
         assertTrue(!RestUtil.isEmptyJson("{Not Empty}"));
     }
 
-    @Test
-    public void testObtainResouceLinkBasedOnServiceInstanceFromAAI() throws Exception {
-        String transactionId = UUID.randomUUID().toString();
-        String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
-
-        String resourceLinkUlr = RestUtil.obtainResouceLinkBasedOnServiceInstanceFromAAI(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, serviceInstanceId, transactionId, aaiBasicAuthorization);
-
-        String returnedInstanceId = resourceLinkUlr.substring(resourceLinkUlr.lastIndexOf("/")+1).trim();
-        assertEquals(serviceInstanceId, returnedInstanceId);
-    }
-
-    @Test
-    public void testObtainResouceLinkBasedOnServiceInstanceFromAAI_nullResourceLink() throws Exception {
-        String transactionId = UUID.randomUUID().toString();
-        String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
-        addResponse(queryNodeUrl, "junit/queryNodeData-nullResourceLink.json", aaiEnricherRule);
-
-        try {
-            RestUtil.obtainResouceLinkBasedOnServiceInstanceFromAAI(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, serviceInstanceId, transactionId, aaiBasicAuthorization);
-        } catch (AuditException e) {
-            assertTrue(e.getMessage().contains("JSONObject[\"resource-link\"] not found"));
-        }
-    }
-
     private void addResponse(String path, String classpathResource, WireMockRule thisMock) throws IOException {
         String payload = readFully(ClassLoader.getSystemResourceAsStream(classpathResource));
         thisMock.stubFor(get(path).willReturn(okJson(payload)));
@@ -136,6 +110,9 @@ public class RestUtilTest {
         return content.toString();
     }
 
+    private static String generateGetCustomerInfoUrl (String baseURL, String aaiPathToSearchNodeQuery,String serviceInstanceId) {
+        return baseURL + MessageFormat.format(aaiPathToSearchNodeQuery, serviceInstanceId);
+    }
 
     ////
     @Test
@@ -143,11 +120,11 @@ public class RestUtilTest {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
+
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
+
         // 2. simulate the response of AAI (1 vnf and 1 pnf)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF
@@ -171,12 +148,11 @@ public class RestUtilTest {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
+
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
+
         // 2. simulate the response of AAI (1 vnf)
-        // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set2.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF (with 1 vserver)
@@ -216,11 +192,9 @@ public class RestUtilTest {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
         // 2. simulate the response of AAI (1 vnf and 1 pnf)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF
@@ -247,12 +221,9 @@ public class RestUtilTest {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
         // 2. simulate the response of AAI (1 vnf)
-        // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set2.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF (with 1 vserver)
@@ -295,12 +266,9 @@ public class RestUtilTest {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
         // 2. simulate the response of AAI (1 vnf)
-        // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set3.json", aaiEnricherRule);
 
         // 3. simulate the rsp of l3-network
@@ -328,12 +296,9 @@ public class RestUtilTest {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
         // 2. simulate the response of AAI (1 vnf)
-        // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set2.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF (with 1 vserver)
@@ -369,12 +334,9 @@ public class RestUtilTest {
 
         String transactionId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
-        String queryNodeUrl = aaiPathToSearchNodeQuery + serviceInstanceId;
-        // 1. simulate the response to obtainResourceLink based on ServiceInstanceId
-        addResponse(queryNodeUrl, "junit/queryNodeData-1.json", aaiEnricherRule);
+        String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
         // 2. simulate the response of AAI (1 vnf)
-        // note: match serviceInstanceId in (1)
-        addResponse( "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb",
+        addResponse( queryNodeUrl,
         "junit/aai-service-instance_set2.json", aaiEnricherRule);
 
         // 3. simulate the rsp of VNF (with 1 vserver)
