@@ -67,6 +67,7 @@ import com.bazaarvoice.jolt.JsonUtils;
 import org.onap.pomba.common.datatypes.Pserver;
 import org.onap.pomba.common.datatypes.LInterface;
 import org.onap.pomba.common.datatypes.LogicalLink;
+import java.text.MessageFormat;
 
 
 public class RestUtil {
@@ -87,7 +88,6 @@ public class RestUtil {
     // Service Catalog -  "related-to"
     private static final String CATALOG_GENERIC_VNF = "generic-vnf";
     private static final String CATALOG_VNFC = "vnfc";
-    private static final String CATALOG_SERVICE_INSTANCE = "service-instance";
     private static final String CATALOG_VSERVER = "vserver";
     private static final String CATALOG_IMAGE = "image";
     private static final String CATALOG_PSERVER = "pserver";
@@ -102,12 +102,9 @@ public class RestUtil {
     // Relationship Json Path
     private static final String RELATIONSHIP_LIST = "relationship-list";
     private static final String RELATIONSHIP = "relationship";
-    private static final String RESULT_DATA = "result-data";
 
     private static final String JSON_ATT_RELATED_TO = "related-to";
     private static final String JSON_ATT_RELATED_LINK = "related-link";
-    private static final String JSON_ATT_RESOURCE_TYPE = "resource-type";
-    private static final String JSON_ATT_RESOURCE_LINK = "resource-link";
 
     private static final String EMPTY_JSON_STRING = "{}";
     private static final String DELIMITER = "$";
@@ -146,7 +143,7 @@ public class RestUtil {
     private static final String ATTRIBUTE_SHARED_NETWORK_BOOLEAN = "sharedNetworkBoolean";
     private static final String ATTRIBUTE_IS_PORT_MIRRORED = "isPortMirrored";
     private static final String ATTRIBUTE_NETWORK_NAME = "networkName";
-    private static final String ATTRIBUTE_MAC_ADDR = "macAddr";
+    private static final String ATTRIBUTE_MAC_ADDRESS = "macAddress";
     private static final String ATTRIBUTE_ADMIN_STATUS = "adminStatus";
     private static final String ATTRIBUTE_NFC_NAMING_CODE = "nfcNamingCode";
     private static final String ATTRIBUTE_NF_NAMING_CODE = "nfNamingCode";
@@ -237,18 +234,7 @@ public class RestUtil {
         //Map to track multiple l3-network under the Gerneric VNF id. The key = vnf-id. The value = list of l3-network instance
         Map<String, List<L3networkInstance>> l3networkMapInVnf = new HashMap<>();
 
-        // Obtain resource-link based on resource-type = service-Instance
-        String resourceLink = obtainResouceLinkBasedOnServiceInstanceFromAAI(aaiClient, baseURL, aaiPathToSearchNodeQuery, serviceInstanceId, transactionId, aaiBasicAuthorization);
-
-        // Handle the case if the service instance is not found in AAI
-        if (resourceLink==null) {
-            // return the empty Json on the root level. i.e service instance
-            return null;
-        }
-
-        log.info(String.format("ResourceLink from AAI: %s", resourceLink));
-        // Build URl to get ServiceInstance Payload
-        String url = baseURL + resourceLink;
+        String url = generateGetCustomerInfoUrl(baseURL, aaiPathToSearchNodeQuery, serviceInstanceId);
 
         // Response from service instance API call
         serviceInstancePayload =
@@ -261,7 +247,7 @@ public class RestUtil {
             return null;
         }
 
-        log.info("Message from AAI:%s", JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(serviceInstancePayload)));
+//        log.info(String.format("Message from AAI:" + serviceInstancePayload));
 
         List<String> genericVNFLinkLst = extractRelatedLink(serviceInstancePayload, CATALOG_GENERIC_VNF);
         log.info(LogMessages.NUMBER_OF_API_CALLS, "genericVNF", genericVNFLinkLst.size());
@@ -654,7 +640,7 @@ public class RestUtil {
             if (isEmptyJson(pserverPayload)) {
                 log.info(LogMessages.NOT_FOUND, "PSERVER with url", pserverURL);
             } else {
-                log.info("Message from AAI for pserver %s ,message body: %s", pserverURL,pserverPayload);
+//                log.info(String.format( "Message from AAI for pserver " + pserverURL + ", message body:" + pserverPayload));
                 // Logic to Create the Pserver POJO object
                 PserverInstance pserverInst = PserverInstance.fromJson(pserverPayload);
 
@@ -1145,7 +1131,7 @@ public class RestUtil {
                     attributeList.add(att);
                 }
 
-                if ((name.name().equals(ATTRIBUTE_MAC_ADDR ))
+                if ((name.name().equals(ATTRIBUTE_MAC_ADDRESS ))
                         && isValid(lInterfaceInstance.getMacAddr())){
                     Attribute att = new Attribute();
                     att.setDataQuality(DataQuality.ok());
@@ -1715,8 +1701,7 @@ public class RestUtil {
                     .append(vfModule.getModelInvariantId()).toString();
 
             if (key.length() > 0) {
-                map.putIfAbsent(key, new AtomicInteger(0));
-                map.get(key).incrementAndGet();
+                map.putIfAbsent(key, new AtomicInteger(0)); //alway 0
             }
 
         }
@@ -1952,62 +1937,10 @@ public class RestUtil {
         }
     }
 
-
-    public static String obtainResouceLinkBasedOnServiceInstanceFromAAI(RestClient aaiClient, String baseURL, String aaiPathToSearchNodeQuery, String serviceInstanceId,
-            String transactionId, String aaiBasicAuthorization) throws AuditException {
-
-        String url = generateGetCustomerInfoUrl(baseURL, aaiPathToSearchNodeQuery, serviceInstanceId);
-        String customerInfoString  = getResource(aaiClient, url, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
-
-        // Handle the case if the service instance is not found in AAI
-        if (isEmptyJson(customerInfoString)) {
-            log.info(LogMessages.NOT_FOUND, "Service Instance" , serviceInstanceId);
-            // Only return the empty Json on the root level. i.e service instance
-            return null;
-        }
-
-        return extractResourceLinkBasedOnResourceType(customerInfoString, CATALOG_SERVICE_INSTANCE);
-    }
-
     private static String generateGetCustomerInfoUrl (String baseURL, String aaiPathToSearchNodeQuery,String serviceInstanceId) {
-        return baseURL + aaiPathToSearchNodeQuery + serviceInstanceId;
+        return baseURL + MessageFormat.format(aaiPathToSearchNodeQuery, serviceInstanceId);
     }
 
-    /*
-     * Extract the resource-Link from Json payload. For example
-     * {
-     *     "result-data": [
-     *         {
-     *             "resource-type": "service-instance",
-     *             "resource-link": "/aai/v13/business/customers/customer/DemoCust_651800ed-2a3c-45f5-b920-85c1ed155fc2/service-subscriptions/service-subscription/vFW/service-instances/service-instance/adc3cc2a-c73e-414f-8ddb-367de81300cb"
-     *         }
-     *     ]
-     * }
-     */
-    private static String extractResourceLinkBasedOnResourceType(String payload, String catalog) throws AuditException {
-        String resourceLink = null;
-        log.info(String.format("Fetching the resource-link based on resource-type= %s", catalog));
-        try {
-            JSONArray result_data_list = new JSONObject(payload).getJSONArray(RESULT_DATA);
-            if (result_data_list != null) {
-                for (int i = 0; i < result_data_list.length(); i++) {
-                    JSONObject obj = result_data_list.optJSONObject(i);
-                    if (obj.has(JSON_ATT_RESOURCE_TYPE) && (obj.getString(JSON_ATT_RESOURCE_TYPE).equals(catalog) ))  {
-                        resourceLink = obj.getString(JSON_ATT_RESOURCE_LINK);
-                        log.info(resourceLink);
-                        return resourceLink;
-                    }
-                }
-            }
-        } catch (JSONException e) {
-            log.error(e.getMessage());
-            throw new AuditException(AuditError.JSON_READER_PARSE_ERROR + " " + e.getMessage());
-        }
-
-        log.warn("resource-link CANNOT be found: ", payload );
-
-        return resourceLink;
-    }
 
     private static boolean isValid ( String inputField) {
         if (inputField == null) {
