@@ -1715,8 +1715,7 @@ public class RestUtil {
                     .append(vfModule.getModelInvariantId()).toString();
 
             if (key.length() > 0) {
-                map.putIfAbsent(key, new AtomicInteger(0));
-                map.get(key).incrementAndGet();
+                map.putIfAbsent(key, new AtomicInteger(0)); //alway 0
             }
 
         }
