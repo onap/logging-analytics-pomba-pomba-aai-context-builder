@@ -18,10 +18,11 @@
 package org.onap.pomba.contextbuilder.aai.service;
 
 
+import javax.servlet.http.HttpServletRequest;
 import org.onap.pomba.common.datatypes.ModelContext;
 import org.onap.pomba.contextbuilder.aai.exception.AuditException;
 
 public interface SpringService {
 
-    public ModelContext getContext(String serviceInstanceId, String transactionId) throws AuditException;
+    public ModelContext getContext(HttpServletRequest req, String serviceInstanceId, String requestId, String partnerName) throws AuditException;
 }

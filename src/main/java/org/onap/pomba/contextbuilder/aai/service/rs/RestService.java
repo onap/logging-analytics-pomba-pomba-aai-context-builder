@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -54,9 +55,10 @@ public interface RestService {
                     @ApiResponse(code = 500, message = "Unexpected Runtime error")
             })
     public Response getContext(@Context HttpHeaders headers,
+            @Context HttpServletRequest req,
             @HeaderParam(HttpHeaders.AUTHORIZATION) @ApiParam(hidden=true) String authorization,
-            @HeaderParam(org.onap.pomba.contextbuilder.aai.util.RestUtil.FROM_APP_ID) @ApiParam(required=true) String xFromAppId,
-            @HeaderParam(org.onap.pomba.contextbuilder.aai.util.RestUtil.TRANSACTION_ID) String xTransactionId,
+            @HeaderParam(org.onap.pomba.contextbuilder.aai.util.RestUtil.FROM_APP_ID) @ApiParam(required=true) String xPartnerName,
+            @HeaderParam(org.onap.pomba.contextbuilder.aai.util.RestUtil.TRANSACTION_ID) String xRequestId,
             @QueryParam("serviceInstanceId") @ApiParam(required=true) String serviceInstanceId
             );
 }

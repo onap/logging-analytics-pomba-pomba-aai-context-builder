@@ -20,6 +20,8 @@ package org.onap.pomba.contextbuilder.aai.service.rs;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -31,7 +33,6 @@ import org.onap.pomba.contextbuilder.aai.util.RestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -47,9 +48,10 @@ public class RestServiceImpl implements RestService {
 
     @Override
     public Response getContext(HttpHeaders headers,
+            HttpServletRequest req,
             String authorization,
-            String fromAppId,
-            String transactionId,
+            String partnerName,
+            String requestId,
             String serviceInstanceId) {
 
         String url = "serviceInstanceId=" + serviceInstanceId;
@@ -57,9 +59,9 @@ public class RestServiceImpl implements RestService {
             log.debug(LogMessages.AAI_CONTEXT_BUILDER_URL, url);
         }
 
-        if (transactionId == null || transactionId.isEmpty()) {
-            transactionId = UUID.randomUUID().toString();
-            log.info(String.format("%s  is missing; using newly generated value: %s", org.onap.pomba.contextbuilder.aai.util.RestUtil.TRANSACTION_ID, transactionId));
+        if (requestId == null || requestId.isEmpty()) {
+            requestId = UUID.randomUUID().toString();
+            log.info(String.format("%s  is missing; using newly generated value: %s", org.onap.pomba.contextbuilder.aai.util.RestUtil.TRANSACTION_ID, requestId));
         }
 
         Response response = null;
@@ -74,9 +76,9 @@ public class RestServiceImpl implements RestService {
             RestUtil.validateServiceInstanceId(serviceInstanceId);
 
             // Keep the same transaction id for logging purpose
-            transactionId= RestUtil.extractTranIdHeader(headers);
+            requestId= RestUtil.extractRequestIdHeader(headers);
 
-            aaiContext = service.getContext(serviceInstanceId,transactionId);
+            aaiContext = service.getContext(req, serviceInstanceId,  requestId, partnerName);
 
             if (aaiContext==null) {
                 // Return empty JSON

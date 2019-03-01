@@ -14,25 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * ============LICENSE_END=====================================================
+ *
  */
-package org.onap.logging_analytics.pomba.pomba_aai_context_builder;
+
+package org.onap.pomba.contextbuilder.aai.test.datatype;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.onap.pomba.contextbuilder.aai.WebConfiguration;
-import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.onap.pomba.contextbuilder.aai.model.GenericResponse;
 
-public class WebConfigurationTest {
-	@Test
-	public void runTest() {
-		WebConfiguration webConfiguration = new WebConfiguration();
-		WebMvcConfigurerAdapter webMvConfigurationAdapter = webConfiguration.forwardToIndex();
-		ViewResolverRegistry registry = mock(ViewResolverRegistry.class);
-		webMvConfigurationAdapter.configureViewResolvers(registry);
-		assertEquals(false, registry.hasRegistrations());
-	}
+public class GenericResponseTest {
 
+    @Test
+    public void testGenericResponse() {
+        GenericResponse response = new GenericResponse();
+
+        response.setFailureReason("failureReason");
+        response.setResponseObj(new Object());
+        response.setStatus("status");
+
+        assertEquals("failureReason", response.getFailureReason());
+        assertEquals("status", response.getStatus());
+        assertTrue(response.getResponseObj() != null);
+
+    }
 }
