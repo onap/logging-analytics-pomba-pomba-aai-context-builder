@@ -14,34 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * ============LICENSE_END=====================================================
+ *
  */
-package org.onap.logging_analytics.pomba.pomba_aai_context_builder;
 
-import static org.junit.Assert.fail;
+package org.onap.pomba.contextbuilder.aai.test.datatype;
+
+import static org.junit.Assert.assertEquals;
+
+import javax.ws.rs.client.Client;
 import org.junit.Test;
-import org.onap.pomba.contextbuilder.aai.exception.AuditException;
-import org.onap.pomba.contextbuilder.aai.reader.JsonReader;
+import org.onap.pomba.contextbuilder.aai.JerseyConfiguration;
 
-public class JsonReaderTest {
-
+public class JerseyConfigurationTest {
     @Test
-    public void testJsonReader() {
-        JsonReader reader = new JsonReader();
-        try {
-            reader.parse("{test:test}");
-        } catch(AuditException e) {
-            fail("This should not throw an exception.");
-        }
-    }
-
-    @Test
-    public void testJsonReaderWithException() {
-        JsonReader reader = new JsonReader();
-        try {
-            reader.parse("{test}");
-            fail("This should throw an exception.");
-        } catch(AuditException e) {
-            //Just a test, no need to log the exception here.
-        }
+    public void testJerseyConfiguration() {
+        JerseyConfiguration jerseyConfiguration = new JerseyConfiguration();
+        Client client = jerseyConfiguration.jerseyClient();
+        String protocol = client.getSslContext().getProtocol();
+        assertEquals("TLS", protocol);
     }
 }

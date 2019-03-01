@@ -15,7 +15,8 @@
  * limitations under the License.
  * ============LICENSE_END=====================================================
  */
-package org.onap.logging_analytics.pomba.pomba_aai_context_builder;
+
+package org.onap.pomba.contextbuilder.aai.test.datatype;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -24,16 +25,14 @@ import org.junit.Test;
 import org.onap.pomba.contextbuilder.aai.datatype.L3networkInstance;
 
 public class L3networkInstanceTest {
-	@Test
-	public void testL3networkInstanceEquals() {
-	    L3networkInstance  l3networkInstance1 = new L3networkInstance
-	            ( "networkId1",  "networkName1",  "networkType1",
-	             "networkRole1",  "networkTechnology1", "resourceVersion1",
-	             "modelInvariantId1",  "modelVersionId1",  "physicalNetworkName1", "true",
-	             null);
+    @Test
+    public void testL3networkInstanceEquals() {
+        L3networkInstance  l3networkInstance1 = new L3networkInstance("networkId1",  "networkName1",  "networkType1",
+                 "networkRole1",  "networkTechnology1", "resourceVersion1", "modelInvariantId1",  "modelVersionId1",
+                 "physicalNetworkName1", "true", null);
 
-	    L3networkInstance  l3networkInstance2 = new L3networkInstance ();
-	    l3networkInstance2.setNetworkId("networkId1");
+        L3networkInstance  l3networkInstance2 = new L3networkInstance();
+        l3networkInstance2.setNetworkId("networkId1");
         l3networkInstance2.setNetworkName("networkName1");
         l3networkInstance2.setNetworkType("networkType1");
         l3networkInstance2.setNetworkRole("networkRole1");
@@ -48,7 +47,7 @@ public class L3networkInstanceTest {
         l3networkInstance1.toJson();
         l3networkInstance1.toString();
         assertEquals("physicalNetworkName1", l3networkInstance2.getPhysicalNetworkName());
-		assertTrue(l3networkInstance1.equals(l3networkInstance1));
-		assertTrue(l3networkInstance1.equals(l3networkInstance2));
-	}
+        assertTrue(l3networkInstance1.equals(l3networkInstance1));
+        assertTrue(l3networkInstance1.equals(l3networkInstance2));
+    }
 }

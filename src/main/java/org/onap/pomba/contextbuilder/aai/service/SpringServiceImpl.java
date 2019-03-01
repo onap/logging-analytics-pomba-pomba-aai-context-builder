@@ -17,6 +17,7 @@
  */
 package org.onap.pomba.contextbuilder.aai.service;
 
+import javax.servlet.http.HttpServletRequest;
 import org.onap.aai.restclient.client.RestClient;
 import org.onap.pomba.common.datatypes.ModelContext;
 import org.onap.pomba.contextbuilder.aai.common.LogMessages;
@@ -45,7 +46,7 @@ public class SpringServiceImpl implements SpringService {
         // needed for instantiation
     }
 
-    public ModelContext getContext(String serviceInstanceId, String tranId) throws AuditException {
+    public ModelContext getContext(HttpServletRequest req, String serviceInstanceId, String requestId, String partnerName) throws AuditException {
 
         String url = "serviceInstanceId=" + serviceInstanceId;
         log.info(LogMessages.AAI_CONTEXT_BUILDER_URL, url);
@@ -54,7 +55,7 @@ public class SpringServiceImpl implements SpringService {
 
         // Retrieve the service instance information from AAI
         try {
-            context= RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, tranId, serviceInstanceId, aaiBasicAuthorization);
+            context= RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, req, requestId, partnerName, serviceInstanceId, aaiBasicAuthorization);
         } catch (AuditException ae) {
             throw ae;
         } catch (Exception e) {

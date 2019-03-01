@@ -15,20 +15,37 @@
  * limitations under the License.
  * ============LICENSE_END=====================================================
  */
-package org.onap.logging_analytics.pomba.pomba_aai_context_builder;
 
-import static org.junit.Assert.assertEquals;
+package org.onap.pomba.contextbuilder.aai.test.datatype;
 
-import javax.ws.rs.client.Client;
-import org.junit.Test;
-import org.onap.pomba.contextbuilder.aai.JerseyConfiguration;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
-public class JerseyConfigurationTest {
-	@Test
-	public void testJerseyConfiguration() {
-		JerseyConfiguration jerseyConfiguration = new JerseyConfiguration();
-		Client client = jerseyConfiguration.jerseyClient();
-		String protocol = client.getSslContext().getProtocol();
-		assertEquals("TLS", protocol);
-	}
+/**
+ * Unit test for simple App.
+ */
+public class AppTest extends TestCase {
+    /**
+     * Create the test case
+     *
+     * @param testName name of the test case
+     */
+    public AppTest( String testName ) {
+        super( testName );
+    }
+
+    /**
+     * @return the suite of tests being tested
+     */
+    public static Test suite() {
+        return new TestSuite( AppTest.class );
+    }
+
+    /**
+     * Rigourous Test :-)
+     */
+    public void testApp() {
+        assertTrue( true );
+    }
 }

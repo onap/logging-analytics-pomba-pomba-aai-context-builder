@@ -15,23 +15,33 @@
  * limitations under the License.
  * ============LICENSE_END=====================================================
  */
-package org.onap.logging_analytics.pomba.pomba_aai_context_builder;
+package org.onap.pomba.contextbuilder.aai.test;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.onap.aai.restclient.client.RestClient;
+import org.onap.pomba.common.datatypes.ModelContext;
+import org.onap.pomba.common.datatypes.Network;
+import org.onap.pomba.common.datatypes.VFModule;
+import org.onap.pomba.common.datatypes.VM;
+import org.onap.pomba.common.datatypes.VNF;
 import org.onap.pomba.contextbuilder.aai.Application;
 import org.onap.pomba.contextbuilder.aai.exception.AuditException;
 import org.onap.pomba.contextbuilder.aai.util.RestUtil;
@@ -43,12 +53,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.onap.pomba.common.datatypes.ModelContext;
-import org.onap.pomba.common.datatypes.VNF;
-import org.onap.pomba.common.datatypes.VFModule;
-import org.onap.pomba.common.datatypes.VM;
-import org.onap.pomba.common.datatypes.Network;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
@@ -64,6 +68,10 @@ public class RestUtilTest {
     private String aaiPathToSearchNodeQuery;
     @Autowired
     private String aaiBasicAuthorization;
+
+    HttpServletRequest mockHttpServletRequest = mock(HttpServletRequest.class);
+
+    private String partnerName = "RestUtilTest";
 
     private static final String DEPTH = "?depth=2";
 
@@ -116,9 +124,9 @@ public class RestUtilTest {
 
     ////
     @Test
-    public void testretrieveAAIModelDataFromAAI_PNF() throws Exception {
+    public void testretrieveAaiModelDataFromAaiPnf() throws Exception {
 
-        String transactionId = UUID.randomUUID().toString();
+        String requestId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
 
         String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
@@ -136,17 +144,25 @@ public class RestUtilTest {
         addResponse( "/aai/v13/network/pnfs/pnf/amdocsPnfName" + DEPTH,
         "junit/pnfSampleInput.json", aaiEnricherRule);
 
-        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
+        when(mockHttpServletRequest.getRemoteAddr()).thenReturn("testretrieveAaiModelDataFromAaiPnf");
 
+        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient,
+                                                              aaiBaseUrl,
+                                                              aaiPathToSearchNodeQuery,
+                                                              mockHttpServletRequest,
+                                                              requestId,
+                                                              partnerName,
+                                                              serviceInstanceId,
+                                                              aaiBasicAuthorization);
         assertEquals(modelCtx.getVnfs().size(), 1);
         assertEquals(modelCtx.getPnfs().size(), 1);
 
     }
     ///Verify the relationship serviceInstanceId -> vnf -> vserver
     @Test
-    public void testretrieveAAIModelDataFromAAI_VSERVER_PSERVER() throws Exception {
+    public void testretrieveAaiModelDataFromAaiVserverPserver() throws Exception {
 
-        String transactionId = UUID.randomUUID().toString();
+        String requestId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
 
         String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
@@ -173,8 +189,16 @@ public class RestUtilTest {
                 "/aai/v13/cloud-infrastructure/pservers/pserver/mtn96compute.cci.att.com" + DEPTH,
                 "junit/pserverInput_set2.json", aaiEnricherRule);
 
-        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
+        when(mockHttpServletRequest.getRemoteAddr()).thenReturn("testretrieveAaiModelDataFromAaiVserverPserver");
 
+        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient,
+                                                              aaiBaseUrl,
+                                                              aaiPathToSearchNodeQuery,
+                                                              mockHttpServletRequest,
+                                                              requestId,
+                                                              partnerName,
+                                                              serviceInstanceId,
+                                                              aaiBasicAuthorization);
         // verify results
         List<VNF> vnfList = modelCtx.getVnfs();
         assertEquals(vnfList.size(), 1);
@@ -188,9 +212,9 @@ public class RestUtilTest {
 
     ////
     @Test
-    public void testretrieveAAIModelDataFromAAI_PInterface_LInterface_with_PNF() throws Exception {
+    public void testretrieveAaiModelDataFromAaiPinterfaceLinterfaceWithPnf() throws Exception {
 
-        String transactionId = UUID.randomUUID().toString();
+        String requestId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
         String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
         // 2. simulate the response of AAI (1 vnf and 1 pnf)
@@ -206,7 +230,18 @@ public class RestUtilTest {
         addResponse( "/aai/v13/network/pnfs/pnf/amdocsPnfName" + DEPTH,
         "junit/pnfInput_w_pInterface_LInterface.json", aaiEnricherRule);
 
-        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
+        when(mockHttpServletRequest
+                .getRemoteAddr())
+                .thenReturn("testretrieveAaiModelDataFromAaiPinterfaceLinterfaceWithPnf");
+
+        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient,
+                aaiBaseUrl,
+                aaiPathToSearchNodeQuery,
+                mockHttpServletRequest,
+                requestId,
+                partnerName,
+                serviceInstanceId,
+                aaiBasicAuthorization);
 
         assertEquals(modelCtx.getVnfs().size(), 1);
         assertEquals(modelCtx.getPnfs().size(), 1);
@@ -217,9 +252,9 @@ public class RestUtilTest {
     }
 
     @Test
-    public void testretrieveAAIModelDataFromAAI_PInterface_LInterface_with_PSERVER() throws Exception {
+    public void testretrieveAaiModelDataFromAaiPinterfaceLinterfaceWithPserver() throws Exception {
 
-        String transactionId = UUID.randomUUID().toString();
+        String requestId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
         String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
         // 2. simulate the response of AAI (1 vnf)
@@ -244,7 +279,18 @@ public class RestUtilTest {
                 "/aai/v13/cloud-infrastructure/pservers/pserver/mtn96compute.cci.att.com" + DEPTH,
                 "junit/pserverInput_with_pInterface_LInterface.json", aaiEnricherRule);
 
-        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
+        when(mockHttpServletRequest
+                .getRemoteAddr())
+                .thenReturn("testretrieveAaiModelDataFromAaiPinterfaceLinterfaceWithPserver");
+
+        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient,
+                aaiBaseUrl,
+                aaiPathToSearchNodeQuery,
+                mockHttpServletRequest,
+                requestId,
+                partnerName,
+                serviceInstanceId,
+                aaiBasicAuthorization);
 
         // verify results
         List<VNF> vnfList = modelCtx.getVnfs();
@@ -262,9 +308,9 @@ public class RestUtilTest {
 
     ///Verify the relationship serviceInstanceId -> l3network
     @Test
-    public void testretrieveAAIModelDataFromAAI_L3_network_in_service_level () throws Exception {
+    public void testretrieveAaiModelDataFromAaiL3NetworkInServiceLevel () throws Exception {
 
-        String transactionId = UUID.randomUUID().toString();
+        String requestId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
         String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
         // 2. simulate the response of AAI (1 vnf)
@@ -281,7 +327,18 @@ public class RestUtilTest {
                 "junit/l3-network-2.json", aaiEnricherRule);
 
 
-        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
+        when(mockHttpServletRequest
+                .getRemoteAddr())
+                .thenReturn("testretrieveAaiModelDataFromAaiL3NetworkInServiceLevel");
+
+        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient,
+                aaiBaseUrl,
+                aaiPathToSearchNodeQuery,
+                mockHttpServletRequest,
+                requestId,
+                partnerName,
+                serviceInstanceId,
+                aaiBasicAuthorization);
 
         // verify results
         List<Network> networkList = modelCtx.getNetworkList();
@@ -292,9 +349,9 @@ public class RestUtilTest {
 
     ///Verify the relationship serviceInstanceId -> vnf -> l3network
     @Test
-    public void testretrieveAAIModelDataFromAAI_L3_network_in_VNF_level() throws Exception {
+    public void testretrieveAaiModelDataFromAaiL3NetworkInVnfLevel() throws Exception {
 
-        String transactionId = UUID.randomUUID().toString();
+        String requestId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
         String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
         // 2. simulate the response of AAI (1 vnf)
@@ -319,7 +376,18 @@ public class RestUtilTest {
                 "/aai/v13/network/l3-networks/l3-network/01e8d84a-l3-network-1" + DEPTH,
                 "junit/l3-network-1.json", aaiEnricherRule);
 
-        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
+        when(mockHttpServletRequest
+                .getRemoteAddr())
+                .thenReturn("testretrieveAaiModelDataFromAaiL3NetworkInVnfLevel");
+
+        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient,
+                aaiBaseUrl,
+                aaiPathToSearchNodeQuery,
+                mockHttpServletRequest,
+                requestId,
+                partnerName,
+                serviceInstanceId,
+                aaiBasicAuthorization);
 
         // verify results
         List<VNF> vnfList = modelCtx.getVnfs();
@@ -330,9 +398,9 @@ public class RestUtilTest {
     }
 
     @Test
-    public void testretrieveAAIModelDataFromAAI_L3_network_in_vModule_level() throws Exception {
+    public void testretrieveAaiModelDataFromAaiL3NetworkInvModuleLevel() throws Exception {
 
-        String transactionId = UUID.randomUUID().toString();
+        String requestId = UUID.randomUUID().toString();
         String serviceInstanceId = "adc3cc2a-c73e-414f-8ddb-367de81300cb"; //match to the test data in junit/queryNodeData-1.json
         String queryNodeUrl = generateGetCustomerInfoUrl("", aaiPathToSearchNodeQuery, serviceInstanceId);
         // 2. simulate the response of AAI (1 vnf)
@@ -361,8 +429,18 @@ public class RestUtilTest {
                 "junit/l3-network-2.json", aaiEnricherRule);
 
 
-        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient, aaiBaseUrl, aaiPathToSearchNodeQuery, transactionId , serviceInstanceId, aaiBasicAuthorization);
+        when(mockHttpServletRequest
+                .getRemoteAddr())
+                .thenReturn("testretrieveAaiModelDataFromAaiL3NetworkInvModuleLevel");
 
+        ModelContext modelCtx = RestUtil.retrieveAAIModelData(aaiClient,
+                aaiBaseUrl,
+                aaiPathToSearchNodeQuery,
+                mockHttpServletRequest,
+                requestId,
+                partnerName,
+                serviceInstanceId,
+                aaiBasicAuthorization);
         // verify results
         List<VNF> vnfList = modelCtx.getVnfs();
         assertEquals(vnfList.size(), 1);

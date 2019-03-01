@@ -15,8 +15,25 @@
  * limitations under the License.
  * ============LICENSE_END=====================================================
  */
-package org.onap.logging_analytics.pomba.pomba_aai_context_builder;
 
-public class TestSrpingServiceImpl {
+package org.onap.pomba.contextbuilder.aai.test.datatype;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+
+import org.junit.Test;
+import org.onap.pomba.contextbuilder.aai.WebConfiguration;
+import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+public class WebConfigurationTest {
+    @Test
+    public void runTest() {
+        WebConfiguration webConfiguration = new WebConfiguration();
+        WebMvcConfigurerAdapter webMvConfigurationAdapter = webConfiguration.forwardToIndex();
+        ViewResolverRegistry registry = mock(ViewResolverRegistry.class);
+        webMvConfigurationAdapter.configureViewResolvers(registry);
+        assertEquals(false, registry.hasRegistrations());
+    }
 
 }
