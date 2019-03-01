@@ -15,41 +15,35 @@
  * limitations under the License.
  * ============LICENSE_END=====================================================
  */
-package org.onap.logging_analytics.pomba.pomba_aai_context_builder;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+package org.onap.pomba.contextbuilder.aai.test.datatype;
 
-/**
- * Unit test for simple App.
- */
-public class AppTest
-    extends TestCase
-{
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public AppTest( String testName )
-    {
-        super( testName );
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+import org.onap.pomba.contextbuilder.aai.exception.AuditException;
+import org.onap.pomba.contextbuilder.aai.reader.JsonReader;
+
+public class JsonReaderTest {
+
+    @Test
+    public void testJsonReader() {
+        JsonReader reader = new JsonReader();
+        try {
+            reader.parse("{test:test}");
+        } catch (AuditException e) {
+            fail("This should not throw an exception.");
+        }
     }
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
-
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
+    @Test
+    public void testJsonReaderWithException() {
+        JsonReader reader = new JsonReader();
+        try {
+            reader.parse("{test}");
+            fail("This should throw an exception.");
+        } catch (AuditException e) {
+            //Just a test, no need to log the exception here.
+        }
     }
 }

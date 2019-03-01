@@ -15,8 +15,12 @@ package org.onap.pomba.contextbuilder.aai.util;
 
 
 
+import com.bazaarvoice.jolt.JsonUtils;
+import java.net.InetAddress;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +28,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -35,14 +40,26 @@ import org.onap.aai.restclient.client.OperationResult;
 import org.onap.aai.restclient.client.RestClient;
 import org.onap.pomba.common.datatypes.Attribute;
 import org.onap.pomba.common.datatypes.DataQuality;
+import org.onap.pomba.common.datatypes.LInterface;
+import org.onap.pomba.common.datatypes.LogicalLink;
 import org.onap.pomba.common.datatypes.ModelContext;
+import org.onap.pomba.common.datatypes.Network;
+import org.onap.pomba.common.datatypes.PInterface;
+import org.onap.pomba.common.datatypes.PNF;
+import org.onap.pomba.common.datatypes.Pserver;
 import org.onap.pomba.common.datatypes.Service;
-import org.onap.pomba.common.datatypes.VNF;
 import org.onap.pomba.common.datatypes.VFModule;
 import org.onap.pomba.common.datatypes.VM;
+import org.onap.pomba.common.datatypes.VNF;
 import org.onap.pomba.common.datatypes.VNFC;
-import org.onap.pomba.common.datatypes.Network;
 import org.onap.pomba.contextbuilder.aai.common.LogMessages;
+import org.onap.pomba.contextbuilder.aai.datatype.L3networkInstance;
+import org.onap.pomba.contextbuilder.aai.datatype.LInterfaceInstance;
+import org.onap.pomba.contextbuilder.aai.datatype.LogicalLinkInstance;
+import org.onap.pomba.contextbuilder.aai.datatype.PInterfaceInstance;
+import org.onap.pomba.contextbuilder.aai.datatype.PInterfaceInstanceList;
+import org.onap.pomba.contextbuilder.aai.datatype.PnfInstance;
+import org.onap.pomba.contextbuilder.aai.datatype.PserverInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.Relationship;
 import org.onap.pomba.contextbuilder.aai.datatype.RelationshipList;
 import org.onap.pomba.contextbuilder.aai.datatype.ServiceInstance;
@@ -50,23 +67,11 @@ import org.onap.pomba.contextbuilder.aai.datatype.VfModule;
 import org.onap.pomba.contextbuilder.aai.datatype.VnfInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.VnfcInstance;
 import org.onap.pomba.contextbuilder.aai.datatype.Vserver;
-import org.onap.pomba.contextbuilder.aai.datatype.PserverInstance;
-import org.onap.pomba.contextbuilder.aai.datatype.PInterfaceInstance;
-import org.onap.pomba.contextbuilder.aai.datatype.L3networkInstance;
-import org.onap.pomba.contextbuilder.aai.datatype.LInterfaceInstance;
-import org.onap.pomba.contextbuilder.aai.datatype.LogicalLinkInstance;
 import org.onap.pomba.contextbuilder.aai.exception.AuditError;
 import org.onap.pomba.contextbuilder.aai.exception.AuditException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.onap.pomba.contextbuilder.aai.datatype.PnfInstance;
-import org.onap.pomba.contextbuilder.aai.datatype.PInterfaceInstanceList;
-import org.onap.pomba.common.datatypes.PNF;
-import org.onap.pomba.common.datatypes.PInterface;
-import com.bazaarvoice.jolt.JsonUtils;
-import org.onap.pomba.common.datatypes.Pserver;
-import org.onap.pomba.common.datatypes.LInterface;
-import org.onap.pomba.common.datatypes.LogicalLink;
+import org.slf4j.MDC;
 
 
 public class RestUtil {
@@ -84,6 +89,20 @@ public class RestUtil {
 
     private static final String APP_NAME = "aaiCtxBuilder";
 
+    private static final String MDC_REQUEST_ID = "RequestId";
+    private static final String MDC_SERVER_FQDN = "ServerFQDN";
+    private static final String MDC_SERVICE_NAME = "ServiceName";
+    private static final String MDC_PARTNER_NAME = "PartnerName";
+    private static final String MDC_START_TIME = "StartTime";
+    private static final String MDC_SERVICE_INSTANCE_ID = "ServiceInstanceId";
+    private static final String MDC_INVOCATION_ID = "InvocationID";
+    private static final String MDC_CLIENT_ADDRESS = "ClientAddress";
+    private static final String MDC_STATUS_CODE = "StatusCode";
+    private static final String MDC_RESPONSE_CODE = "ResponseCode";
+    private static final String MDC_INSTANCE_ID = "InstanceId";
+
+    private static UUID instanceId = UUID.randomUUID();
+
     // Service Catalog -  "related-to"
     private static final String CATALOG_GENERIC_VNF = "generic-vnf";
     private static final String CATALOG_VNFC = "vnfc";
@@ -96,8 +115,6 @@ public class RestUtil {
     private static final String CATALOG_PNF = "pnf";
     private static final String VF_MODULES = "vf-modules";
     private static final String VF_MODULE = "vf-module";
-
-
 
     // Relationship Json Path
     private static final String RELATIONSHIP_LIST = "relationship-list";
@@ -190,7 +207,7 @@ public class RestUtil {
 
     public static void validateHeader(HttpHeaders headers) throws AuditException {
         String fromAppId = null;
-        String transactionId = null;
+        String requestId = null;
 
         fromAppId = headers.getRequestHeaders().getFirst(FROM_APP_ID);
         if ((fromAppId == null) || fromAppId.trim().isEmpty()) {
@@ -198,24 +215,24 @@ public class RestUtil {
             throw new AuditException(AuditError.MISSING_HEADER_PARAMETER + FROM_APP_ID, Status.BAD_REQUEST);
         }
 
-        transactionId = headers.getRequestHeaders().getFirst(TRANSACTION_ID);
-        if ((transactionId == null) || transactionId.trim().isEmpty()) {
-            transactionId = UUID.randomUUID().toString();
-            log.info(LogMessages.HEADER_MESSAGE, TRANSACTION_ID, transactionId);
+        requestId = headers.getRequestHeaders().getFirst(TRANSACTION_ID);
+        if ((requestId == null) || requestId.trim().isEmpty()) {
+            requestId = UUID.randomUUID().toString();
+            log.info(LogMessages.HEADER_MESSAGE, TRANSACTION_ID, requestId);
         }
     }
 
     /*
      * The purpose is to keep same transaction Id from north bound interface to south bound interface
      */
-    public static String extractTranIdHeader(HttpHeaders headers) {
-        String transactionId = null;
-        transactionId = headers.getRequestHeaders().getFirst(TRANSACTION_ID);
-        if ((transactionId == null) || transactionId.trim().isEmpty()) {
-            transactionId = UUID.randomUUID().toString();
-            log.info(LogMessages.HEADER_MESSAGE, TRANSACTION_ID, transactionId);
+    public static String extractRequestIdHeader(HttpHeaders headers) {
+        String requestId = null;
+        requestId = headers.getRequestHeaders().getFirst(TRANSACTION_ID);
+        if ((requestId == null) || requestId.trim().isEmpty()) {
+            requestId = UUID.randomUUID().toString();
+            log.info(LogMessages.HEADER_MESSAGE, TRANSACTION_ID, requestId);
         }
-        return transactionId;
+        return requestId;
     }
 
     /*
@@ -223,7 +240,8 @@ public class RestUtil {
      *
      */
     public static ModelContext retrieveAAIModelData(RestClient aaiClient, String baseURL, String aaiPathToSearchNodeQuery,
-            String transactionId, String serviceInstanceId, String aaiBasicAuthorization) throws AuditException {
+            HttpServletRequest req, String requestId, String partnerName, String serviceInstanceId, String aaiBasicAuthorization) throws AuditException {
+        initMdc(requestId, partnerName, serviceInstanceId, req.getRemoteAddr());
         String serviceInstancePayload = null;
         String genericVNFPayload = null;
 
@@ -238,7 +256,7 @@ public class RestUtil {
         Map<String, List<L3networkInstance>> l3networkMapInVnf = new HashMap<>();
 
         // Obtain resource-link based on resource-type = service-Instance
-        String resourceLink = obtainResouceLinkBasedOnServiceInstanceFromAAI(aaiClient, baseURL, aaiPathToSearchNodeQuery, serviceInstanceId, transactionId, aaiBasicAuthorization);
+        String resourceLink = obtainResouceLinkBasedOnServiceInstanceFromAAI(aaiClient, baseURL, aaiPathToSearchNodeQuery, serviceInstanceId, requestId, aaiBasicAuthorization);
 
         // Handle the case if the service instance is not found in AAI
         if (resourceLink==null) {
@@ -252,7 +270,7 @@ public class RestUtil {
 
         // Response from service instance API call
         serviceInstancePayload =
-                getResource(aaiClient, url, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
+                getResource(aaiClient, url, aaiBasicAuthorization, requestId, MediaType.valueOf(MediaType.APPLICATION_JSON));
 
         // Handle the case if the service instance is not found in AAI
         if (isEmptyJson(serviceInstancePayload)) {
@@ -273,7 +291,7 @@ public class RestUtil {
             String genericVNFURL = baseURL + genericVNFLink + DEPTH;
             // Response from generic VNF API call
             genericVNFPayload =
-                    getResource(aaiClient, genericVNFURL, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
+                    getResource(aaiClient, genericVNFURL, aaiBasicAuthorization, requestId, MediaType.valueOf(MediaType.APPLICATION_JSON));
 
             if (isEmptyJson(genericVNFPayload)) {
                 log.info(LogMessages.NOT_FOUND, "GenericVNF with url ", genericVNFLink);
@@ -288,34 +306,34 @@ public class RestUtil {
                           List<LInterfaceInstance> lInterfaceInstList_aai = vnfInstance.getLInterfaceInstanceList().getLInterfaceList();
                           for (LInterfaceInstance lInterfaceInst_aai : lInterfaceInstList_aai) {
                               lInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
-                                       transactionId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
+                                       requestId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
                           }
                 }
                 vnfLst.add(vnfInstance);
 
                 // Update VModule with l3-network list from aai, if any.
-                buildVModuleWithL3NetworkInfo (vnfInstance, aaiClient, baseURL, transactionId,  aaiBasicAuthorization);
+                buildVModuleWithL3NetworkInfo (vnfInstance, aaiClient, baseURL, requestId,  aaiBasicAuthorization);
 
                 // Build the vnf_vnfc relationship map
-                buildVnfcMap(vnfcMap, genericVNFPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization );
+                buildVnfcMap(vnfcMap, genericVNFPayload, aaiClient, baseURL, requestId, aaiBasicAuthorization );
 
                 // Build vnf_vfmodule_vserver relationship map
-                buildVfmoduleVserverMap(vnfVfmoduleVserverMap,  genericVNFPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization);
+                buildVfmoduleVserverMap(vnfVfmoduleVserverMap,  genericVNFPayload, aaiClient, baseURL, requestId, aaiBasicAuthorization);
 
                 // Build the vnf_l3_network relationship map
-                buildVnfWithL3networkInfo(l3networkMapInVnf, genericVNFPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization );
+                buildVnfWithL3networkInfo(l3networkMapInVnf, genericVNFPayload, aaiClient, baseURL, requestId, aaiBasicAuthorization );
             }
         }
 
         //Obtain PNF (Physical Network Function)
-        List<PnfInstance> pnfLst = retrieveAAIModelData_PNF (aaiClient, baseURL, transactionId, serviceInstanceId, aaiBasicAuthorization, serviceInstancePayload) ;
+        List<PnfInstance> pnfLst = retrieveAAIModelData_PNF (aaiClient, baseURL, requestId, serviceInstanceId, aaiBasicAuthorization, serviceInstancePayload) ;
 
         //Obtain l3-network on service level
-        List<L3networkInstance> l3networkLstInService = retrieveAaiModelDataL3NetworkInServiceLevel (aaiClient, baseURL, transactionId, aaiBasicAuthorization, serviceInstancePayload) ;
+        List<L3networkInstance> l3networkLstInService = retrieveAaiModelDataL3NetworkInServiceLevel (aaiClient, baseURL, requestId, aaiBasicAuthorization, serviceInstancePayload) ;
 
         //Obtain logical-link on service level
         List<LogicalLinkInstance> logicalLinkInstanceLstInService = obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
-                transactionId,  aaiBasicAuthorization, ServiceInstance.fromJson(serviceInstancePayload).getRelationshipList());
+                requestId,  aaiBasicAuthorization, ServiceInstance.fromJson(serviceInstancePayload).getRelationshipList());
 
         // Transform to common model and return
         return transform(ServiceInstance.fromJson(serviceInstancePayload), vnfLst, vnfcMap, l3networkMapInVnf, vnfVfmoduleVserverMap, pnfLst, l3networkLstInService, logicalLinkInstanceLstInService);
@@ -323,7 +341,7 @@ public class RestUtil {
 
     private static void buildVModuleWithL3NetworkInfo (VnfInstance vnfInstance,
             RestClient aaiClient, String baseURL,
-            String transactionId,  String aaiBasicAuthorization
+            String requestId,  String aaiBasicAuthorization
             ) throws AuditException {
 
         if ((vnfInstance != null ) && (vnfInstance.getVfModules()) != null) {
@@ -343,7 +361,7 @@ public class RestUtil {
                         }
 
                         if (!(relatedLinkList.isEmpty())) {
-                             List<L3networkInstance> l3nwInsLst = queryAaiForL3networkInfo (aaiClient,baseURL,transactionId,aaiBasicAuthorization,relatedLinkList);
+                             List<L3networkInstance> l3nwInsLst = queryAaiForL3networkInfo (aaiClient,baseURL,requestId,aaiBasicAuthorization,relatedLinkList);
 
                             if ((l3nwInsLst != null) && (!l3nwInsLst.isEmpty())) {
                                 t_vfModule.setL3NetworkList(l3nwInsLst);
@@ -356,7 +374,7 @@ public class RestUtil {
     }
 
     private static List<PnfInstance> retrieveAAIModelData_PNF(RestClient aaiClient, String baseURL,
-            String transactionId, String serviceInstanceId, String aaiBasicAuthorization, String serviceInstancePayload) throws AuditException {
+            String requestId, String serviceInstanceId, String aaiBasicAuthorization, String serviceInstancePayload) throws AuditException {
 
         List<String> genericPNFLinkLst = extractRelatedLink(serviceInstancePayload, CATALOG_PNF);
         log.info(LogMessages.NUMBER_OF_API_CALLS, "PNF", genericPNFLinkLst.size());
@@ -374,7 +392,7 @@ public class RestUtil {
             String genericPNFURL = baseURL + genericPNFLink + DEPTH;
             // Response from generic PNF API call
             genericPNFPayload =
-                    getResource(aaiClient, genericPNFURL, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
+                    getResource(aaiClient, genericPNFURL, aaiBasicAuthorization, requestId, MediaType.valueOf(MediaType.APPLICATION_JSON));
 
             if (isEmptyJson(genericPNFPayload)) {
                 log.info(LogMessages.NOT_FOUND, "GenericPNF with url ", genericPNFLink);
@@ -390,7 +408,7 @@ public class RestUtil {
                           List<PInterfaceInstance> pInterfaceInstList_aai = pnfInstance.getPInterfaceInstanceList().getPInterfaceList();
                           for (PInterfaceInstance pInterfaceInst_aai : pInterfaceInstList_aai) {
                               pInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
-                                       transactionId,  aaiBasicAuthorization, pInterfaceInst_aai.getRelationshipList()));
+                                       requestId,  aaiBasicAuthorization, pInterfaceInst_aai.getRelationshipList()));
 
                               //Obtain L-Interface level logical-link
                               if ((pInterfaceInst_aai.getLInterfaceInstanceList() != null)
@@ -398,7 +416,7 @@ public class RestUtil {
                                         List<LInterfaceInstance> lInterfaceInstList_aai = pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList();
                                         for (LInterfaceInstance lInterfaceInst_aai : lInterfaceInstList_aai) {
                                             lInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
-                                                     transactionId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
+                                                     requestId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
                                         }
                               }
                           }
@@ -410,7 +428,7 @@ public class RestUtil {
     }
 
     private static List<LogicalLinkInstance> obtainLogicalLinkInfoFromAai(RestClient aaiClient, String baseURL,
-            String transactionId, String aaiBasicAuthorization, RelationshipList logicalLinkRelateionShipList) throws AuditException {
+            String requestId, String aaiBasicAuthorization, RelationshipList logicalLinkRelateionShipList) throws AuditException {
         if (logicalLinkRelateionShipList == null) {
             return null;
         }
@@ -430,7 +448,7 @@ public class RestUtil {
         }
 
         if (!(relatedLinkList.isEmpty())) {
-            List<LogicalLinkInstance> logicalLinkInsLst = queryAaiForLogicalLinkData (aaiClient,baseURL,transactionId,aaiBasicAuthorization,relatedLinkList);
+            List<LogicalLinkInstance> logicalLinkInsLst = queryAaiForLogicalLinkData (aaiClient,baseURL,requestId,aaiBasicAuthorization,relatedLinkList);
 
             if ((logicalLinkInsLst != null) && (!logicalLinkInsLst.isEmpty())) {
 
@@ -442,7 +460,7 @@ public class RestUtil {
     }
 
     private static List<LogicalLinkInstance> queryAaiForLogicalLinkData(RestClient aaiClient, String baseURL,
-            String transactionId, String aaiBasicAuthorization, List<String> genericRelatedLinkLst) throws AuditException {
+            String requestId, String aaiBasicAuthorization, List<String> genericRelatedLinkLst) throws AuditException {
         if ( genericRelatedLinkLst.isEmpty()) {
             return null;
          }
@@ -457,7 +475,7 @@ public class RestUtil {
             String genericURL = baseURL + genericRelatedLink;
             // Response from generic l3-network API call
              genericDataPayload =
-                    getResource(aaiClient, genericURL, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
+                    getResource(aaiClient, genericURL, aaiBasicAuthorization, requestId, MediaType.valueOf(MediaType.APPLICATION_JSON));
 
             if (isEmptyJson(genericDataPayload)) {
                 log.info(LogMessages.NOT_FOUND, " url ", genericRelatedLink);
@@ -474,7 +492,7 @@ public class RestUtil {
     }
 
     private static List<L3networkInstance> queryAaiForL3networkInfo(RestClient aaiClient, String baseURL,
-            String transactionId, String aaiBasicAuthorization, List<String> genericL3networkLinkLst) throws AuditException {
+            String requestId, String aaiBasicAuthorization, List<String> genericL3networkLinkLst) throws AuditException {
         if ( genericL3networkLinkLst.isEmpty()) {
             return null;
          }
@@ -489,7 +507,7 @@ public class RestUtil {
              String genericL3NetworkURL = baseURL + genericNetworkLink + DEPTH;
              // Response from generic l3-network API call
              genericL3networkPayload =
-                     getResource(aaiClient, genericL3NetworkURL, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
+                     getResource(aaiClient, genericL3NetworkURL, aaiBasicAuthorization, requestId, MediaType.valueOf(MediaType.APPLICATION_JSON));
 
              if (isEmptyJson(genericL3networkPayload)) {
                  log.info(LogMessages.NOT_FOUND, "GenericPNF with url ", genericNetworkLink);
@@ -505,18 +523,18 @@ public class RestUtil {
     }
 
     private static List<L3networkInstance> retrieveAaiModelDataL3NetworkInServiceLevel(RestClient aaiClient, String baseURL,
-            String transactionId, String aaiBasicAuthorization, String relationShipPayload) throws AuditException {
+            String requestId, String aaiBasicAuthorization, String relationShipPayload) throws AuditException {
 
         List<String> genericL3networkLinkLst = extractRelatedLink(relationShipPayload, CATALOG_L3_NETWORK);
 
-        return (queryAaiForL3networkInfo (aaiClient,baseURL,transactionId,aaiBasicAuthorization,genericL3networkLinkLst) ) ;
+        return (queryAaiForL3networkInfo (aaiClient,baseURL,requestId,aaiBasicAuthorization,genericL3networkLinkLst) ) ;
     }
 
     /*
      *  The map is to track the relationship of vnf-id with multiple vnfc relationship
      */
     private static Map<String, List<VnfcInstance>> buildVnfcMap(Map<String, List<VnfcInstance>> vnfcMap, String genericVNFPayload, RestClient aaiClient, String baseURL,
-            String transactionId, String aaiBasicAuthorization) throws AuditException {
+            String requestId, String aaiBasicAuthorization) throws AuditException {
 
         String vnfcPayload = null;
 
@@ -527,7 +545,7 @@ public class RestUtil {
         List<VnfcInstance> vnfcLst = new ArrayList<>();
         for (String vnfcLink : vnfcLinkLst) {
             String vnfcURL = baseURL + vnfcLink;
-            vnfcPayload = getResource(aaiClient, vnfcURL, aaiBasicAuthorization,  transactionId,
+            vnfcPayload = getResource(aaiClient, vnfcURL, aaiBasicAuthorization,  requestId,
                     MediaType.valueOf(MediaType.APPLICATION_JSON));
 
             if (isEmptyJson(vnfcPayload)) {
@@ -552,9 +570,9 @@ public class RestUtil {
      *  The map is to track the relationship of vnf-id with multiple l3-network relationship at vnf level
      */
     private static Map<String, List<L3networkInstance>> buildVnfWithL3networkInfo(Map<String, List<L3networkInstance>> l3networkMap_in_vnf, String genericVNFPayload, RestClient aaiClient, String baseURL,
-            String transactionId, String aaiBasicAuthorization) throws AuditException {
+            String requestId, String aaiBasicAuthorization) throws AuditException {
 
-        List<L3networkInstance> l3NwLst = retrieveAaiModelDataL3NetworkInServiceLevel (aaiClient, baseURL, transactionId, aaiBasicAuthorization, genericVNFPayload) ;
+        List<L3networkInstance> l3NwLst = retrieveAaiModelDataL3NetworkInServiceLevel (aaiClient, baseURL, requestId, aaiBasicAuthorization, genericVNFPayload) ;
 
         if ((l3NwLst != null ) && (!l3NwLst.isEmpty())) {
             // Assume the vnf-id is unique as a key
@@ -572,7 +590,7 @@ public class RestUtil {
      *
      * The Map<String, Map<String, List<Vserver>>> key: vnf-id
      */
-    private static Map<String, Map<String, List<Vserver>>> buildVfmoduleVserverMap(Map<String, Map<String, List<Vserver>>> vnf_vfmodule_vserver_Map, String genericVNFPayload, RestClient aaiClient, String baseURL, String transactionId, String aaiBasicAuthorization) throws AuditException {
+    private static Map<String, Map<String, List<Vserver>>> buildVfmoduleVserverMap(Map<String, Map<String, List<Vserver>>> vnf_vfmodule_vserver_Map, String genericVNFPayload, RestClient aaiClient, String baseURL, String requestId, String aaiBasicAuthorization) throws AuditException {
 
         Map<String, List<Vserver>> vServerMap = new HashMap<>();
 
@@ -591,7 +609,7 @@ public class RestUtil {
                 List<Vserver> vserverLst = new ArrayList<>();
                 for (String vserverLink : vserverLinkLst) {
                     String vserverURL = baseURL + vserverLink + DEPTH;
-                    vserverPayload = getResource(aaiClient, vserverURL, aaiBasicAuthorization,  transactionId,
+                    vserverPayload = getResource(aaiClient, vserverURL, aaiBasicAuthorization,  requestId,
                             MediaType.valueOf(MediaType.APPLICATION_XML));
 
                     if (isEmptyJson(vserverPayload)) {
@@ -601,7 +619,7 @@ public class RestUtil {
                         Vserver vserver = Vserver.fromJson(vserverPayload);
 
                         // add pserver if any
-                        List<PserverInstance> pserverInstanceLst = getPserverInfoFromAai(vserverPayload, aaiClient, baseURL, transactionId, aaiBasicAuthorization);
+                        List<PserverInstance> pserverInstanceLst = getPserverInfoFromAai(vserverPayload, aaiClient, baseURL, requestId, aaiBasicAuthorization);
                         if ((pserverInstanceLst != null) && (!pserverInstanceLst.isEmpty())) {
                             vserver.setPserverInstanceList(pserverInstanceLst);
                         }
@@ -612,7 +630,7 @@ public class RestUtil {
                                   List<LInterfaceInstance> lInterfaceInstList_aai = vserver.getLInterfaceInstanceList().getLInterfaceList();
                                   for (LInterfaceInstance lInterfaceInst_aai : lInterfaceInstList_aai) {
                                       lInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
-                                               transactionId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
+                                               requestId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
                                   }
                         }
 
@@ -632,7 +650,7 @@ public class RestUtil {
         return vnf_vfmodule_vserver_Map;
     }
 
-    private static List<PserverInstance> getPserverInfoFromAai (String vserverPayload, RestClient aaiClient, String baseURL, String transactionId, String aaiBasicAuthorization) throws AuditException {
+    private static List<PserverInstance> getPserverInfoFromAai (String vserverPayload, RestClient aaiClient, String baseURL, String requestId, String aaiBasicAuthorization) throws AuditException {
         if (vserverPayload == null) {
             //already reported.
             return null;
@@ -648,7 +666,7 @@ public class RestUtil {
         pserverLst = new ArrayList<>();
         for (String pserverRelatedLink : pserverRelatedLinkList) {
             String pserverURL = baseURL + pserverRelatedLink + DEPTH;;
-            String pserverPayload = getResource(aaiClient, pserverURL, aaiBasicAuthorization,  transactionId,
+            String pserverPayload = getResource(aaiClient, pserverURL, aaiBasicAuthorization,  requestId,
                     MediaType.valueOf(MediaType.APPLICATION_XML));
 
             if (isEmptyJson(pserverPayload)) {
@@ -664,13 +682,13 @@ public class RestUtil {
                           for (PInterfaceInstance pInterfaceInst_aai : pInterfaceInstList_aai) {
                               //Obtain P-Interface level logical-link
                               pInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
-                                       transactionId,  aaiBasicAuthorization, pInterfaceInst_aai.getRelationshipList()));
+                                       requestId,  aaiBasicAuthorization, pInterfaceInst_aai.getRelationshipList()));
 
                               List<LInterfaceInstance> lInterfaceInstList_aai = pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList();
                               for (LInterfaceInstance lInterfaceInst_aai : lInterfaceInstList_aai) {
                                   //Obtain L-Interface level logical-link
                                   lInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
-                                           transactionId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
+                                           requestId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
                               }
 
                           }
@@ -1927,9 +1945,9 @@ public class RestUtil {
         return vServerRelatedLinkMap;
     }
 
-    private static Map<String, List<String>> buildHeaders(String aaiBasicAuthorization, String transactionId) {
+    private static Map<String, List<String>> buildHeaders(String aaiBasicAuthorization, String requestId) {
         MultivaluedHashMap<String, String> headers = new MultivaluedHashMap<>();
-        headers.put(TRANSACTION_ID, Collections.singletonList(transactionId));
+        headers.put(TRANSACTION_ID, Collections.singletonList(requestId));
         headers.put(FROM_APP_ID, Collections.singletonList(APP_NAME));
         headers.put(AUTHORIZATION, Collections.singletonList(aaiBasicAuthorization));
         return headers;
@@ -1940,24 +1958,28 @@ public class RestUtil {
             throws AuditException {
         OperationResult result = client.get(url, buildHeaders(aaiBasicAuthorization, transId), MediaType.valueOf(MediaType.APPLICATION_JSON));
 
+        MDC.put(MDC_RESPONSE_CODE, String.valueOf(result.getResultCode()));
         if (result.getResultCode() == 200) {
+            MDC.put(MDC_STATUS_CODE, "COMPLETE");
             return result.getResult();
         } else if (result.getResultCode() == 404) {
             // Resource not found, generate empty JSON format
+            MDC.put(MDC_STATUS_CODE, "ERROR");
             log.info(LogMessages.RESOURCE_NOT_FOUND, url, "return empty Json format");
             return new JSONObject().toString();
 
         } else {
+            MDC.put(MDC_STATUS_CODE, "ERROR");
             throw new AuditException(AuditError.INTERNAL_SERVER_ERROR + " with " + result.getFailureCause());
         }
     }
 
 
     public static String obtainResouceLinkBasedOnServiceInstanceFromAAI(RestClient aaiClient, String baseURL, String aaiPathToSearchNodeQuery, String serviceInstanceId,
-            String transactionId, String aaiBasicAuthorization) throws AuditException {
+            String requestId, String aaiBasicAuthorization) throws AuditException {
 
         String url = generateGetCustomerInfoUrl(baseURL, aaiPathToSearchNodeQuery, serviceInstanceId);
-        String customerInfoString  = getResource(aaiClient, url, aaiBasicAuthorization, transactionId, MediaType.valueOf(MediaType.APPLICATION_JSON));
+        String customerInfoString  = getResource(aaiClient, url, aaiBasicAuthorization, requestId, MediaType.valueOf(MediaType.APPLICATION_JSON));
 
         // Handle the case if the service instance is not found in AAI
         if (isEmptyJson(customerInfoString)) {
@@ -2015,5 +2037,26 @@ public class RestUtil {
         }
 
         return true;
+    }
+
+    private static void initMdc(String requestId, String partnerName, String serviceInstanceId, String remoteAddress) {
+        MDC.clear();
+        MDC.put(MDC_REQUEST_ID, requestId);
+        MDC.put(MDC_SERVICE_NAME, APP_NAME);
+        MDC.put(MDC_SERVICE_INSTANCE_ID, serviceInstanceId);
+        MDC.put(MDC_PARTNER_NAME, partnerName);
+        MDC.put(MDC_CLIENT_ADDRESS, remoteAddress);
+        MDC.put(MDC_START_TIME, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(new Date()));
+        MDC.put(MDC_INVOCATION_ID, UUID.randomUUID().toString());
+        MDC.put(MDC_INSTANCE_ID, instanceId.toString());
+
+        try {
+            MDC.put(MDC_SERVER_FQDN, InetAddress.getLocalHost().getCanonicalHostName());
+        } catch (Exception e) {
+            // If, for some reason we are unable to get the canonical host name,
+            // we
+            // just want to leave the field null.
+            log.info("Could not get canonical host name for " + MDC_SERVER_FQDN + ", leaving field null");
+        }
     }
 }

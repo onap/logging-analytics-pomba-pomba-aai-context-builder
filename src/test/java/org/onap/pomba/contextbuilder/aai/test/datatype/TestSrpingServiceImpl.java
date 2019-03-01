@@ -15,26 +15,9 @@
  * limitations under the License.
  * ============LICENSE_END=====================================================
  */
-package org.onap.logging_analytics.pomba.pomba_aai_context_builder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
-import org.onap.pomba.contextbuilder.aai.model.GenericResponse;
+package org.onap.pomba.contextbuilder.aai.test.datatype;
 
-public class GenericResponseTest {
+public class TestSrpingServiceImpl {
 
-    @Test
-    public void testGenericResponse() {
-        GenericResponse response = new GenericResponse();
-
-        response.setFailureReason("failureReason");
-        response.setResponseObj(new Object());
-        response.setStatus("status");
-
-        assertEquals("failureReason", response.getFailureReason());
-        assertEquals("status", response.getStatus());
-        assertTrue(response.getResponseObj() != null);
-
-    }
 }
