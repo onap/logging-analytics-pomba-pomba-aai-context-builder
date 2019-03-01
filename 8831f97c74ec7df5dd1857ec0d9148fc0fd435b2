@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7d8d1e1a_cd8f77e1",
+        "filename": "src/test/java/org/onap/pomba/contextbuilder/aai/test/datatype/TestSrpingServiceImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 3131
+      },
+      "writtenOn": "2019-03-01T19:25:58Z",
+      "side": 1,
+      "message": "Delete this file",
+      "revId": "8831f97c74ec7df5dd1857ec0d9148fc0fd435b2",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
