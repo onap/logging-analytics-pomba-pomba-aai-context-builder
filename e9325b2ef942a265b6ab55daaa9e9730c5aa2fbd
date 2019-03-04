@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "af9e84b4_117d9eaf",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 657,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-03-04T21:48:26Z",
+      "side": 1,
+      "message": "Should have used {} instead of String.formant with %s",
+      "revId": "e9325b2ef942a265b6ab55daaa9e9730c5aa2fbd",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
