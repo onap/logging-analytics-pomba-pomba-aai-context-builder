@@ -87,6 +87,7 @@ public class RestServiceImpl implements RestService {
                 response = Response.ok().entity(gson.toJson(aaiContext)).build();
             }
         } catch (AuditException ce) {
+            log.error("getContext failure", ce);
             if (ce.getHttpStatus() !=null) {
                 response = Response.status(ce.getHttpStatus()).entity(ce.getMessage()).build();
             }else {
@@ -94,6 +95,7 @@ public class RestServiceImpl implements RestService {
                 response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(ce.getMessage()).build();
             }
         } catch (Exception e) {
+            log.error("getContext failure", e);
             response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
 

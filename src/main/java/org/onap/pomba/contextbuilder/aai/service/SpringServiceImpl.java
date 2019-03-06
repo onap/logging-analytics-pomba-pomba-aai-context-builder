@@ -59,7 +59,7 @@ public class SpringServiceImpl implements SpringService {
         } catch (AuditException ae) {
             throw ae;
         } catch (Exception e) {
-            throw new AuditException(e.getLocalizedMessage());
+            throw new AuditException(e.getLocalizedMessage(), e);
         }
         return context;
     }

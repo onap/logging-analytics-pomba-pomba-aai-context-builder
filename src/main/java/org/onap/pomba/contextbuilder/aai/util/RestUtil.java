@@ -658,30 +658,34 @@ public class RestUtil {
             if (isEmptyJson(pserverPayload)) {
                 log.info(LogMessages.NOT_FOUND, "PSERVER with url", pserverURL);
             } else {
-                log.info(String.format("Message from AAI for pserver url %s ,message body: %s", pserverURL, JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(pserverPayload))));
-
+                log.info("Message from AAI for pserver url {}, message body {}", pserverURL,
+                        JsonUtils.toPrettyJsonString(JsonUtils.jsonToObject(pserverPayload)));
                 // Logic to Create the Pserver POJO object
                 PserverInstance pserverInst = PserverInstance.fromJson(pserverPayload);
 
                 if ((pserverInst.getPInterfaceInstanceList() != null)
-                        &&(!(pserverInst.getPInterfaceInstanceList().getPInterfaceList().isEmpty()))) {
-                          List<PInterfaceInstance> pInterfaceInstList_aai = pserverInst.getPInterfaceInstanceList().getPInterfaceList();
-                          for (PInterfaceInstance pInterfaceInst_aai : pInterfaceInstList_aai) {
-                              //Obtain P-Interface level logical-link
-                              pInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
-                                       requestId,  aaiBasicAuthorization, pInterfaceInst_aai.getRelationshipList()));
+                        && (!(pserverInst.getPInterfaceInstanceList().getPInterfaceList().isEmpty()))) {
+                    List<PInterfaceInstance> pInterfaceInstListAai = pserverInst.getPInterfaceInstanceList()
+                            .getPInterfaceList();
+                    for (PInterfaceInstance pInterfaceInst_aai : pInterfaceInstListAai) {
+                        // Obtain P-Interface level logical-link
+                        pInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai(aaiClient, baseURL,
+                                requestId, aaiBasicAuthorization, pInterfaceInst_aai.getRelationshipList()));
 
-                              List<LInterfaceInstance> lInterfaceInstList_aai = pInterfaceInst_aai.getLInterfaceInstanceList().getLInterfaceList();
-                              for (LInterfaceInstance lInterfaceInst_aai : lInterfaceInstList_aai) {
-                                  //Obtain L-Interface level logical-link
-                                  lInterfaceInst_aai.setLogicalLinkInstanceList(obtainLogicalLinkInfoFromAai ( aaiClient, baseURL,
-                                           requestId,  aaiBasicAuthorization, lInterfaceInst_aai.getRelationshipList()));
-                              }
-
-                          }
+                        if (pInterfaceInst_aai.getLInterfaceInstanceList() != null) {
+                            List<LInterfaceInstance> lInterfaceInstListAai = pInterfaceInst_aai
+                                    .getLInterfaceInstanceList().getLInterfaceList();
+                            for (LInterfaceInstance lInterfaceInstAai : lInterfaceInstListAai) {
+                                // Obtain L-Interface level logical-link
+                                lInterfaceInstAai.setLogicalLinkInstanceList(
+                                        obtainLogicalLinkInfoFromAai(aaiClient, baseURL, requestId,
+                                                aaiBasicAuthorization, lInterfaceInstAai.getRelationshipList()));
+                            }
+                        }
+                    }
                 }
 
-                //update P-Interface if any.
+                // update P-Interface if any.
                 pserverLst.add(pserverInst);
             }
         }
