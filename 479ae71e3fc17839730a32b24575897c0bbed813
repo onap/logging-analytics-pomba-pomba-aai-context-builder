@@ -1,0 +1,7 @@
+Verified+1: ONAP Jobbuilder <onap-jobbuilder@jenkins.onap.org>
+Code-Review+2: Geora Barsky <georab@amdocs.com>
+Submitted-by: Geora Barsky <georab@amdocs.com>
+Submitted-at: Fri, 08 Mar 2019 19:02:28 +0000
+Reviewed-on: https://gerrit.onap.org/r/79818
+Project: logging-analytics/pomba/pomba-aai-context-builder
+Branch: refs/heads/master
