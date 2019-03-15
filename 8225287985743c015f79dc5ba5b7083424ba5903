@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cff09cc3_7ecb05d8",
+        "filename": "src/main/java/org/onap/pomba/contextbuilder/aai/util/RestUtil.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 970,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-03-15T20:49:30Z",
+      "side": 1,
+      "message": "if inMaint is \"true\", then set locked to false,\nif inMaint is \"false\", then set locked to true.",
+      "revId": "8225287985743c015f79dc5ba5b7083424ba5903",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
