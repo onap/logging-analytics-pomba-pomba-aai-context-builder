@@ -26,9 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -751,7 +748,7 @@ public class RestUtil {
                         vnfcModel.setModelInvariantUUID(vnfc.getModelInvariantId());
                         vnfcModel.setName(vnfc.getVnfcName());
                         vnfcModel.setModelVersionID(vnfc.getModelVersionId());
-                        vnfcModel.setUuid(vnfc.getModelVersionId());
+                        // Do not fill up UUID, based on the Pomba audit common model.
                         vnfcModel.setAttributes(populateVnfcAttributeList(vnfc));
                         vnfcLst.add(vnfcModel);
                     }
@@ -774,11 +771,8 @@ public class RestUtil {
 
             // --------------- Handle the vfModule
             List<VFModule> vfModuleLst = new ArrayList<>();
-            //Map to calculate the Vf Module MaxInstance.
             if (vnf.getVfModules() != null) {
                 List<VfModule> vfModuleList_from_aai = vnf.getVfModules().getVfModule();
-                ConcurrentMap<String, AtomicInteger> maxInstanceMap =
-                        buildMaxInstanceMap(vfModuleList_from_aai);
 
                 for (VfModule t_vfModule : vfModuleList_from_aai ) {
                     VFModule vfModule = new VFModule();
@@ -787,7 +781,6 @@ public class RestUtil {
                     vfModule.setName(t_vfModule.getVfModuleName());
                     vfModule.setModelVersionID(t_vfModule.getModelVersionId());
                     vfModule.setModelCustomizationUUID(t_vfModule.getModelCustomizationId());
-                    vfModule.setMaxInstances(maxInstanceMap.size());
                     vfModule.setDataQuality(DataQuality.ok());
                     List<Network> l3networkInVfModule = transformL3Network(t_vfModule.getL3NetworkList());
                     if ((l3networkInVfModule != null) && (!l3networkInVfModule.isEmpty()) ){
@@ -810,7 +803,6 @@ public class RestUtil {
                                 &&  (modelInvariantId.equals(t_vfModule.getModelInvariantId()))){
 
                                     List<Vserver>  vserverList = vfmoduleEntry.getValue();
-                                    vfModule.setMaxInstances(getMaxInstance(vfmoduleEntry.getKey(), maxInstanceMap));
 
                                     // Handle VM
                                     List<VM>   vmList = new ArrayList<>();
@@ -975,7 +967,7 @@ public class RestUtil {
             {
                 Attribute att = new Attribute();
                 att.setDataQuality(DataQuality.ok());
-                att.setName(Attribute.Name.nfcNamingCode);
+                att.setName(Attribute.Name.lockedBoolean);
                 att.setValue(String.valueOf(vnfc.getInMaintenance()));
                 attributeList.add(att);
             }
@@ -1708,46 +1700,6 @@ public class RestUtil {
     private static String extractAttValue(String relatedLink) {
         return relatedLink.substring(relatedLink.lastIndexOf("/")+1);
     }
-
-    /*
-     * Build the map with key (model_version_id and model_invariant_id), and with the max occurrences of
-     * the value in the map
-     *
-     */
-    private static ConcurrentMap<String, AtomicInteger> buildMaxInstanceMap(List<VfModule> vfModuleList) {
-
-        ConcurrentMap<String, AtomicInteger> map = new ConcurrentHashMap<>();
-
-        for (VfModule vfModule : vfModuleList) {
-            // group the key by vf-module-id, model-invariant-id,vf-module-name, model-version-id and model-customization-id
-            String key = new StringBuilder().append(vfModule.getVfModuleId()).append(DELIMITER)
-                    .append(vfModule.getModelInvariantId()).toString();
-
-            if (key.length() > 0) {
-                map.putIfAbsent(key, new AtomicInteger(0)); //alway 0
-            }
-
-        }
-
-        return map;
-
-    }
-
-    /*
-     * Return the occurrence of the VfModule complex key: (model-version-id)+(model-invariant-id)
-     */
-    private static int getMaxInstance(String key, ConcurrentMap<String, AtomicInteger> maxInstanceMap) {
-
-        for (Map.Entry<String, AtomicInteger> entry : maxInstanceMap.entrySet()) {
-
-            if (entry.getKey().equals(key)) {
-                return entry.getValue().intValue();
-            }
-
-        }
-        return 0;
-    }
-
 
     public static boolean isEmptyJson(String serviceInstancePayload) {
 
