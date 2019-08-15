@@ -1,0 +1,5 @@
+---
+distribution_type: 'maven'
+version: '1.5.1'
+project: 'pomba-aai-context-builder'
+log_dir: 'logging-analytics-pomba-pomba-aai-context-builder-maven-stage-master/103/'
