@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0e6dcad6_3799812d",
+        "filename": "INFO.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 481
+      },
+      "writtenOn": "2019-08-23T20:13:26Z",
+      "side": 1,
+      "message": "yaml is complaining becuase it only accepts one name tag per block. Sorry about this. We will need to update these names to be 1 name per block.",
+      "range": {
+        "startLine": 63,
+        "startChar": 0,
+        "endLine": 70,
+        "endChar": 30
+      },
+      "revId": "47646c0a7c8f13612a30f0710b083a890f0b91ef",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
